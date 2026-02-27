@@ -1,0 +1,152 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: kannari_db
+      POSTGRES_USER: kannari_user
+      POSTGRES_PASSWORD: kannari_secure_pass_2026
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kannari_user -d kannari_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Django Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql://kannari_user:kannari_secure_pass_2026@db:5432/kannari_db
+      - ALLOWED_HOSTS=localhost,127.0.0.1,178.156.242.253,backend,kannarimusicacademy.com,www.kannarimusicacademy.com
+      - CORS_ALLOWED_ORIGINS=http://178.156.242.253,https://178.156.242.253,http://localhost:3000,http://localhost,http://kannarimusicacademy.com,https://kannarimusicacademy.com,http://www.kannarimusicacademy.com,https://www.kannarimusicacademy.com
+      - DEBUG=True
+      - MEDIA_ROOT=/app/media
+      - FRONTEND_URL=https://kannarimusicacademy.com
+    volumes:
+      - media_data:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import socket; s=socket.socket(); s.settimeout(2); s.connect(('127.0.0.1', 8000)); s.close()\" >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    ports:
+      - "8000:8000"
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    ports:
+      - "3000:80"
+
+  # Jitsi Meet - Web frontend
+  jitsi-web:
+    image: jitsi/web:stable
+    restart: always
+    env_file:
+      - ./jitsi/.env
+    environment:
+      - XMPP_SERVER=jitsi-prosody
+      - XMPP_BOSH_URL_BASE=http://jitsi-prosody:5280
+    expose:
+      - "80"
+    volumes:
+      - jitsi_web_config:/config
+    depends_on:
+      - jitsi-prosody
+      - jitsi-jicofo
+      - jitsi-jvb
+
+  # Jitsi Meet - XMPP server
+  jitsi-prosody:
+    image: jitsi/prosody:stable
+    restart: always
+    env_file:
+      - ./jitsi/.env
+    expose:
+      - "5222"
+      - "5280"
+      - "5347"
+    volumes:
+      - jitsi_prosody_config:/config
+
+  # Jitsi Meet - Conference focus
+  jitsi-jicofo:
+    image: jitsi/jicofo:stable
+    restart: always
+    env_file:
+      - ./jitsi/.env
+    environment:
+      - XMPP_SERVER=jitsi-prosody
+    volumes:
+      - jitsi_jicofo_config:/config
+    depends_on:
+      - jitsi-prosody
+
+  # Jitsi Meet - Video bridge
+  jitsi-jvb:
+    image: jitsi/jvb:stable
+    restart: always
+    env_file:
+      - ./jitsi/.env
+    environment:
+      - XMPP_SERVER=jitsi-prosody
+      - XMPP_BOSH_URL_BASE=http://jitsi-prosody:5280
+    ports:
+      - "10000:10000/udp"
+      - "127.0.0.1:4443:4443"
+    volumes:
+      - jitsi_jvb_config:/config
+    depends_on:
+      - jitsi-prosody
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - media_data:/app/media
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+      jitsi-web:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  media_data:
+  jitsi_web_config:
+  jitsi_prosody_config:
+  jitsi_jicofo_config:
+  jitsi_jvb_config:

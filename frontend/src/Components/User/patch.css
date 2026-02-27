@@ -1,0 +1,142 @@
+/* Fix 1: Make close button more visible */
+.close-floating-btn {
+    background: rgba(255, 255, 255, 0.35);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: all 0.2s ease-in-out;
+    flex-shrink: 0;
+    padding: 0;
+    line-height: 1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.close-floating-btn:hover {
+    background: rgba(255, 255, 255, 0.5);
+    transform: scale(1.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.close-floating-btn:active {
+    transform: scale(0.95);
+}
+
+/* Fix 2: Add Mark Complete button styling */
+.complete-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    font-size: 13px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.complete-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.complete-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.3);
+}
+
+.complete-btn i {
+    font-size: 15px;
+}
+
+/* Fix 3: Improve downloadables styling */
+.downloadables-section {
+    margin-top: 12px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f0f9ff 100%);
+    border-radius: 12px;
+    border: 2px solid #bfdbfe;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.08);
+    animation: slideDown 0.3s ease-out;
+}
+
+.downloadables-title {
+    color: #1e40af;
+    font-weight: 700;
+    font-size: 15px;
+    margin: 0 0 14px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.downloadables-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.downloadable-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: white;
+    border: 1.5px solid #e0e7ff;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.25s ease-in-out;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.downloadable-card:hover {
+    background: white;
+    border-color: #3b82f6;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.downloadable-icon {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.downloadable-icon i {
+    font-size: 20px;
+    color: #3b82f6;
+}
+
+.download-action {
+    color: #d1d5db;
+    font-size: 18px;
+    transition: all 0.2s ease-in-out;
+    flex-shrink: 0;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

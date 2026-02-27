@@ -1,0 +1,288 @@
+/* ==================== UNIFIED LOADING SPINNER ==================== */
+/* Kannari Music Academy - Music-themed Loading Animation */
+
+/* Container Styles */
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 250px);
+    width: 100%;
+    padding: 40px 20px;
+    box-sizing: border-box;
+    flex: 1;
+    margin: 0 auto;
+}
+
+/* For pages within dashboard layouts with sidebars (desktop) */
+@media (min-width: 768px) {
+    .loading-container {
+        min-height: calc(100vh - 180px);
+    }
+}
+
+/* When LoadingSpinner is inside dashboard-content or dashboard-main */
+.dashboard-content .loading-container,
+.dashboard-main .loading-container,
+.teacher-main-content .loading-container,
+.progress-content .loading-container,
+.progress-main .loading-container,
+.achievements-content .loading-container,
+.achievements-main .loading-container,
+.all-courses-content .loading-container,
+.all-courses-main .loading-container,
+.admin-main-content .loading-container {
+    min-height: calc(100vh - 200px);
+    height: calc(100vh - 200px);
+}
+
+/* Admin loading wrapper - for full page loading in admin panel */
+.admin-loading-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 150px);
+    width: 100%;
+}
+
+.admin-loading-wrapper .loading-container {
+    min-height: auto;
+    height: auto;
+}
+
+/* School loading wrapper - for full page loading in school panel */
+.school-loading-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 150px);
+    width: 100%;
+}
+
+.school-loading-wrapper .loading-container {
+    min-height: auto;
+    height: auto;
+}
+
+.loading-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Variant Backgrounds */
+.variant-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+}
+
+.variant-primary .loading-text {
+    color: white;
+}
+
+.variant-primary .bar {
+    background: linear-gradient(180deg, #ffffff 0%, #e0e7ff 100%);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+.variant-light {
+    background: transparent;
+}
+
+.variant-light .loading-text {
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.variant-light .bar {
+    background: linear-gradient(180deg, #3b82f6 0%, #1e40af 100%);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.variant-dark {
+    background: #1e293b;
+}
+
+.variant-dark .loading-text {
+    color: #e2e8f0;
+}
+
+.variant-dark .bar {
+    background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
+    box-shadow: 0 0 15px rgba(96, 165, 250, 0.5);
+}
+
+/* Non-fullscreen variants - transparent background */
+.loading-container.variant-primary,
+.loading-container.variant-dark {
+    background: transparent;
+}
+
+.loading-container.variant-primary .bar,
+.loading-container.variant-light .bar {
+    background: linear-gradient(180deg, #3b82f6 0%, #1e40af 100%);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+/* Music Equalizer Loader */
+.music-loader {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 6px;
+}
+
+/* Size Variants */
+.spinner-sm {
+    height: 30px;
+}
+
+.spinner-sm .bar {
+    width: 5px;
+    border-radius: 3px;
+}
+
+.spinner-md {
+    height: 50px;
+}
+
+.spinner-md .bar {
+    width: 8px;
+    border-radius: 4px;
+}
+
+.spinner-lg {
+    height: 70px;
+}
+
+.spinner-lg .bar {
+    width: 10px;
+    border-radius: 5px;
+}
+
+.spinner-xl {
+    height: 90px;
+}
+
+.spinner-xl .bar {
+    width: 14px;
+    border-radius: 7px;
+}
+
+/* Individual Bars */
+.bar {
+    display: inline-block;
+    background: linear-gradient(180deg, #3b82f6 0%, #1e40af 100%);
+    animation: musicWave 1s ease-in-out infinite;
+    transform-origin: bottom;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.bar1 {
+    height: 60%;
+    animation-delay: 0s;
+}
+
+.bar2 {
+    height: 80%;
+    animation-delay: 0.1s;
+}
+
+.bar3 {
+    height: 100%;
+    animation-delay: 0.2s;
+}
+
+.bar4 {
+    height: 70%;
+    animation-delay: 0.3s;
+}
+
+.bar5 {
+    height: 50%;
+    animation-delay: 0.4s;
+}
+
+/* Animation Keyframes */
+@keyframes musicWave {
+    0%, 100% {
+        transform: scaleY(0.3);
+    }
+    50% {
+        transform: scaleY(1);
+    }
+}
+
+/* Loading Text */
+.loading-text {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 0.5px;
+    color: #1e293b;
+    animation: textPulse 2s ease-in-out infinite;
+}
+
+@keyframes textPulse {
+    0%, 100% {
+        opacity: 0.7;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .loading-container {
+        min-height: 300px;
+    }
+
+    .spinner-lg {
+        height: 55px;
+    }
+
+    .spinner-lg .bar {
+        width: 8px;
+    }
+
+    .spinner-xl {
+        height: 70px;
+    }
+
+    .spinner-xl .bar {
+        width: 10px;
+    }
+
+    .loading-text {
+        font-size: 14px;
+    }
+}
+
+/* Inline Loader for Buttons and Small Areas */
+.loading-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.loading-inline .music-loader {
+    height: 20px;
+}
+
+.loading-inline .bar {
+    width: 3px;
+    border-radius: 2px;
+}
