@@ -197,7 +197,7 @@ const TeacherSessions = () => {
 
   // ============= MAIN UI =============
   return (
-    <div style={{ padding: '32px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
         <div>

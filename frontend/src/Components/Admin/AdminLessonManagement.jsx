@@ -15,7 +15,7 @@ const baseUrl = API_BASE_URL;
  * @param {Object} props
  * @param {string} props.userType - 'admin' or 'teacher'
  * @param {number} props.teacherId - Required when userType is 'teacher'
- * @param {string} props.basePath - Base route path (e.g., '/admin/lesson-management' or '/teacher-course-management')
+ * @param {string} props.basePath - Base route path (e.g., '/admin-panel/lesson-management' or '/teacher/course-management')
  * @param {string} props.pageTitle - Page title to display
  * @param {boolean} props.showTeacherSelect - Whether to show teacher selection dropdown
  * @param {boolean} props.showAnalytics - Whether to show analytics button
@@ -23,7 +23,7 @@ const baseUrl = API_BASE_URL;
 const AdminLessonManagement = ({
     userType = 'admin',
     teacherId = null,
-    basePath = '/admin/lesson-management',
+    basePath = '/admin-panel/lesson-management',
     pageTitle = 'Course Management',
     showTeacherSelect = true,
     showAnalytics = true
@@ -84,6 +84,7 @@ const AdminLessonManagement = ({
         description: '',
         content_type: 'video',
         file: null,
+        youtube_url: '',
         duration_seconds: 0,
         objectives: '',
         is_preview: false,
@@ -571,6 +572,7 @@ const AdminLessonManagement = ({
             description: '',
             content_type: 'video',
             file: null,
+            youtube_url: '',
             duration_seconds: 0,
             objectives: '',
             is_preview: false,
@@ -610,6 +612,7 @@ const AdminLessonManagement = ({
             description: lesson.description || '',
             content_type: lesson.content_type,
             file: null,
+            youtube_url: lesson.youtube_url || '',
             duration_seconds: lesson.duration_seconds,
             objectives: lesson.objectives || '',
             is_preview: lesson.is_preview || false,
@@ -723,9 +726,9 @@ const AdminLessonManagement = ({
     const handleLessonSubmit = async (e) => {
         e.preventDefault();
         
-        // Validate file for new lessons
-        if (!editingLesson && !lessonFormData.file) {
-            Swal.fire('Error', 'Please select a file to upload', 'error');
+        // Validate file for new lessons (file not required if youtube_url provided)
+        if (!editingLesson && !lessonFormData.file && !lessonFormData.youtube_url) {
+            Swal.fire('Error', 'Please select a file to upload or provide a YouTube URL', 'error');
             return;
         }
         
@@ -747,6 +750,9 @@ const AdminLessonManagement = ({
             formData.append('is_locked', lessonFormData.is_locked);
             formData.append('is_premium', lessonFormData.is_premium);
             formData.append('required_access_level', lessonFormData.required_access_level || 'free');
+            if (lessonFormData.youtube_url) {
+                formData.append('youtube_url', lessonFormData.youtube_url);
+            }
             if (lessonFormData.file) {
                 formData.append('file', lessonFormData.file);
             }
@@ -1466,14 +1472,14 @@ const AdminLessonManagement = ({
                                                     <small className="text-muted">{module.total_lessons || module.lessons?.length || 0} Lessons</small>
                                                 </div>
                                             </div>
-                                            <div className="d-flex align-items-center gap-2">
+                                            <div className="d-flex align-items-center gap-2" style={{ flexShrink: 0 }}>
                                                 <button
                                                     className="btn btn-sm"
                                                     onClick={(e) => { e.stopPropagation(); openAddLessonModal(module.id); }}
                                                     title="Add Lesson"
-                                                    style={{ background: '#e8f5e9', color: '#2e7d32', border: 'none', borderRadius: '6px', padding: '6px 10px' }}
+                                                    style={{ background: '#e8f5e9', color: '#2e7d32', border: 'none', borderRadius: '6px', padding: '6px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '34px' }}
                                                 >
-                                                    <i className="bi bi-plus-lg"></i>
+                                                    <i className="bi bi-plus-circle" style={{ fontSize: '16px' }}></i>
                                                 </button>
                                                 <button
                                                     className="btn btn-sm"
@@ -1541,10 +1547,16 @@ const AdminLessonManagement = ({
                                                                                     Objectives
                                                                                 </span>
                                                                             )}
+                                                                            {lesson.youtube_url && (
+                                                                                <span className="badge" style={{ backgroundColor: '#fee2e2', color: '#dc2626', fontSize: '11px', fontWeight: 500 }}>
+                                                                                    <i className="bi bi-youtube me-1"></i>
+                                                                                    YouTube
+                                                                                </span>
+                                                                            )}
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <div className="d-flex gap-2">
+                                                                <div className="d-flex gap-2" style={{ flexShrink: 0 }}>
                                                                     <button
                                                                         className="btn btn-sm"
                                                                         onClick={() => openDownloadablesModal(lesson)}
@@ -2106,10 +2118,44 @@ const AdminLessonManagement = ({
                                             <small className="text-muted">Minimum subscription tier needed for this lesson</small>
                                         </div>
 
+                                        {/* YouTube URL */}
+                                        <div className="col-12">
+                                            <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>
+                                                <i className="bi bi-youtube me-1" style={{ color: '#ff0000' }}></i>
+                                                YouTube Video Link
+                                            </label>
+                                            <div className="input-group">
+                                                <span className="input-group-text" style={{ 
+                                                    background: lessonFormData.youtube_url ? '#fef2f2' : '#f9fafb', 
+                                                    border: '1px solid #e5e7eb', 
+                                                    borderRight: 'none',
+                                                    borderRadius: '8px 0 0 8px',
+                                                    color: lessonFormData.youtube_url ? '#dc2626' : '#9ca3af'
+                                                }}>
+                                                    <i className="bi bi-youtube"></i>
+                                                </span>
+                                                <input
+                                                    type="url"
+                                                    className="form-control"
+                                                    value={lessonFormData.youtube_url}
+                                                    onChange={(e) => setLessonFormData({ ...lessonFormData, youtube_url: e.target.value })}
+                                                    placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                                                    style={{ border: '1px solid #e5e7eb', borderRadius: '0 8px 8px 0', padding: '10px 14px' }}
+                                                />
+                                            </div>
+                                            <small className="text-muted">
+                                                Optional — Add a YouTube link for students to watch. Works with all content types. 
+                                                {!lessonFormData.file && !editingLesson && lessonFormData.youtube_url && (
+                                                    <span style={{ color: '#16a34a', fontWeight: 500 }}> File upload is optional when a YouTube link is provided.</span>
+                                                )}
+                                            </small>
+                                        </div>
+
                                         {/* Drag & Drop File Upload */}
                                         <div className="col-12">
                                             <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>
-                                                Upload File {!editingLesson && <span style={{ color: '#ef4444' }}>*</span>}
+                                                Upload File {!editingLesson && !lessonFormData.youtube_url && <span style={{ color: '#ef4444' }}>*</span>}
+                                                {lessonFormData.youtube_url && <span style={{ color: '#6b7280', fontWeight: 400, fontSize: '13px' }}> (optional)</span>}
                                             </label>
                                             <div
                                                 onDragEnter={handleDragEnter}
@@ -2138,7 +2184,6 @@ const AdminLessonManagement = ({
                                                         lessonFormData.content_type === 'pdf' ? '.pdf' :
                                                         lessonFormData.content_type === 'image' ? 'image/*' : '*'
                                                     }
-                                                    required={!editingLesson}
                                                 />
                                                 {lessonFormData.file ? (
                                                     <div>

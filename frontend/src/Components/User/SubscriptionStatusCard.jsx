@@ -49,7 +49,7 @@ const SubscriptionStatusCard = ({ studentId, compact = false }) => {
                     <h4>No Active Subscription</h4>
                     <p>Subscribe to unlock premium courses and features</p>
                 </div>
-                <Link to="/subscriptions" className="btn btn-primary subscribe-btn">
+                <Link to="/student/subscriptions" className="btn btn-primary subscribe-btn">
                     <i className="bi bi-star me-2"></i>
                     View Plans
                 </Link>
@@ -87,7 +87,7 @@ const SubscriptionStatusCard = ({ studentId, compact = false }) => {
                         {daysRemaining} days left
                     </span>
                 </div>
-                <Link to="/subscriptions" className="btn btn-sm btn-outline-primary">
+                <Link to="/student/subscriptions" className="btn btn-sm btn-outline-primary">
                     Manage
                 </Link>
             </div>
@@ -217,12 +217,12 @@ const SubscriptionStatusCard = ({ studentId, compact = false }) => {
             </div>
 
             <div className="subscription-actions">
-                <Link to="/subscriptions" className="btn btn-outline-primary">
+                <Link to="/student/subscriptions" className="btn btn-outline-primary">
                     <i className="bi bi-gear me-1"></i>
                     Manage Subscription
                 </Link>
                 {isExpiringSoon && (
-                    <Link to="/subscriptions" className="btn btn-primary">
+                    <Link to="/student/subscriptions" className="btn btn-primary">
                         <i className="bi bi-arrow-repeat me-1"></i>
                         Renew Now
                     </Link>

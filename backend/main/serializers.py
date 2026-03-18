@@ -171,7 +171,7 @@ class ModuleLessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ModuleLesson
         fields = ['id', 'module', 'title', 'description', 'objectives', 'objectives_list',
-                  'content_type', 'file', 'duration_seconds', 'duration_formatted', 
+                  'content_type', 'file', 'youtube_url', 'duration_seconds', 'duration_formatted', 
                   'file_size_formatted', 'order', 'is_preview', 'is_locked', 'is_premium',
                   'required_access_level',
                   'downloadables', 'created_at', 'updated_at']
@@ -1219,15 +1219,27 @@ class GroupClassStudentSerializer(serializers.ModelSerializer):
 
 
 class LessonAssignmentSerializer(serializers.ModelSerializer):
-    lesson_title = serializers.CharField(source='lesson.title', read_only=True)
+    lesson_title = serializers.CharField(source='lesson.title', read_only=True, allow_null=True)
     student_name = serializers.CharField(source='student.fullname', read_only=True, allow_null=True)
     group_name = serializers.CharField(source='group_class.name', read_only=True, allow_null=True)
+    school_name = serializers.CharField(source='school.name', read_only=True, allow_null=True)
+    teacher_name = serializers.CharField(source='teacher.full_name', read_only=True, allow_null=True)
+    display_title = serializers.CharField(read_only=True)
+    submission_type_display = serializers.CharField(source='get_submission_type_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    submission_count = serializers.SerializerMethodField()
     
     class Meta:
         model = models.LessonAssignment
-        fields = ['id', 'school', 'lesson', 'lesson_title', 'assignment_type',
-                  'student', 'student_name', 'group_class', 'group_name',
-                  'due_date', 'audio_required', 'max_points', 'notes', 'assigned_at']
+        fields = ['id', 'school', 'school_name', 'teacher', 'teacher_name',
+                  'lesson', 'lesson_title', 'title', 'display_title', 'description',
+                  'submission_type', 'submission_type_display', 'status', 'status_display',
+                  'assignment_type', 'student', 'student_name', 'group_class', 'group_name',
+                  'due_date', 'audio_required', 'max_points', 'notes', 'assigned_at',
+                  'submission_count']
+
+    def get_submission_count(self, obj):
+        return obj.submissions.count()
 
     def __init__(self, *args, **kwargs):
         super(LessonAssignmentSerializer, self).__init__(*args, **kwargs)
@@ -1239,42 +1251,67 @@ class LessonAssignmentSerializer(serializers.ModelSerializer):
 
 
 class LessonAssignmentSubmissionSerializer(serializers.ModelSerializer):
-    assignment_lesson_title = serializers.CharField(source='assignment.lesson.title', read_only=True)
+    assignment_title = serializers.CharField(source='assignment.display_title', read_only=True)
+    assignment_lesson_title = serializers.SerializerMethodField()
     assignment_max_points = serializers.IntegerField(source='assignment.max_points', read_only=True)
+    assignment_submission_type = serializers.CharField(source='assignment.submission_type', read_only=True)
     student_name = serializers.CharField(source='student.fullname', read_only=True)
-    graded_by_name = serializers.CharField(source='graded_by.full_name', read_only=True)
+    graded_by_name = serializers.CharField(source='graded_by.full_name', read_only=True, allow_null=True)
 
     class Meta:
         model = models.LessonAssignmentSubmission
         fields = [
-            'id', 'assignment', 'assignment_lesson_title', 'assignment_max_points',
-            'student', 'student_name', 'audio_file', 'submission_notes',
-            'points_awarded', 'teacher_feedback', 'graded_by', 'graded_by_name',
-            'graded_at', 'submitted_at', 'updated_at'
+            'id', 'assignment', 'assignment_title', 'assignment_lesson_title',
+            'assignment_max_points', 'assignment_submission_type',
+            'student', 'student_name',
+            'audio_file', 'video_file', 'file', 'text_content',
+            'submission_notes', 'points_awarded', 'teacher_feedback',
+            'graded_by', 'graded_by_name', 'graded_at', 'submitted_at', 'updated_at'
         ]
+
+    def get_assignment_lesson_title(self, obj):
+        if obj.assignment and obj.assignment.lesson:
+            return obj.assignment.lesson.title
+        return None
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
         request = self.context.get('request')
-        if request and data.get('audio_file'):
+        if request:
             forwarded_proto = request.META.get('HTTP_X_FORWARDED_PROTO', '')
-            if forwarded_proto == 'https' or request.is_secure():
-                data['audio_file'] = data['audio_file'].replace('http://', 'https://')
+            is_https = forwarded_proto == 'https' or request.is_secure()
+            if is_https:
+                for field in ('audio_file', 'video_file', 'file'):
+                    if data.get(field):
+                        data[field] = data[field].replace('http://', 'https://')
         return data
 
 
 class StudentLessonAssignmentSerializer(serializers.ModelSerializer):
-    lesson_title = serializers.CharField(source='lesson.title', read_only=True)
-    school_name = serializers.CharField(source='school.name', read_only=True)
+    lesson_title = serializers.SerializerMethodField()
+    school_name = serializers.CharField(source='school.name', read_only=True, allow_null=True)
+    teacher_name = serializers.CharField(source='teacher.full_name', read_only=True, allow_null=True)
+    display_title = serializers.CharField(read_only=True)
+    submission_type_display = serializers.CharField(source='get_submission_type_display', read_only=True)
+    computed_status = serializers.SerializerMethodField()
     submission = serializers.SerializerMethodField()
+    mc_questions = serializers.SerializerMethodField()
 
     class Meta:
         model = models.LessonAssignment
         fields = [
-            'id', 'lesson', 'lesson_title', 'school_name',
+            'id', 'lesson', 'lesson_title', 'title', 'display_title', 'description',
+            'school_name', 'teacher_name', 'submission_type', 'submission_type_display',
             'assignment_type', 'due_date', 'audio_required', 'max_points',
-            'notes', 'assigned_at', 'submission'
+            'notes', 'assigned_at', 'computed_status', 'submission', 'mc_questions'
         ]
+
+    def get_lesson_title(self, obj):
+        return obj.lesson.title if obj.lesson else None
+
+    def get_computed_status(self, obj):
+        student_id = self.context.get('student_id')
+        return obj.compute_status(student_id) if student_id else obj.status
 
     def get_submission(self, obj):
         student_id = self.context.get('student_id')
@@ -1284,3 +1321,415 @@ class StudentLessonAssignmentSerializer(serializers.ModelSerializer):
         if not submission:
             return None
         return LessonAssignmentSubmissionSerializer(submission, context=self.context).data
+
+    def get_mc_questions(self, obj):
+        """Include multiple choice questions if this is an MC assignment."""
+        if obj.submission_type != 'multiple_choice':
+            return None
+        questions = obj.mc_questions.all()
+        student_id = self.context.get('student_id')
+        result = []
+        for q in questions:
+            q_data = {
+                'id': q.id,
+                'question_text': q.question_text,
+                'option_a': q.option_a,
+                'option_b': q.option_b,
+                'option_c': q.option_c,
+                'option_d': q.option_d,
+                'points': q.points,
+                'order': q.order,
+            }
+            if student_id:
+                answer = q.answers.filter(student_id=student_id).first()
+                q_data['student_answer'] = {
+                    'selected_option': answer.selected_option,
+                    'is_correct': answer.is_correct,
+                    'answered_at': answer.answered_at.isoformat()
+                } if answer else None
+            result.append(q_data)
+        return result
+
+
+# ==================== MESSAGING SERIALIZERS ====================
+
+class MessageSerializer(serializers.ModelSerializer):
+    sender_display = serializers.CharField(read_only=True)
+    recipient_display = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = models.Message
+        fields = ['id', 'sender_type', 'sender_parent', 'sender_teacher', 'sender_admin', 'sender_student',
+                  'recipient_type', 'recipient_parent', 'recipient_teacher', 'recipient_admin', 'recipient_student',
+                  'parent_link', 'teacher_student', 'content', 'is_read', 'read_at',
+                  'is_hidden_by_sender', 'is_hidden_by_recipient',
+                  'sender_display', 'recipient_display', 'created_at']
+        read_only_fields = ['created_at', 'read_at', 'sender_display', 'recipient_display']
+
+
+class ChatLockPolicySerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='parent_link.student.fullname', read_only=True)
+    parent_name = serializers.CharField(source='parent_link.parent.fullname', read_only=True)
+    parent_email = serializers.CharField(source='parent_link.parent.email', read_only=True)
+    student_email = serializers.CharField(source='parent_link.student.email', read_only=True)
+    relationship = serializers.CharField(source='parent_link.relationship', read_only=True)
+    link_status = serializers.CharField(source='parent_link.status', read_only=True)
+    age_tier = serializers.SerializerMethodField()
+    chat_allowed = serializers.SerializerMethodField()
+    teacher_names = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.ChatLockPolicy
+        fields = ['id', 'parent_link', 'student_name', 'parent_name',
+                  'parent_email', 'student_email', 'relationship', 'link_status',
+                  'is_locked', 'lock_reason', 'unlocked_by', 'unlock_expires_at',
+                  'age_tier', 'chat_allowed', 'teacher_names',
+                  'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
+
+    def get_age_tier(self, obj):
+        return obj.get_student_age_tier()
+
+    def get_chat_allowed(self, obj):
+        allowed, reason = obj.is_chat_currently_allowed()
+        return {'allowed': allowed, 'reason': reason}
+
+    def get_teacher_names(self, obj):
+        assignments = models.TeacherStudent.objects.filter(
+            student=obj.parent_link.student, status='active'
+        ).select_related('teacher')
+        return [a.teacher.full_name for a in assignments]
+
+
+class TeacherOfficeHoursSerializer(serializers.ModelSerializer):
+    teacher_name = serializers.CharField(source='teacher.full_name', read_only=True)
+    day_name = serializers.CharField(source='get_day_of_week_display', read_only=True)
+
+    class Meta:
+        model = models.TeacherOfficeHours
+        fields = ['id', 'teacher', 'teacher_name', 'day_of_week', 'day_name',
+                  'start_time', 'end_time', 'notes', 'is_active', 'created_at', 'updated_at']
+        read_only_fields = ['teacher', 'created_at', 'updated_at']
+
+
+class ChatUnlockRequestSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='parent_link.student.fullname', read_only=True)
+    parent_name = serializers.CharField(source='parent_link.parent.fullname', read_only=True)
+    is_active_now = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.ChatUnlockRequest
+        fields = ['id', 'parent_link', 'student_name', 'parent_name',
+                  'unlocked_by_admin', 'unlocked_by_school', 'duration_hours',
+                  'unlock_at', 'expires_at', 'notes', 'is_active_now', 'created_at']
+        read_only_fields = ['created_at', 'unlock_at']
+
+    def get_is_active_now(self, obj):
+        return obj.is_active()
+
+
+# ==================== GROUP FEATURE SERIALIZERS ====================
+
+class GroupMessageSerializer(serializers.ModelSerializer):
+    sender_name_display = serializers.SerializerMethodField()
+    sender_profile_img = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.GroupMessage
+        fields = ['id', 'group_class', 'sender_type', 'sender_teacher', 'sender_admin',
+                  'sender_parent', 'sender_student', 'sender_name', 'sender_name_display',
+                  'sender_profile_img', 'content', 'is_pinned', 'is_hidden', 'created_at']
+        read_only_fields = ['created_at', 'sender_name']
+        extra_kwargs = {'group_class': {'required': False}}
+
+    def get_sender_name_display(self, obj):
+        if obj.sender_teacher:
+            return obj.sender_teacher.full_name
+        if obj.sender_admin:
+            return obj.sender_admin.full_name
+        if obj.sender_parent:
+            return obj.sender_parent.fullname
+        if obj.sender_student:
+            return obj.sender_student.fullname
+        return obj.sender_name or 'Unknown'
+
+    def get_sender_profile_img(self, obj):
+        try:
+            if obj.sender_teacher and obj.sender_teacher.profile_img:
+                return obj.sender_teacher.profile_img.url
+            if obj.sender_student and obj.sender_student.profile_img:
+                return obj.sender_student.profile_img.url
+        except:
+            pass
+        return None
+
+
+class GroupAnnouncementSerializer(serializers.ModelSerializer):
+    author_name = serializers.SerializerMethodField()
+    priority_display = serializers.CharField(source='get_priority_display', read_only=True)
+
+    class Meta:
+        model = models.GroupAnnouncement
+        fields = ['id', 'group_class', 'teacher', 'admin', 'title', 'content',
+                  'file', 'is_pinned', 'priority', 'priority_display',
+                  'author_name', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
+        extra_kwargs = {'group_class': {'required': False}}
+
+    def get_author_name(self, obj):
+        if obj.teacher:
+            return obj.teacher.full_name
+        if obj.admin:
+            return obj.admin.full_name
+        # School-posted announcements (no teacher/admin FK)
+        if obj.group_class and obj.group_class.school:
+            return obj.group_class.school.name
+        return 'School'
+
+
+class GroupResourceSerializer(serializers.ModelSerializer):
+    teacher_name = serializers.CharField(source='teacher.full_name', read_only=True, allow_null=True)
+    file_size_formatted = serializers.CharField(read_only=True)
+    file_type_display = serializers.CharField(source='get_file_type_display', read_only=True)
+
+    class Meta:
+        model = models.GroupResource
+        fields = ['id', 'group_class', 'teacher', 'teacher_name', 'title', 'description',
+                  'file', 'link_url', 'file_type', 'file_type_display', 'file_size_formatted',
+                  'download_count', 'created_at']
+        read_only_fields = ['created_at', 'download_count']
+        extra_kwargs = {'group_class': {'required': False}}
+
+
+class GroupSessionSerializer(serializers.ModelSerializer):
+    teacher_name = serializers.CharField(source='teacher.full_name', read_only=True)
+    group_name = serializers.CharField(source='group_class.name', read_only=True)
+    actual_duration_minutes = serializers.IntegerField(read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    formatted_time = serializers.SerializerMethodField()
+    # Accept any session_type string on write; perform_create maps to model choices
+    session_type = serializers.CharField(required=False, default='video_call')
+
+    class Meta:
+        model = models.GroupSession
+        fields = ['id', 'group_class', 'group_name', 'teacher', 'teacher_name',
+                  'title', 'description', 'scheduled_date', 'scheduled_time', 'formatted_time',
+                  'duration_minutes', 'session_type', 'status', 'status_display',
+                  'room_name', 'meeting_link', 'is_live', 'started_at', 'ended_at',
+                  'recording_url', 'actual_duration_minutes',
+                  'has_minor_participants', 'recording_enabled',
+                  'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at', 'room_name', 'meeting_link',
+                            'started_at', 'ended_at', 'actual_duration_minutes']
+        extra_kwargs = {
+            'group_class': {'required': False},
+            'teacher': {'required': False},
+            'scheduled_date': {'required': False},
+            'scheduled_time': {'required': False},
+        }
+
+    def get_formatted_time(self, obj):
+        return obj.scheduled_time.strftime('%H:%M') if obj.scheduled_time else None
+
+
+class GroupSessionParticipantLogSerializer(serializers.ModelSerializer):
+    participant_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.GroupSessionParticipantLog
+        fields = ['id', 'session', 'teacher', 'student', 'participant_role',
+                  'participant_name', 'joined_at', 'left_at', 'duration_seconds',
+                  'ip_address', 'created_at']
+        read_only_fields = ['created_at']
+
+    def get_participant_name(self, obj):
+        if obj.teacher:
+            return obj.teacher.full_name
+        if obj.student:
+            return obj.student.fullname
+        return 'Unknown'
+
+
+# ==================== DISCUSSION & MC SERIALIZERS ====================
+
+class DiscussionThreadSerializer(serializers.ModelSerializer):
+    author_display = serializers.CharField(read_only=True)
+    replies_count = serializers.SerializerMethodField()
+    replies = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.DiscussionThread
+        fields = ['id', 'assignment', 'author_type', 'author_student', 'author_teacher',
+                  'author_admin', 'content', 'parent_reply', 'is_pinned',
+                  'author_display', 'replies_count', 'replies',
+                  'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
+
+    def get_replies_count(self, obj):
+        return obj.replies.count()
+
+    def get_replies(self, obj):
+        # Only include top-level replies (1 level deep) to avoid infinite recursion
+        if obj.parent_reply is not None:
+            return []
+        replies = obj.replies.all().order_by('created_at')[:50]
+        return DiscussionThreadSerializer(replies, many=True, context=self.context).data
+
+
+class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.MultipleChoiceQuestion
+        fields = ['id', 'assignment', 'question_text', 'option_a', 'option_b',
+                  'option_c', 'option_d', 'correct_option', 'points', 'order', 'created_at']
+        read_only_fields = ['created_at']
+
+
+class MultipleChoiceQuestionStudentSerializer(serializers.ModelSerializer):
+    """Serializer for students — hides the correct answer."""
+    student_answer = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.MultipleChoiceQuestion
+        fields = ['id', 'assignment', 'question_text', 'option_a', 'option_b',
+                  'option_c', 'option_d', 'points', 'order', 'student_answer']
+
+    def get_student_answer(self, obj):
+        student_id = self.context.get('student_id')
+        if not student_id:
+            return None
+        answer = obj.answers.filter(student_id=student_id).first()
+        if not answer:
+            return None
+        return {
+            'selected_option': answer.selected_option,
+            'is_correct': answer.is_correct,
+            'answered_at': answer.answered_at.isoformat()
+        }
+
+
+class MultipleChoiceAnswerSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.fullname', read_only=True)
+    question_text = serializers.CharField(source='question.question_text', read_only=True)
+
+    class Meta:
+        model = models.MultipleChoiceAnswer
+        fields = ['id', 'question', 'question_text', 'student', 'student_name',
+                  'selected_option', 'is_correct', 'answered_at']
+        read_only_fields = ['is_correct', 'answered_at']
+
+
+# ==================== PARENT POLICY SERIALIZER ====================
+
+class ParentPolicyAcceptanceSerializer(serializers.ModelSerializer):
+    parent_name = serializers.CharField(source='parent.fullname', read_only=True)
+    policy_title = serializers.CharField(source='policy.title', read_only=True)
+    policy_type = serializers.CharField(source='policy.policy_type', read_only=True)
+
+    class Meta:
+        model = models.ParentPolicyAcceptance
+        fields = ['id', 'parent', 'parent_name', 'policy', 'policy_title', 'policy_type',
+                  'accepted_at', 'ip_address', 'user_agent']
+
+
+# ==================== TEACHER COMMUNITY SERIALIZER ====================
+
+class TeacherCommunityMessageSerializer(serializers.ModelSerializer):
+    teacher_name = serializers.CharField(source='teacher.full_name', read_only=True)
+    teacher_profile_img = serializers.ImageField(source='teacher.profile_img', read_only=True)
+
+    class Meta:
+        model = models.TeacherCommunityMessage
+        fields = ['id', 'teacher', 'teacher_name', 'teacher_profile_img',
+                  'content', 'is_pinned', 'is_hidden', 'created_at', 'updated_at']
+        read_only_fields = ['accepted_at']
+
+
+# ==================== GAMES & GAMIFICATION SERIALIZERS ====================
+
+class GameDefinitionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.GameDefinition
+        fields = ['id', 'game_type', 'title', 'description', 'is_active',
+                  'min_access_level', 'max_level', 'created_at', 'updated_at']
+
+
+class GameQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.GameQuestion
+        fields = ['id', 'game', 'level', 'prompt', 'question_payload', 'choices',
+                  'correct_answer', 'time_limit_seconds', 'points', 'is_active',
+                  'order', 'created_at']
+
+
+class GameQuestionPublicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.GameQuestion
+        fields = ['id', 'game', 'level', 'prompt', 'question_payload', 'choices',
+                  'time_limit_seconds', 'points', 'order']
+
+
+class StudentGameProfileSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.fullname', read_only=True)
+    game_type = serializers.CharField(source='game.game_type', read_only=True)
+    game_title = serializers.CharField(source='game.title', read_only=True)
+    accuracy_percent = serializers.ReadOnlyField()
+
+    class Meta:
+        model = models.StudentGameProfile
+        fields = ['id', 'student', 'student_name', 'game', 'game_type', 'game_title',
+                  'total_attempts', 'correct_attempts', 'accuracy_percent',
+                  'total_score', 'best_score', 'best_streak', 'highest_level_unlocked',
+                  'time_spent_seconds', 'sonara_coins', 'last_played_at',
+                  'created_at', 'updated_at']
+
+
+class GameAttemptSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.GameAttempt
+        fields = ['id', 'session', 'question', 'expected_payload', 'submitted_payload',
+                  'response_time_ms', 'is_correct', 'accuracy_score', 'points_earned',
+                  'feedback', 'created_at']
+
+
+class GameSessionSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.fullname', read_only=True)
+    game_type = serializers.CharField(source='game.game_type', read_only=True)
+    game_title = serializers.CharField(source='game.title', read_only=True)
+    attempts = GameAttemptSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = models.GameSession
+        fields = ['id', 'student', 'student_name', 'game', 'game_type', 'game_title',
+                  'level', 'score', 'streak', 'max_streak', 'correct_count', 'wrong_count',
+                  'average_response_ms', 'time_spent_seconds', 'status',
+                  'started_at', 'completed_at', 'attempts']
+
+
+class GameBadgeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.GameBadge
+        fields = ['id', 'badge_key', 'title', 'description', 'criteria', 'is_active', 'created_at']
+
+
+class StudentGameBadgeSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.fullname', read_only=True)
+    badge_title = serializers.CharField(source='badge.title', read_only=True)
+    badge_key = serializers.CharField(source='badge.badge_key', read_only=True)
+    source_game_type = serializers.CharField(source='source_game.game_type', read_only=True)
+
+    class Meta:
+        model = models.StudentGameBadge
+        fields = ['id', 'student', 'student_name', 'badge', 'badge_title', 'badge_key',
+                  'source_game', 'source_game_type', 'awarded_at']
+
+
+class WeeklyGameLeaderboardSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.fullname', read_only=True)
+    game_type = serializers.CharField(source='game.game_type', read_only=True)
+    game_title = serializers.CharField(source='game.title', read_only=True)
+
+    class Meta:
+        model = models.WeeklyGameLeaderboard
+        fields = ['id', 'student', 'student_name', 'game', 'game_type', 'game_title',
+                  'week_start', 'week_end', 'total_score', 'attempts_count',
+                  'avg_accuracy', 'best_streak', 'rank', 'updated_at']

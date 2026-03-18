@@ -1,0 +1,396 @@
+/* Subscription Status Card Styles */
+
+.subscription-status-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    margin-bottom: 24px;
+}
+
+.subscription-status-card.compact {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.subscription-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* No Subscription State */
+.subscription-status-card.no-subscription {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 2px dashed #cbd5e1;
+}
+
+.subscription-status-card.no-subscription .subscription-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #64748b;
+    flex-shrink: 0;
+}
+
+.subscription-status-card.no-subscription .subscription-info {
+    flex: 1;
+}
+
+.subscription-status-card.no-subscription h4 {
+    margin: 0 0 4px 0;
+    color: #1e293b;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.subscription-status-card.no-subscription p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.subscription-status-card.no-subscription .subscribe-btn {
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border: none;
+    padding: 10px 20px;
+    font-weight: 500;
+}
+
+.subscription-status-card.no-subscription .subscribe-btn:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    transform: translateY(-1px);
+}
+
+/* Active Subscription State */
+.subscription-status-card.active {
+    background: white;
+    border: 1px solid #e2e8f0;
+}
+
+.subscription-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.subscription-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 20px;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.subscription-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.subscription-status-badge.active {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.subscription-status-badge.pending {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.subscription-status-badge.cancelled {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.subscription-details .plan-name {
+    margin: 0 0 16px 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* Days Remaining Section */
+.days-remaining-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.days-remaining-section.expiring {
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+}
+
+.days-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #e0f2fe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #0284c7;
+}
+
+.days-remaining-section.expiring .days-icon {
+    background: #fde68a;
+    color: #d97706;
+}
+
+.days-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.days-count {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1;
+}
+
+.days-label {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.expiring-badge {
+    margin-left: auto;
+    background: #f59e0b;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Assigned Teacher Section */
+.assigned-teacher-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    padding: 14px 16px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.teacher-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #3b82f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.teacher-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.teacher-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.teacher-label {
+    font-size: 12px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.teacher-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e40af;
+}
+
+/* Usage Stats */
+.usage-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.usage-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.usage-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.usage-header span:last-child {
+    font-weight: 600;
+    color: #334155;
+}
+
+.usage-bar {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.usage-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* Plan Features Preview */
+.plan-features-preview {
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.plan-features-preview h5 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.plan-features-preview ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.plan-features-preview li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 14px;
+    color: #334155;
+}
+
+.plan-features-preview li i {
+    color: #10b981;
+    font-size: 14px;
+}
+
+/* Subscription Actions */
+.subscription-actions {
+    display: flex;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.subscription-actions .btn {
+    flex: 1;
+    padding: 10px 16px;
+    font-weight: 500;
+    border-radius: 8px;
+}
+
+/* Compact Card Styles */
+.subscription-status-card.compact .subscription-badge {
+    font-size: 11px;
+    padding: 4px 10px;
+}
+
+.subscription-status-card.compact .subscription-compact-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.subscription-status-card.compact .plan-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.subscription-status-card.compact .days-left {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.subscription-status-card.compact .days-left.expiring {
+    color: #f59e0b;
+    font-weight: 500;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .subscription-status-card.no-subscription {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .subscription-status-card.no-subscription .subscription-info {
+        order: 1;
+    }
+
+    .subscription-status-card.no-subscription .subscribe-btn {
+        width: 100%;
+    }
+
+    .days-remaining-section {
+        flex-wrap: wrap;
+    }
+
+    .expiring-badge {
+        margin-left: 0;
+        margin-top: 10px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .subscription-actions {
+        flex-direction: column;
+    }
+
+    .subscription-actions .btn {
+        width: 100%;
+    }
+}

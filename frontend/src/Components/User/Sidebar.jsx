@@ -5,14 +5,44 @@ import { useState } from 'react'
 import axios from 'axios'
 import './Sidebar.css'
 import { API_BASE_URL } from '../../config';
+import { getStudentSonaraCoins } from '../../services/gameService';
 
-const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
+const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobile: externalIsMobile }) => {
   const location = useLocation();
+
+  // Self-managed mobile state when parent doesn't provide props
+  const [internalIsMobile, setInternalIsMobile] = useState(window.innerWidth < 768);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+
+  const isMobile = externalIsMobile !== undefined ? externalIsMobile : internalIsMobile;
+  const isOpen = externalSetIsOpen ? (externalIsOpen || false) : internalIsOpen;
+  const setIsOpen = externalSetIsOpen || setInternalIsOpen;
+
+  // Track resize for self-managed mobile detection
+  useEffect(() => {
+    if (externalIsMobile !== undefined) return; // parent manages it
+    const handleResize = () => setInternalIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [externalIsMobile]);
+
+  // Auto-close sidebar on route change (mobile)
+  useEffect(() => {
+    if (isMobile) {
+      setIsOpen(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+
   const [studentData, setStudentData] = useState({
     fullname: '',
     email: '',
     profile_img: ''
   });
+  const [groups, setGroups] = useState([]);
+  const [minorStatus, setMinorStatus] = useState(null); // { is_minor, can_send_messages, has_parent_approval }
+  const [sonaraCoins, setSonaraCoins] = useState(null);
+  const [hasGameSubscription, setHasGameSubscription] = useState(null);
   const studentId = localStorage.getItem('studentId');
 
   const baseUrl = API_BASE_URL;
@@ -41,8 +71,56 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
     };
     if (studentId) {
       fetchStudentData();
-      // Refresh data every 5 seconds to catch updates from settings page
-      const interval = setInterval(fetchStudentData, 5000);
+      // Refresh data every 30 seconds to catch updates from settings page
+      const interval = setInterval(fetchStudentData, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [studentId]);
+
+  // Fetch student's groups
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const res = await axios.get(`${baseUrl}/student/${studentId}/my-groups/`);
+        setGroups(Array.isArray(res.data) ? res.data : []);
+      } catch (err) {
+        console.log('No groups or error:', err);
+      }
+    };
+    if (studentId) {
+      fetchGroups();
+    }
+  }, [studentId]);
+
+  // Fetch minor access status
+  useEffect(() => {
+    const fetchMinorStatus = async () => {
+      try {
+        const res = await axios.get(`${baseUrl}/student/${studentId}/minor-access-status/`);
+        setMinorStatus(res.data);
+      } catch (err) {
+        console.log('Minor status check error:', err);
+      }
+    };
+    if (studentId) {
+      fetchMinorStatus();
+    }
+  }, [studentId]);
+
+  // Fetch Sonara Coins
+  useEffect(() => {
+    const fetchCoins = async () => {
+      try {
+        const res = await getStudentSonaraCoins(studentId);
+        setSonaraCoins(res.data.sonara_coins_total || 0);
+        setHasGameSubscription(res.data.has_subscription !== false);
+      } catch (err) {
+        console.log('Sonara coins fetch error:', err);
+      }
+    };
+    if (studentId) {
+      fetchCoins();
+      const interval = setInterval(fetchCoins, 60000); // refresh every 60s
       return () => clearInterval(interval);
     }
   }, [studentId]);
@@ -91,7 +169,7 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
           </div>
           <div style={{ minWidth: 0, overflow: 'hidden' }}>
             <div style={{ color: 'white', fontWeight: '600', fontSize: '15px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Kannari Music Academy</div>
-            <div style={{ color: '#94a3b8', fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Music Academy</div>
+            <div style={{ color: '#94a3b8', fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Student Portal</div>
           </div>
         </div>
       </div>
@@ -99,7 +177,7 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
       {/* Navigation Menu */}
       <nav style={{ flex: 1, padding: '8px 12px' }}>
         <Link 
-          to='/user-dashboard' 
+          to='/student/dashboard' 
           onClick={handleNavClick}
           style={{
             display: 'flex',
@@ -108,8 +186,8 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
             padding: '12px 16px',
             borderRadius: '8px',
             textDecoration: 'none',
-            color: isActive('/user-dashboard') ? 'white' : '#94a3b8',
-            backgroundColor: isActive('/user-dashboard') ? '#1e40af' : 'transparent',
+            color: isActive('/student/dashboard') ? 'white' : '#94a3b8',
+            backgroundColor: isActive('/student/dashboard') ? '#1e40af' : 'transparent',
             marginBottom: '4px',
             transition: 'all 0.2s'
           }}
@@ -119,7 +197,7 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
         </Link>
 
         <Link 
-          to='/my-courses'
+          to='/student/my-courses'
           onClick={handleNavClick}
           style={{
             display: 'flex',
@@ -128,8 +206,8 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
             padding: '12px 16px',
             borderRadius: '8px',
             textDecoration: 'none',
-            color: isActive('/my-courses') ? 'white' : '#94a3b8',
-            backgroundColor: isActive('/my-courses') ? '#1e40af' : 'transparent',
+            color: isActive('/student/my-courses') ? 'white' : '#94a3b8',
+            backgroundColor: isActive('/student/my-courses') ? '#1e40af' : 'transparent',
             marginBottom: '4px',
             transition: 'all 0.2s',
             position: 'relative'
@@ -137,7 +215,7 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
         >
           <i className="bi bi-book" style={{ fontSize: '18px' }}></i>
           <span style={{ fontSize: '14px', fontWeight: '500' }}>My Courses</span>
-          {isActive('/my-courses') && (
+          {isActive('/student/my-courses') && (
             <span style={{ marginLeft: 'auto', width: '6px', height: '6px', backgroundColor: '#60a5fa', borderRadius: '50%' }}></span>
           )}
         </Link>
@@ -163,7 +241,7 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
         </Link>
 
         <Link 
-          to='/my-progress'
+          to='/student/my-progress'
           onClick={handleNavClick}
           style={{
             display: 'flex',
@@ -172,8 +250,8 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
             padding: '12px 16px',
             borderRadius: '8px',
             textDecoration: 'none',
-            color: isActive('/my-progress') ? 'white' : '#94a3b8',
-            backgroundColor: isActive('/my-progress') ? '#1e40af' : 'transparent',
+            color: isActive('/student/my-progress') ? 'white' : '#94a3b8',
+            backgroundColor: isActive('/student/my-progress') ? '#1e40af' : 'transparent',
             marginBottom: '4px',
             transition: 'all 0.2s'
           }}
@@ -183,7 +261,7 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
         </Link>
 
         <Link 
-          to='/my-achievements'
+          to='/student/my-achievements'
           onClick={handleNavClick}
           style={{
             display: 'flex',
@@ -192,8 +270,8 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
             padding: '12px 16px',
             borderRadius: '8px',
             textDecoration: 'none',
-            color: isActive('/my-achievements') ? 'white' : '#94a3b8',
-            backgroundColor: isActive('/my-achievements') ? '#1e40af' : 'transparent',
+            color: isActive('/student/my-achievements') ? 'white' : '#94a3b8',
+            backgroundColor: isActive('/student/my-achievements') ? '#1e40af' : 'transparent',
             marginBottom: '4px',
             transition: 'all 0.2s'
           }}
@@ -203,7 +281,7 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
         </Link>
 
         <Link 
-          to='/my-sessions'
+          to='/student/my-sessions'
           onClick={handleNavClick}
           style={{
             display: 'flex',
@@ -212,8 +290,8 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
             padding: '12px 16px',
             borderRadius: '8px',
             textDecoration: 'none',
-            color: isActive('/my-sessions') ? 'white' : '#94a3b8',
-            backgroundColor: isActive('/my-sessions') ? '#1e40af' : 'transparent',
+            color: isActive('/student/my-sessions') ? 'white' : '#94a3b8',
+            backgroundColor: isActive('/student/my-sessions') ? '#1e40af' : 'transparent',
             marginBottom: '4px',
             transition: 'all 0.2s'
           }}
@@ -223,7 +301,7 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
         </Link>
 
         <Link 
-          to='/my-messages'
+          to='/student/my-messages'
           onClick={handleNavClick}
           style={{
             display: 'flex',
@@ -232,18 +310,64 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
             padding: '12px 16px',
             borderRadius: '8px',
             textDecoration: 'none',
-            color: isActive('/my-messages') ? 'white' : '#94a3b8',
-            backgroundColor: isActive('/my-messages') ? '#1e40af' : 'transparent',
+            color: (minorStatus?.is_minor && !minorStatus?.can_send_messages) ? '#475569' : (isActive('/student/my-messages') ? 'white' : '#94a3b8'),
+            backgroundColor: isActive('/student/my-messages') ? '#1e40af' : 'transparent',
             marginBottom: '4px',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s',
+            opacity: (minorStatus?.is_minor && !minorStatus?.can_send_messages) ? 0.5 : 1,
+            pointerEvents: (minorStatus?.is_minor && !minorStatus?.can_send_messages) ? 'none' : 'auto'
           }}
         >
           <i className="bi bi-mic" style={{ fontSize: '18px' }}></i>
           <span style={{ fontSize: '14px', fontWeight: '500' }}>Messages</span>
+          {minorStatus?.is_minor && !minorStatus?.can_send_messages && (
+            <i className="bi bi-lock-fill" style={{ marginLeft: 'auto', fontSize: '12px', color: '#f59e0b' }}></i>
+          )}
         </Link>
 
+
+
+        {/* Minor restriction banner */}
+        {minorStatus?.is_minor && !minorStatus?.can_send_messages && (
+          <div style={{
+            margin: '4px 0 8px', padding: '8px 12px', backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.2)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <i className="bi bi-shield-exclamation" style={{ fontSize: '12px', color: '#f59e0b' }}></i>
+              <span style={{ fontSize: '11px', color: '#d97706', fontWeight: '600' }}>Parent Approval Required</span>
+            </div>
+            <p style={{ margin: '4px 0 0', fontSize: '10px', color: '#92400e', lineHeight: '1.4' }}>
+              Messaging is locked until your parent/guardian approves your account.
+            </p>
+          </div>
+        )}
+
+        {/* Text Messages — only for 18+ students */}
+        {minorStatus && !minorStatus.is_minor && (
+          <Link
+            to='/student/text-messages'
+            onClick={handleNavClick}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px 16px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              color: isActive('/student/text-messages') ? 'white' : '#94a3b8',
+              backgroundColor: isActive('/student/text-messages') ? '#1e40af' : 'transparent',
+              marginBottom: '4px',
+              transition: 'all 0.2s'
+            }}
+          >
+            <i className="bi bi-chat-dots" style={{ fontSize: '18px' }}></i>
+            <span style={{ fontSize: '14px', fontWeight: '500' }}>Text Messages</span>
+          </Link>
+        )}
+
         <Link 
-          to='/my-assignments'
+          to='/student/my-assignments'
           onClick={handleNavClick}
           style={{
             display: 'flex',
@@ -252,8 +376,8 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
             padding: '12px 16px',
             borderRadius: '8px',
             textDecoration: 'none',
-            color: isActive('/my-assignments') ? 'white' : '#94a3b8',
-            backgroundColor: isActive('/my-assignments') ? '#1e40af' : 'transparent',
+            color: isActive('/student/my-assignments') ? 'white' : '#94a3b8',
+            backgroundColor: isActive('/student/my-assignments') ? '#1e40af' : 'transparent',
             marginBottom: '4px',
             transition: 'all 0.2s'
           }}
@@ -262,8 +386,40 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
           <span style={{ fontSize: '14px', fontWeight: '500' }}>Assignments</span>
         </Link>
 
-        <Link 
-          to='/subscriptions'
+        {/* Group Classes Section */}
+        {groups.length > 0 && (
+          <>
+            <div style={{ height: '1px', backgroundColor: '#1e293b', margin: '8px 0' }}></div>
+            <div style={{ padding: '4px 16px 8px', fontSize: '11px', fontWeight: '700', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              My Groups
+            </div>
+            <Link
+              to='/student/my-groups'
+              onClick={handleNavClick}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                color: isActive('/student/my-groups') ? 'white' : '#94a3b8',
+                backgroundColor: isActive('/student/my-groups') ? '#1e40af' : 'transparent',
+                marginBottom: '4px',
+                transition: 'all 0.2s'
+              }}
+            >
+              <i className="bi bi-diagram-3" style={{ fontSize: '18px' }}></i>
+              <span style={{ fontSize: '14px', fontWeight: '500' }}>All Groups</span>
+              {groups.some(g => g.live_now) && (
+                <span style={{ marginLeft: 'auto', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', animation: 'pulse 1.5s infinite' }}></span>
+              )}
+            </Link>
+          </>
+        )}
+
+        <Link
+          to='/student/games'
           onClick={handleNavClick}
           style={{
             display: 'flex',
@@ -272,8 +428,61 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
             padding: '12px 16px',
             borderRadius: '8px',
             textDecoration: 'none',
-            color: isActive('/subscriptions') ? 'white' : '#94a3b8',
-            backgroundColor: isActive('/subscriptions') ? '#1e40af' : 'transparent',
+            color: isActive('/student/games') ? 'white' : '#94a3b8',
+            backgroundColor: isActive('/student/games') ? '#1e40af' : 'transparent',
+            marginBottom: '4px',
+            transition: 'all 0.2s'
+          }}
+        >
+          <i className="bi bi-controller" style={{ fontSize: '18px' }}></i>
+          <span style={{ fontSize: '14px', fontWeight: '500' }}>Games</span>
+          {hasGameSubscription === false ? (
+            <span style={{
+              marginLeft: 'auto',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '3px',
+              padding: '2px 8px',
+              backgroundColor: 'rgba(148, 163, 184, 0.1)',
+              border: '1px solid rgba(148, 163, 184, 0.2)',
+              borderRadius: '10px',
+              fontSize: '11px',
+              fontWeight: '700',
+              color: '#94a3b8',
+            }}>
+              🔒
+            </span>
+          ) : sonaraCoins !== null && sonaraCoins > 0 && (
+            <span style={{
+              marginLeft: 'auto',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '3px',
+              padding: '2px 8px',
+              backgroundColor: 'rgba(251, 191, 36, 0.15)',
+              border: '1px solid rgba(251, 191, 36, 0.25)',
+              borderRadius: '10px',
+              fontSize: '11px',
+              fontWeight: '700',
+              color: '#fbbf24',
+            }}>
+              💰 {sonaraCoins}
+            </span>
+          )}
+        </Link>
+
+        <Link 
+          to='/student/subscriptions'
+          onClick={handleNavClick}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            textDecoration: 'none',
+            color: isActive('/student/subscriptions') ? 'white' : '#94a3b8',
+            backgroundColor: isActive('/student/subscriptions') ? '#1e40af' : 'transparent',
             marginBottom: '4px',
             transition: 'all 0.2s'
           }}
@@ -353,7 +562,7 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
         {/* Settings and Logout */}
         <div style={{ display: 'flex', gap: '6px' }}>
           <Link 
-            to='/profile-setting' 
+            to='/student/profile-setting' 
             style={{
               flex: 1,
               display: 'flex',
@@ -377,7 +586,7 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>Settings</span>
           </Link>
           <Link 
-            to='/user-logout' 
+            to='/student/logout' 
             style={{
               flex: 1,
               display: 'flex',
@@ -404,7 +613,7 @@ const Sidebar = ({ isOpen = false, setIsOpen = null, isMobile = false }) => {
         
         {/* Hidde n link to preserve routing logic */}
         <div style={{ display: 'none' }}>
-          <Link to='/change-password'>Change Password</Link>
+          <Link to='/student/change-password'>Change Password</Link>
         </div>
       </div>
     </div>

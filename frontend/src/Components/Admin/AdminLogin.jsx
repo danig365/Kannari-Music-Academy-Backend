@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 import { API_BASE_URL } from '../../config';
+import { validateLoginForm, FieldError } from '../../utils/formValidation';
 
 const baseUrl = API_BASE_URL;
 
@@ -14,12 +15,13 @@ const AdminLogin = () => {
     });
     const [errorMsg, setErrorMsg] = useState('');
     const [loading, setLoading] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState({});
 
     useEffect(() => {
         document.title = 'Admin Login | Kannari Music Academy';
         const adminLoginStatus = localStorage.getItem('adminLoginStatus');
         if (adminLoginStatus === 'true') {
-            navigate('/admin-dashboard');
+            navigate('/admin-panel/dashboard');
         }
     }, [navigate]);
 
@@ -33,6 +35,11 @@ const AdminLogin = () => {
 
     const submitForm = async (e) => {
         e.preventDefault();
+
+        const errors = validateLoginForm(adminLoginData);
+        setFieldErrors(errors);
+        if (Object.keys(errors).length > 0) return;
+
         setLoading(true);
         
         const formData = new FormData();
@@ -46,7 +53,7 @@ const AdminLogin = () => {
                 localStorage.setItem('adminId', response.data.admin_id);
                 localStorage.setItem('adminRole', response.data.role);
                 localStorage.setItem('adminName', response.data.name);
-                navigate('/admin-dashboard');
+                navigate('/admin-panel/dashboard');
             } else {
                 setErrorMsg('Invalid email or password');
             }
@@ -206,7 +213,7 @@ const AdminLogin = () => {
                                         width: '100%',
                                         padding: '12px 16px',
                                         fontSize: '15px',
-                                        border: '1px solid #e5e7eb',
+                                        border: fieldErrors.email ? '1px solid #ef4444' : '1px solid #e5e7eb',
                                         borderRadius: '8px',
                                         outline: 'none',
                                         transition: 'all 0.2s',
@@ -218,10 +225,11 @@ const AdminLogin = () => {
                                         e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                                     }}
                                     onBlur={(e) => {
-                                        e.target.style.borderColor = '#e5e7eb';
+                                        e.target.style.borderColor = fieldErrors.email ? '#ef4444' : '#e5e7eb';
                                         e.target.style.boxShadow = 'none';
                                     }}
                                 />
+                                <FieldError error={fieldErrors.email} />
                             </div>
 
                             {/* Password */}
@@ -245,7 +253,7 @@ const AdminLogin = () => {
                                         width: '100%',
                                         padding: '12px 16px',
                                         fontSize: '15px',
-                                        border: '1px solid #e5e7eb',
+                                        border: fieldErrors.password ? '1px solid #ef4444' : '1px solid #e5e7eb',
                                         borderRadius: '8px',
                                         outline: 'none',
                                         transition: 'all 0.2s',
@@ -257,13 +265,12 @@ const AdminLogin = () => {
                                         e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                                     }}
                                     onBlur={(e) => {
-                                        e.target.style.borderColor = '#e5e7eb';
+                                        e.target.style.borderColor = fieldErrors.password ? '#ef4444' : '#e5e7eb';
                                         e.target.style.boxShadow = 'none';
                                     }}
                                 />
+                                <FieldError error={fieldErrors.password} />
                             </div>
-
-                            {/* Submit Button */}
                             <button
                                 type="submit"
                                 disabled={loading}

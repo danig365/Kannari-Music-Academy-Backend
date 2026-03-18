@@ -74,23 +74,23 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
             <div className="flex-grow-1 py-3">
                 <nav>
                     <Link 
-                        to="/admin-dashboard" 
-                        onClick={(e) => handleNavClick(e, '/admin-dashboard')}
+                        to="/admin-panel/dashboard" 
+                        onClick={(e) => handleNavClick(e, '/admin-panel/dashboard')}
                         className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
                         style={{ 
-                            color: isActive('/admin-dashboard') ? '#fff' : '#8b92a7',
-                            backgroundColor: isActive('/admin-dashboard') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-                            borderLeft: isActive('/admin-dashboard') ? '3px solid #4285f4' : '3px solid transparent',
+                            color: isActive('/admin-panel/dashboard') ? '#fff' : '#8b92a7',
+                            backgroundColor: isActive('/admin-panel/dashboard') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+                            borderLeft: isActive('/admin-panel/dashboard') ? '3px solid #4285f4' : '3px solid transparent',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
-                            if (!isActive('/admin-dashboard')) {
+                            if (!isActive('/admin-panel/dashboard')) {
                                 e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
                                 e.currentTarget.style.color = '#fff';
                             }
                         }}
                         onMouseLeave={(e) => {
-                            if (!isActive('/admin-dashboard')) {
+                            if (!isActive('/admin-panel/dashboard')) {
                                 e.currentTarget.style.backgroundColor = 'transparent';
                                 e.currentTarget.style.color = '#8b92a7';
                             }
@@ -101,23 +101,23 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                     </Link>
 
                     <Link 
-                        to="/admin/users-management" 
-                        onClick={(e) => handleNavClick(e, '/admin/users-management')}
+                        to="/admin-panel/users-management" 
+                        onClick={(e) => handleNavClick(e, '/admin-panel/users-management')}
                         className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
                         style={{ 
-                            color: isActive('/admin/users-management') ? '#fff' : '#8b92a7',
-                            backgroundColor: isActive('/admin/users-management') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-                            borderLeft: isActive('/admin/users-management') ? '3px solid #4285f4' : '3px solid transparent',
+                            color: isActive('/admin-panel/users-management') ? '#fff' : '#8b92a7',
+                            backgroundColor: isActive('/admin-panel/users-management') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+                            borderLeft: isActive('/admin-panel/users-management') ? '3px solid #4285f4' : '3px solid transparent',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
-                            if (!isActive('/admin/users-management')) {
+                            if (!isActive('/admin-panel/users-management')) {
                                 e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
                                 e.currentTarget.style.color = '#fff';
                             }
                         }}
                         onMouseLeave={(e) => {
-                            if (!isActive('/admin/users-management')) {
+                            if (!isActive('/admin-panel/users-management')) {
                                 e.currentTarget.style.backgroundColor = 'transparent';
                                 e.currentTarget.style.color = '#8b92a7';
                             }
@@ -128,23 +128,23 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                     </Link>
 
                     <Link 
-                        to="/admin/lesson-management" 
-                        onClick={(e) => handleNavClick(e, '/admin/lesson-management')}
+                        to="/admin-panel/lesson-management" 
+                        onClick={(e) => handleNavClick(e, '/admin-panel/lesson-management')}
                         className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
                         style={{ 
-                            color: isActive('/admin/lesson-management') || location.pathname.startsWith('/admin/lesson-management') ? '#fff' : '#8b92a7',
-                            backgroundColor: isActive('/admin/lesson-management') || location.pathname.startsWith('/admin/lesson-management') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-                            borderLeft: isActive('/admin/lesson-management') || location.pathname.startsWith('/admin/lesson-management') ? '3px solid #4285f4' : '3px solid transparent',
+                            color: isActive('/admin-panel/lesson-management') || location.pathname.startsWith('/admin-panel/lesson-management') ? '#fff' : '#8b92a7',
+                            backgroundColor: isActive('/admin-panel/lesson-management') || location.pathname.startsWith('/admin-panel/lesson-management') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+                            borderLeft: isActive('/admin-panel/lesson-management') || location.pathname.startsWith('/admin-panel/lesson-management') ? '3px solid #4285f4' : '3px solid transparent',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
-                            if (!isActive('/admin/lesson-management') && !location.pathname.startsWith('/admin/lesson-management')) {
+                            if (!isActive('/admin-panel/lesson-management') && !location.pathname.startsWith('/admin-panel/lesson-management')) {
                                 e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
                                 e.currentTarget.style.color = '#fff';
                             }
                         }}
                         onMouseLeave={(e) => {
-                            if (!isActive('/admin/lesson-management') && !location.pathname.startsWith('/admin/lesson-management')) {
+                            if (!isActive('/admin-panel/lesson-management') && !location.pathname.startsWith('/admin-panel/lesson-management')) {
                                 e.currentTarget.style.backgroundColor = 'transparent';
                                 e.currentTarget.style.color = '#8b92a7';
                             }
@@ -155,23 +155,23 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                     </Link>
 
                     <Link 
-                        to="/admin/activity-logs" 
-                        onClick={(e) => handleNavClick(e, '/admin/activity-logs')}
+                        to="/admin-panel/activity-logs" 
+                        onClick={(e) => handleNavClick(e, '/admin-panel/activity-logs')}
                         className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
                         style={{ 
-                            color: isActive('/admin/activity-logs') ? '#fff' : '#8b92a7',
-                            backgroundColor: isActive('/admin/activity-logs') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-                            borderLeft: isActive('/admin/activity-logs') ? '3px solid #4285f4' : '3px solid transparent',
+                            color: isActive('/admin-panel/activity-logs') ? '#fff' : '#8b92a7',
+                            backgroundColor: isActive('/admin-panel/activity-logs') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+                            borderLeft: isActive('/admin-panel/activity-logs') ? '3px solid #4285f4' : '3px solid transparent',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
-                            if (!isActive('/admin/activity-logs')) {
+                            if (!isActive('/admin-panel/activity-logs')) {
                                 e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
                                 e.currentTarget.style.color = '#fff';
                             }
                         }}
                         onMouseLeave={(e) => {
-                            if (!isActive('/admin/activity-logs')) {
+                            if (!isActive('/admin-panel/activity-logs')) {
                                 e.currentTarget.style.backgroundColor = 'transparent';
                                 e.currentTarget.style.color = '#8b92a7';
                             }
@@ -182,23 +182,23 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                     </Link>
 
                     <Link 
-                        to="/admin/subscriptions" 
-                        onClick={(e) => handleNavClick(e, '/admin/subscriptions')}
+                        to="/admin-panel/subscriptions" 
+                        onClick={(e) => handleNavClick(e, '/admin-panel/subscriptions')}
                         className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
                         style={{ 
-                            color: isActive('/admin/subscriptions') ? '#fff' : '#8b92a7',
-                            backgroundColor: isActive('/admin/subscriptions') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-                            borderLeft: isActive('/admin/subscriptions') ? '3px solid #4285f4' : '3px solid transparent',
+                            color: isActive('/admin-panel/subscriptions') ? '#fff' : '#8b92a7',
+                            backgroundColor: isActive('/admin-panel/subscriptions') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+                            borderLeft: isActive('/admin-panel/subscriptions') ? '3px solid #4285f4' : '3px solid transparent',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
-                            if (!isActive('/admin/subscriptions')) {
+                            if (!isActive('/admin-panel/subscriptions')) {
                                 e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
                                 e.currentTarget.style.color = '#fff';
                             }
                         }}
                         onMouseLeave={(e) => {
-                            if (!isActive('/admin/subscriptions')) {
+                            if (!isActive('/admin-panel/subscriptions')) {
                                 e.currentTarget.style.backgroundColor = 'transparent';
                                 e.currentTarget.style.color = '#8b92a7';
                             }
@@ -209,23 +209,50 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                     </Link>
 
                     <Link 
-                        to="/admin/audit-logs" 
-                        onClick={(e) => handleNavClick(e, '/admin/audit-logs')}
+                        to="/admin-panel/games-analytics" 
+                        onClick={(e) => handleNavClick(e, '/admin-panel/games-analytics')}
                         className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
                         style={{ 
-                            color: isActive('/admin/audit-logs') ? '#fff' : '#8b92a7',
-                            backgroundColor: isActive('/admin/audit-logs') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-                            borderLeft: isActive('/admin/audit-logs') ? '3px solid #4285f4' : '3px solid transparent',
+                            color: isActive('/admin-panel/games-analytics') ? '#fff' : '#8b92a7',
+                            backgroundColor: isActive('/admin-panel/games-analytics') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+                            borderLeft: isActive('/admin-panel/games-analytics') ? '3px solid #4285f4' : '3px solid transparent',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
-                            if (!isActive('/admin/audit-logs')) {
+                            if (!isActive('/admin-panel/games-analytics')) {
                                 e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
                                 e.currentTarget.style.color = '#fff';
                             }
                         }}
                         onMouseLeave={(e) => {
-                            if (!isActive('/admin/audit-logs')) {
+                            if (!isActive('/admin-panel/games-analytics')) {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                                e.currentTarget.style.color = '#8b92a7';
+                            }
+                        }}
+                    >
+                        <i className="bi bi-controller me-3" style={{ fontSize: '18px' }}></i>
+                        <span style={{ fontSize: '14px' }}>Games Analytics</span>
+                    </Link>
+
+                    <Link 
+                        to="/admin-panel/audit-logs" 
+                        onClick={(e) => handleNavClick(e, '/admin-panel/audit-logs')}
+                        className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
+                        style={{ 
+                            color: isActive('/admin-panel/audit-logs') ? '#fff' : '#8b92a7',
+                            backgroundColor: isActive('/admin-panel/audit-logs') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+                            borderLeft: isActive('/admin-panel/audit-logs') ? '3px solid #4285f4' : '3px solid transparent',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!isActive('/admin-panel/audit-logs')) {
+                                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                                e.currentTarget.style.color = '#fff';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!isActive('/admin-panel/audit-logs')) {
                                 e.currentTarget.style.backgroundColor = 'transparent';
                                 e.currentTarget.style.color = '#8b92a7';
                             }
@@ -262,8 +289,8 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                     
                     <div className="d-flex gap-2">
                         <Link 
-                            to="/admin/settings" 
-                            onClick={(e) => handleNavClick(e, '/admin/settings')}
+                            to="/admin-panel/settings" 
+                            onClick={(e) => handleNavClick(e, '/admin-panel/settings')}
                             className="text-decoration-none flex-fill text-center py-2 rounded-2"
                             style={{ 
                                 color: '#8b92a7',
@@ -283,8 +310,8 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                             <i className="bi bi-gear me-1"></i> Settings
                         </Link>
                         <Link 
-                            to="/admin-logout" 
-                            onClick={(e) => handleNavClick(e, '/admin-logout')}
+                            to="/admin-panel/logout" 
+                            onClick={(e) => handleNavClick(e, '/admin-panel/logout')}
                             className="text-decoration-none flex-fill text-center py-2 rounded-2"
                             style={{ 
                                 color: '#8b92a7',

@@ -71,3 +71,40 @@ admin.site.register(models.ParentalConsent)
 admin.site.register(models.SessionAuthorization)
 admin.site.register(models.SessionParticipantLog)
 admin.site.register(models.SafetyReport)
+
+# Messaging & Chat Lock
+admin.site.register(models.Message)
+
+class ChatLockPolicyAdmin(admin.ModelAdmin):
+    list_display = ['parent_link', 'is_locked', 'lock_reason', 'unlocked_by', 'unlock_expires_at', 'updated_at']
+    list_filter = ['is_locked', 'lock_reason', 'unlocked_by']
+admin.site.register(models.ChatLockPolicy, ChatLockPolicyAdmin)
+
+class TeacherOfficeHoursAdmin(admin.ModelAdmin):
+    list_display = ['teacher', 'day_of_week', 'start_time', 'end_time', 'is_active']
+    list_filter = ['is_active', 'day_of_week']
+admin.site.register(models.TeacherOfficeHours, TeacherOfficeHoursAdmin)
+
+class ChatUnlockRequestAdmin(admin.ModelAdmin):
+    list_display = ['parent_link', 'unlocked_by_admin', 'unlocked_by_school', 'duration_hours', 'expires_at']
+    list_filter = ['duration_hours']
+admin.site.register(models.ChatUnlockRequest, ChatUnlockRequestAdmin)
+
+# Group Features
+admin.site.register(models.GroupMessage)
+admin.site.register(models.GroupAnnouncement)
+admin.site.register(models.GroupResource)
+
+class GroupSessionAdmin(admin.ModelAdmin):
+    list_display = ['group_class', 'teacher', 'title', 'scheduled_date', 'scheduled_time', 'status', 'is_live']
+    list_filter = ['status', 'is_live', 'session_type']
+admin.site.register(models.GroupSession, GroupSessionAdmin)
+admin.site.register(models.GroupSessionParticipantLog)
+
+# Discussion & Multiple Choice
+admin.site.register(models.DiscussionThread)
+admin.site.register(models.MultipleChoiceQuestion)
+admin.site.register(models.MultipleChoiceAnswer)
+
+# Parent Policy
+admin.site.register(models.ParentPolicyAcceptance)

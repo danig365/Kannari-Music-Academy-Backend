@@ -31,6 +31,7 @@ const StudentCoursePlayer = () => {
     const [floatingResourcesOpen, setFloatingResourcesOpen] = useState(false);
     const [lessonAccess, setLessonAccess] = useState({ can_access: true, checking: true });
     const [subscriptionInfo, setSubscriptionInfo] = useState(null);
+    const [showYouTubeModal, setShowYouTubeModal] = useState(false);
 
     const milestoneMessages = {
         25: { emoji: '🚀', title: 'Great Start!', text: "You're 25% through! Keep up the momentum!" },
@@ -53,7 +54,7 @@ const StudentCoursePlayer = () => {
                     title: 'Login Required',
                     text: 'Please login to access course content',
                     confirmButtonColor: '#3b82f6'
-                }).then(() => navigate('/user-login'));
+                }).then(() => navigate('/student/login'));
                 return;
             }
 
@@ -80,7 +81,7 @@ const StudentCoursePlayer = () => {
                 setPageData(response.data);
 
                 if (!lesson_id && response.data.current_lesson) {
-                    navigate(`/learn/${course_id}/lesson/${response.data.current_lesson.id}`, 
+                    navigate(`/student/learn/${course_id}/lesson/${response.data.current_lesson.id}`, 
                             { replace: true });
                 }
 
@@ -362,7 +363,8 @@ const StudentCoursePlayer = () => {
 
     const handlePrevious = () => {
         if (navigation.previous) {
-            navigate(`/learn/${course_id}/lesson/${navigation.previous.id}`);
+            setShowYouTubeModal(false);
+            navigate(`/student/learn/${course_id}/lesson/${navigation.previous.id}`);
         }
     };
 
@@ -377,7 +379,8 @@ const StudentCoursePlayer = () => {
                 });
                 return;
             }
-            navigate(`/learn/${course_id}/lesson/${navigation.next.id}`);
+            setShowYouTubeModal(false);
+            navigate(`/student/learn/${course_id}/lesson/${navigation.next.id}`);
         }
     };
 
@@ -438,6 +441,25 @@ const StudentCoursePlayer = () => {
         return icons[fileType] || 'bi-file-earmark-fill';
     };
 
+    // Extract YouTube video ID from various URL formats
+    const getYouTubeEmbedUrl = (url) => {
+        if (!url) return null;
+        let videoId = null;
+        try {
+            const urlObj = new URL(url);
+            if (urlObj.hostname.includes('youtube.com')) {
+                videoId = urlObj.searchParams.get('v');
+            } else if (urlObj.hostname.includes('youtu.be')) {
+                videoId = urlObj.pathname.slice(1);
+            }
+        } catch (e) {
+            // Try regex as fallback
+            const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            if (match) videoId = match[1];
+        }
+        return videoId ? `https://www.youtube.com/embed/${videoId}?rel=0` : null;
+    };
+
     const renderContent = () => {
         if (!currentLesson) {
             return (
@@ -463,7 +485,7 @@ const StudentCoursePlayer = () => {
                         className="btn-primary-gradient"
                         onClick={() => {
                             if (navigation.previous) {
-                                navigate(`/learn/${course_id}/lesson/${navigation.previous.id}`);
+                                navigate(`/student/learn/${course_id}/lesson/${navigation.previous.id}`);
                             }
                         }}
                     >
@@ -474,14 +496,15 @@ const StudentCoursePlayer = () => {
             );
         }
 
-        const { content_type, file, title } = currentLesson;
+        const { content_type, file, title, youtube_url } = currentLesson;
+        const youtubeEmbedUrl = getYouTubeEmbedUrl(youtube_url);
         
         let fileUrl = file;
         if (file && !file.startsWith('http')) {
             fileUrl = `${mediaUrl}${file.startsWith('/') ? '' : '/'}${file}`;
         }
         
-        if (!fileUrl) {
+        if (!fileUrl && !youtubeEmbedUrl) {
             return (
                 <div className="error-state-container">
                     <div className="error-state-icon">
@@ -489,6 +512,25 @@ const StudentCoursePlayer = () => {
                     </div>
                     <h5 className="empty-state-title">Content Unavailable</h5>
                     <p className="empty-state-text">This lesson doesn't have any content yet</p>
+                </div>
+            );
+        }
+        
+        // YouTube-only lesson (no file uploaded)
+        if (!fileUrl && youtubeEmbedUrl) {
+            return (
+                <div className="content-section-wrapper">
+                    <div className="content-player-wrapper">
+                        <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '12px' }}>
+                            <iframe
+                                src={youtubeEmbedUrl}
+                                title={title}
+                                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            ></iframe>
+                        </div>
+                    </div>
                 </div>
             );
         }
@@ -513,6 +555,35 @@ const StudentCoursePlayer = () => {
             return colors[type] || '#3b82f6';
         };
 
+        // YouTube watch button (opens popup modal)
+        const YouTubeButton = () => youtubeEmbedUrl ? (
+            <div style={{ marginTop: '16px', textAlign: 'center' }}>
+                <button
+                    onClick={() => setShowYouTubeModal(true)}
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '12px 28px',
+                        background: 'linear-gradient(135deg, #ff0000 0%, #cc0000 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '50px',
+                        fontSize: '15px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 15px rgba(255, 0, 0, 0.3)',
+                        transition: 'all 0.2s ease'
+                    }}
+                    onMouseOver={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(255, 0, 0, 0.4)'; }}
+                    onMouseOut={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 15px rgba(255, 0, 0, 0.3)'; }}
+                >
+                    <i className="bi bi-youtube" style={{ fontSize: '20px' }}></i>
+                    Watch YouTube Video
+                </button>
+            </div>
+        ) : null;
+
         switch (content_type) {
             case 'video':
                 return (
@@ -534,6 +605,7 @@ const StudentCoursePlayer = () => {
                                 Your browser does not support the video tag.
                             </video>
                         </div>
+                        <YouTubeButton />
                     </div>
                 );
 
@@ -551,6 +623,7 @@ const StudentCoursePlayer = () => {
                                 </audio>
                             </div>
                         </div>
+                        <YouTubeButton />
                     </div>
                 );
 
@@ -560,6 +633,7 @@ const StudentCoursePlayer = () => {
                         <div className="content-player-wrapper pdf-wrapper">
                             <iframe src={`${fileUrl}#toolbar=1`} style={{width: '100%', height: '600px', border: 'none', borderRadius: '12px'}} title="PDF Viewer"></iframe>
                         </div>
+                        <YouTubeButton />
                     </div>
                 );
 
@@ -569,6 +643,7 @@ const StudentCoursePlayer = () => {
                         <div className="content-player-wrapper image-wrapper">
                             <img src={fileUrl} alt={title} className="lesson-image" />
                         </div>
+                        <YouTubeButton />
                     </div>
                 );
 
@@ -642,7 +717,7 @@ const StudentCoursePlayer = () => {
 
                         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
                             <Link 
-                                to="/subscriptions" 
+                                to="/student/subscriptions" 
                                 style={{
                                     display: 'inline-flex',
                                     alignItems: 'center',
@@ -792,7 +867,7 @@ const StudentCoursePlayer = () => {
                                 className="btn-primary-gradient"
                                 onClick={() => {
                                     if (navigation.previous) {
-                                        navigate(`/learn/${course_id}/lesson/${navigation.previous.id}`);
+                                        navigate(`/student/learn/${course_id}/lesson/${navigation.previous.id}`);
                                     }
                                 }}
                             >
@@ -915,6 +990,88 @@ const StudentCoursePlayer = () => {
                     )}
                 </div>
             </div>
+
+            {/* YouTube Video Popup Modal */}
+            {showYouTubeModal && currentLesson?.youtube_url && (
+                <div 
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                        zIndex: 9999,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '20px',
+                        animation: 'fadeIn 0.2s ease'
+                    }}
+                    onClick={() => setShowYouTubeModal(false)}
+                >
+                    <div 
+                        style={{
+                            width: '100%',
+                            maxWidth: '960px',
+                            background: '#000',
+                            borderRadius: '16px',
+                            overflow: 'hidden',
+                            boxShadow: '0 25px 60px rgba(0, 0, 0, 0.5)',
+                            position: 'relative'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Modal Header */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '14px 20px',
+                            background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+                            borderBottom: '1px solid #333'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <i className="bi bi-youtube" style={{ color: '#ff0000', fontSize: '22px' }}></i>
+                                <span style={{ color: '#fff', fontWeight: 600, fontSize: '15px' }}>
+                                    YouTube Video — {currentLesson.title}
+                                </span>
+                            </div>
+                            <button
+                                onClick={() => setShowYouTubeModal(false)}
+                                style={{
+                                    background: 'rgba(255,255,255,0.1)',
+                                    border: 'none',
+                                    color: '#fff',
+                                    width: '36px',
+                                    height: '36px',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    fontSize: '18px',
+                                    transition: 'background 0.2s'
+                                }}
+                                onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.2)'}
+                                onMouseOut={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
+                            >
+                                <i className="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        {/* YouTube Iframe */}
+                        <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
+                            <iframe
+                                src={getYouTubeEmbedUrl(currentLesson.youtube_url)}
+                                title={`${currentLesson.title} - YouTube`}
+                                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            ></iframe>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

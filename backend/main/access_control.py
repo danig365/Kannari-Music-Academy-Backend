@@ -88,6 +88,20 @@ class SubscriptionAccessControl:
         Check if student can enroll in a specific course.
         Returns tuple: (can_enroll: bool, message: str)
         """
+        # Phase 5: Check minor access gate before subscription check
+        try:
+            student = models.Student.objects.get(id=student_id)
+            if student.is_minor():
+                if not student.has_approved_parent_with_policies():
+                    return False, (
+                        "Parental consent is required before minors can enroll in courses. "
+                        "Please ask your parent/guardian to complete the consent process "
+                        "via the email they received, including accepting the Terms of Service "
+                        "and Child Safety Policy."
+                    )
+        except models.Student.DoesNotExist:
+            return False, "Student not found."
+
         # First check subscription status
         has_sub, subscription, msg = SubscriptionAccessControl.check_subscription_status(student_id)
         

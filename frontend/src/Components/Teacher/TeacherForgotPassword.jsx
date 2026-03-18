@@ -60,7 +60,7 @@ const TeacherForgotPassword = () => {
       if (res.data.bool) {
         Swal.fire({ icon: 'success', title: 'Password reset successful', toast: true, timer: 2000, position: 'top', showConfirmButton: false });
         setTimeout(() => {
-          window.location.href = '/teacher-login';
+          window.location.href = '/teacher/login';
         }, 1800);
       }
     } catch (error) {
@@ -73,7 +73,7 @@ const TeacherForgotPassword = () => {
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%)', padding: '40px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: '480px', background: 'white', borderRadius: '16px', padding: '40px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)' }}>
-        <Link to="/teacher-login" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px' }}>← Back to login</Link>
+        <Link to="/teacher/login" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px' }}>← Back to login</Link>
         <h2 style={{ marginTop: '16px', marginBottom: '8px', color: '#1a1a1a' }}>{token ? 'Set New Password' : 'Forgot Password'}</h2>
         <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '24px' }}>
           {token ? 'Enter your new password below.' : 'Enter your registered email to receive a password reset link.'}

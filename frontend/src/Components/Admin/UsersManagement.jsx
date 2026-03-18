@@ -762,7 +762,7 @@ const UsersManagement = () => {
                             <div style="text-align: left; padding: 10px;">
                                 <p style="margin-bottom: 15px; color: #666;">The following login credentials have been generated for the school portal:</p>
                                 <div style="background: #f8f9fa; border-radius: 8px; padding: 16px; border: 1px solid #e9ecef;">
-                                    <p style="margin: 5px 0;"><strong>Login URL:</strong> <a href="/school-login" style="color: #1976d2;">${window.location.origin}/school-login</a></p>
+                                    <p style="margin: 5px 0;"><strong>Login URL:</strong> <a href="/school/login" style="color: #1976d2;">${window.location.origin}/school/login</a></p>
                                     <p style="margin: 5px 0;"><strong>Email:</strong> <code style="background: #e3f2fd; padding: 2px 8px; border-radius: 4px;">${response.data.school_login_email}</code></p>
                                     <p style="margin: 5px 0;"><strong>Password:</strong> <code style="background: #e8f5e9; padding: 2px 8px; border-radius: 4px;">${response.data.school_login_password}</code></p>
                                 </div>

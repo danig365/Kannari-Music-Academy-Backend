@@ -8,7 +8,7 @@ const TeacherLogout = () => {
     localStorage.removeItem('teacherQualification')
     localStorage.removeItem('teacherMobile')
     localStorage.removeItem('teacherProfileImg')
-    window.location.href='/teacher-login';
+    window.location.href='/teacher/login';
   return (
     <div>
       

@@ -158,7 +158,7 @@ const TeacherOverview = () => {
             <i className="bi bi-arrow-clockwise"></i>
             Refresh
           </button>
-          <Link to='/teacher-students' style={{
+          <Link to='/teacher/students' style={{
             padding: '12px 20px',
             background: 'white',
             color: '#667eea',
@@ -186,7 +186,7 @@ const TeacherOverview = () => {
             <i className="bi bi-people"></i>
             View Students
           </Link>
-          <Link to='/teacher-course-management' style={{
+          <Link to='/teacher/course-management' style={{
             padding: '12px 20px',
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             color: 'white',
@@ -456,7 +456,7 @@ const TeacherOverview = () => {
               margin: 0,
               letterSpacing: '-0.5px'
             }}>My Courses</h2>
-            <Link to='/teacher-course-management' style={{
+            <Link to='/teacher/course-management' style={{
               fontSize: '15px',
               fontWeight: 600,
               color: '#667eea',
@@ -984,7 +984,7 @@ const TeacherOverview = () => {
             justifyContent: 'center',
             flexWrap: 'wrap'
           }}>
-            <Link to='/teacher-course-management' style={{
+            <Link to='/teacher/course-management' style={{
               padding: '12px 28px',
               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               color: 'white',
@@ -1011,7 +1011,7 @@ const TeacherOverview = () => {
             >
               <i className="bi bi-plus-lg"></i>Create a Course
             </Link>
-            <Link to='/teacher-students' style={{
+            <Link to='/teacher/students' style={{
               padding: '12px 28px',
               background: 'white',
               color: '#667eea',

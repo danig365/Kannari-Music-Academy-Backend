@@ -4,7 +4,7 @@ import LoadingSpinner from '../LoadingSpinner'
 const UserLogout = () => {
     localStorage.removeItem('studentLoginStatus')
     localStorage.removeItem('studentId')
-    window.location.href='/user-login';
+    window.location.href='/student/login';
     
     return <LoadingSpinner fullScreen size="lg" text="Logging out..." />
 }

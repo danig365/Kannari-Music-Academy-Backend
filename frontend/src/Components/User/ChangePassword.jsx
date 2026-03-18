@@ -44,7 +44,7 @@ const ChangePassword = () => {
                             showConfirmButton: false
                         
                         });
-                        window.location.href='/user-logout';
+                        window.location.href='/student/logout';
                     }else{
                         Swal.fire({
                             title:'Error: Please Try again!',
@@ -66,7 +66,7 @@ const ChangePassword = () => {
 
     const studentLoginStatus=localStorage.getItem('studentLoginStatus')
     if(studentLoginStatus!='true'){
-        window.location.href='/user-login';
+        window.location.href='/student/login';
     }
 
   return (

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../../config';
 import Sidebar from './Sidebar';
+import './EnhancedDashboard.css';
 import Swal from 'sweetalert2';
 
 const AudioMessages = () => {
@@ -13,12 +14,26 @@ const AudioMessages = () => {
   const [playingId, setPlayingId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [minorBlocked, setMinorBlocked] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Check minor access status
+  useEffect(() => {
+    const checkAccess = async () => {
+      try {
+        const res = await axios.get(`${baseUrl}/student/${studentId}/minor-access-status/`);
+        if (res.data.is_minor && !res.data.can_send_messages) {
+          setMinorBlocked(true);
+        }
+      } catch {}
+    };
+    if (studentId) checkAccess();
+  }, [studentId]);
 
   useEffect(() => {
     fetchMessages();
@@ -93,14 +108,34 @@ const AudioMessages = () => {
       {isMobile && sidebarOpen && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999 }} onClick={() => setSidebarOpen(false)} />
       )}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #e2e8f0', backgroundColor: '#fff' }}>
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#64748b', display: isMobile ? 'block' : 'none' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto', marginLeft: isMobile ? 0 : '250px' }}>
+        <div className="mobile-header">
+          <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Toggle sidebar">
             <i className="bi bi-list"></i>
           </button>
-          <span style={{ fontWeight: '600', color: '#1e293b', marginLeft: '8px' }}>Kannari Music Academy</span>
+          <div className="logo-mini">Kannari Music Academy</div>
         </div>
-        <div style={{ padding: '32px', maxWidth: '900px', margin: '0 auto', width: '100%' }}>
+        <div style={{ padding: '32px', width: '100%' }}>
+      {/* Minor Blocked Banner */}
+      {minorBlocked && (
+        <div style={{
+          padding: '20px 24px', marginBottom: '24px', borderRadius: '12px',
+          background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+          border: '1px solid #f59e0b', display: 'flex', alignItems: 'center', gap: '16px'
+        }}>
+          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <i className="bi bi-shield-lock-fill" style={{ fontSize: '20px', color: '#fff' }}></i>
+          </div>
+          <div>
+            <h4 style={{ margin: '0 0 4px', fontWeight: '700', color: '#92400e', fontSize: '15px' }}>Parent Approval Required</h4>
+            <p style={{ margin: 0, fontSize: '13px', color: '#78350f', lineHeight: '1.5' }}>
+              Messaging features are restricted for students under 18 until a parent or guardian approves your account.
+              Ask your parent to check their email for the consent link, or have them visit the <a href="/parent/login" style={{ color: '#7c3aed', fontWeight: '600' }}>Parent Portal</a>.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
         <div>

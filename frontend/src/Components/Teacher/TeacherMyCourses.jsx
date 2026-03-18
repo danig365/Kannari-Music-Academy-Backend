@@ -83,7 +83,7 @@ const TeacherMyCourses = () => {
                                 {courseData.map((course,index) => 
                                     <tr>
                                     <td className='text-center'>
-                                        <Link to={`/teacher-course-management/` +course.id}>{course.title}</Link>
+                                        <Link to={`/teacher/course-management/` +course.id}>{course.title}</Link>
                                         <hr />
                                         <i class="bi bi-star-fill text-warning"></i>&nbsp;
                                         {course.course_rating && 
@@ -94,11 +94,11 @@ const TeacherMyCourses = () => {
                                         }
                                     </td>
                                     <td className='text-center'><img className='round' src={course.featured_img} width="80 " alt={course.title}/></td>
-                                    <td className='text-center'><Link to={`/enrolled-students/`+course.id} >&nbsp;{course.total_enrolled_students}  <i class="bi bi-people-fill"></i></Link></td> 
+                                    <td className='text-center'><Link to={`/teacher/enrolled-students/`+course.id} >&nbsp;{course.total_enrolled_students}  <i class="bi bi-people-fill"></i></Link></td> 
                                     <td className='text-center'>
-                                        <Link to={`/edit-course/` +course.id} className='btn btn-secondary btn-sm ms-2  mb-2'><i class="bi bi-pencil-square"></i></Link>
-                                        <Link to={`/study-material/` +course.id} className='btn btn-primary btn-sm ms-2 mb-2'>Study Material</Link>
-                                        <Link to={`/add-chapter/` +course.id} className='btn btn-success btn-sm ms-2 mb-2'>Add Chapter</Link>
+                                        <Link to={`/teacher/course-management/` +course.id} className='btn btn-secondary btn-sm ms-2  mb-2'><i class="bi bi-pencil-square"></i></Link>
+                                        <Link to={`/teacher/study-material/` +course.id} className='btn btn-primary btn-sm ms-2 mb-2'>Study Material</Link>
+                                        <Link to={`/teacher/course-management/` +course.id} className='btn btn-success btn-sm ms-2 mb-2'>Add Chapter</Link>
                                         <button onClick={()=>handleDeleteClick(course.id)} className='btn btn-danger btn-sm ms-2 mb-2'><i class="bi bi-trash"></i></button>
                                     </td>
                                 </tr>

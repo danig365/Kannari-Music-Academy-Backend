@@ -121,7 +121,7 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
           </div>
           <div>
             <div className="fw-bold text-white" style={{ fontSize: '18px' }}>Kannari Music Academy</div>
-            <div style={{ fontSize: '13px', color: '#6b7280' }}>Learning Platform</div>
+            <div style={{ fontSize: '13px', color: '#6b7280' }}>Teacher Portal</div>
           </div>
         </div>
       </div>
@@ -130,23 +130,23 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
       <div className="flex-grow-1 py-3">
         <nav>
           <Link 
-            to='/teacher-overview' 
-            onClick={(e) => handleNavClick(e, '/teacher-overview')}
+            to='/teacher/overview' 
+            onClick={(e) => handleNavClick(e, '/teacher/overview')}
             className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
             style={{ 
-              color: isActive('/teacher-overview') || isActive('/teacher-dashboard') ? '#fff' : '#8b92a7',
-              backgroundColor: isActive('/teacher-overview') || isActive('/teacher-dashboard') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher-overview') || isActive('/teacher-dashboard') ? '3px solid #4285f4' : '3px solid transparent',
+              color: isActive('/teacher/overview') || isActive('/teacher/dashboard') ? '#fff' : '#8b92a7',
+              backgroundColor: isActive('/teacher/overview') || isActive('/teacher/dashboard') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+              borderLeft: isActive('/teacher/overview') || isActive('/teacher/dashboard') ? '3px solid #4285f4' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              if (!isActive('/teacher-overview') && !isActive('/teacher-dashboard')) {
+              if (!isActive('/teacher/overview') && !isActive('/teacher/dashboard')) {
                 e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
                 e.currentTarget.style.color = '#fff';
               }
             }}
             onMouseLeave={(e) => {
-              if (!isActive('/teacher-overview') && !isActive('/teacher-dashboard')) {
+              if (!isActive('/teacher/overview') && !isActive('/teacher/dashboard')) {
                 e.currentTarget.style.backgroundColor = 'transparent';
                 e.currentTarget.style.color = '#8b92a7';
               }
@@ -157,23 +157,23 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
           </Link>
 
           <Link 
-            to='/teacher-students' 
-            onClick={(e) => handleNavClick(e, '/teacher-students')}
+            to='/teacher/students' 
+            onClick={(e) => handleNavClick(e, '/teacher/students')}
             className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
             style={{ 
-              color: isActive('/teacher-students') ? '#fff' : '#8b92a7',
-              backgroundColor: isActive('/teacher-students') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher-students') ? '3px solid #4285f4' : '3px solid transparent',
+              color: isActive('/teacher/students') ? '#fff' : '#8b92a7',
+              backgroundColor: isActive('/teacher/students') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+              borderLeft: isActive('/teacher/students') ? '3px solid #4285f4' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              if (!isActive('/teacher-students')) {
+              if (!isActive('/teacher/students')) {
                 e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
                 e.currentTarget.style.color = '#fff';
               }
             }}
             onMouseLeave={(e) => {
-              if (!isActive('/teacher-students')) {
+              if (!isActive('/teacher/students')) {
                 e.currentTarget.style.backgroundColor = 'transparent';
                 e.currentTarget.style.color = '#8b92a7';
               }
@@ -184,23 +184,23 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
           </Link>
 
           <Link 
-            to='/teacher-course-management' 
-            onClick={(e) => handleNavClick(e, '/teacher-course-management')}
+            to='/teacher/course-management' 
+            onClick={(e) => handleNavClick(e, '/teacher/course-management')}
             className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
             style={{ 
-              color: isActive('/teacher-course-management') || location.pathname.startsWith('/teacher-course-management/') ? '#fff' : '#8b92a7',
-              backgroundColor: isActive('/teacher-course-management') || location.pathname.startsWith('/teacher-course-management/') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher-course-management') || location.pathname.startsWith('/teacher-course-management/') ? '3px solid #4285f4' : '3px solid transparent',
+              color: isActive('/teacher/course-management') || location.pathname.startsWith('/teacher/course-management/') ? '#fff' : '#8b92a7',
+              backgroundColor: isActive('/teacher/course-management') || location.pathname.startsWith('/teacher/course-management/') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+              borderLeft: isActive('/teacher/course-management') || location.pathname.startsWith('/teacher/course-management/') ? '3px solid #4285f4' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              if (!isActive('/teacher-course-management') && !location.pathname.startsWith('/teacher-course-management/')) {
+              if (!isActive('/teacher/course-management') && !location.pathname.startsWith('/teacher/course-management/')) {
                 e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
                 e.currentTarget.style.color = '#fff';
               }
             }}
             onMouseLeave={(e) => {
-              if (!isActive('/teacher-course-management') && !location.pathname.startsWith('/teacher-course-management/')) {
+              if (!isActive('/teacher/course-management') && !location.pathname.startsWith('/teacher/course-management/')) {
                 e.currentTarget.style.backgroundColor = 'transparent';
                 e.currentTarget.style.color = '#8b92a7';
               }
@@ -211,23 +211,23 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
           </Link>
 
           <Link 
-            to='/teacher-sessions' 
-            onClick={(e) => handleNavClick(e, '/teacher-sessions')}
+            to='/teacher/sessions' 
+            onClick={(e) => handleNavClick(e, '/teacher/sessions')}
             className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
             style={{ 
-              color: isActive('/teacher-sessions') ? '#fff' : '#8b92a7',
-              backgroundColor: isActive('/teacher-sessions') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher-sessions') ? '3px solid #4285f4' : '3px solid transparent',
+              color: isActive('/teacher/sessions') ? '#fff' : '#8b92a7',
+              backgroundColor: isActive('/teacher/sessions') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+              borderLeft: isActive('/teacher/sessions') ? '3px solid #4285f4' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              if (!isActive('/teacher-sessions')) {
+              if (!isActive('/teacher/sessions')) {
                 e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
                 e.currentTarget.style.color = '#fff';
               }
             }}
             onMouseLeave={(e) => {
-              if (!isActive('/teacher-sessions')) {
+              if (!isActive('/teacher/sessions')) {
                 e.currentTarget.style.backgroundColor = 'transparent';
                 e.currentTarget.style.color = '#8b92a7';
               }
@@ -238,23 +238,23 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
           </Link>
 
           <Link 
-            to='/teacher-audio-messages' 
-            onClick={(e) => handleNavClick(e, '/teacher-audio-messages')}
+            to='/teacher/audio-messages' 
+            onClick={(e) => handleNavClick(e, '/teacher/audio-messages')}
             className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
             style={{ 
-              color: isActive('/teacher-audio-messages') ? '#fff' : '#8b92a7',
-              backgroundColor: isActive('/teacher-audio-messages') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher-audio-messages') ? '3px solid #4285f4' : '3px solid transparent',
+              color: isActive('/teacher/audio-messages') ? '#fff' : '#8b92a7',
+              backgroundColor: isActive('/teacher/audio-messages') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+              borderLeft: isActive('/teacher/audio-messages') ? '3px solid #4285f4' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              if (!isActive('/teacher-audio-messages')) {
+              if (!isActive('/teacher/audio-messages')) {
                 e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
                 e.currentTarget.style.color = '#fff';
               }
             }}
             onMouseLeave={(e) => {
-              if (!isActive('/teacher-audio-messages')) {
+              if (!isActive('/teacher/audio-messages')) {
                 e.currentTarget.style.backgroundColor = 'transparent';
                 e.currentTarget.style.color = '#8b92a7';
               }
@@ -265,23 +265,104 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
           </Link>
 
           <Link 
-            to='/teacher-assignment-reviews' 
-            onClick={(e) => handleNavClick(e, '/teacher-assignment-reviews')}
+            to='/teacher/text-messages' 
+            onClick={(e) => handleNavClick(e, '/teacher/text-messages')}
             className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
             style={{ 
-              color: isActive('/teacher-assignment-reviews') ? '#fff' : '#8b92a7',
-              backgroundColor: isActive('/teacher-assignment-reviews') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher-assignment-reviews') ? '3px solid #4285f4' : '3px solid transparent',
+              color: isActive('/teacher/text-messages') ? '#fff' : '#8b92a7',
+              backgroundColor: isActive('/teacher/text-messages') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+              borderLeft: isActive('/teacher/text-messages') ? '3px solid #4285f4' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              if (!isActive('/teacher-assignment-reviews')) {
+              if (!isActive('/teacher/text-messages')) {
                 e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
                 e.currentTarget.style.color = '#fff';
               }
             }}
             onMouseLeave={(e) => {
-              if (!isActive('/teacher-assignment-reviews')) {
+              if (!isActive('/teacher/text-messages')) {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#8b92a7';
+              }
+            }}
+          >
+            <i className="bi bi-chat-dots me-3" style={{ fontSize: '18px' }}></i>
+            <span style={{ fontSize: '14px' }}>Text Messages</span>
+          </Link>
+
+          <Link 
+            to='/teacher/create-assignments' 
+            onClick={(e) => handleNavClick(e, '/teacher/create-assignments')}
+            className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
+            style={{ 
+              color: isActive('/teacher/create-assignments') ? '#fff' : '#8b92a7',
+              backgroundColor: isActive('/teacher/create-assignments') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+              borderLeft: isActive('/teacher/create-assignments') ? '3px solid #4285f4' : '3px solid transparent',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (!isActive('/teacher/create-assignments')) {
+                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                e.currentTarget.style.color = '#fff';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive('/teacher/create-assignments')) {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#8b92a7';
+              }
+            }}
+          >
+            <i className="bi bi-journal-plus me-3" style={{ fontSize: '18px' }}></i>
+            <span style={{ fontSize: '14px' }}>Create Assignments</span>
+          </Link>
+
+          <Link 
+            to='/teacher/office-hours' 
+            onClick={(e) => handleNavClick(e, '/teacher/office-hours')}
+            className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
+            style={{ 
+              color: isActive('/teacher/office-hours') ? '#fff' : '#8b92a7',
+              backgroundColor: isActive('/teacher/office-hours') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+              borderLeft: isActive('/teacher/office-hours') ? '3px solid #4285f4' : '3px solid transparent',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (!isActive('/teacher/office-hours')) {
+                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                e.currentTarget.style.color = '#fff';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive('/teacher/office-hours')) {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#8b92a7';
+              }
+            }}
+          >
+            <i className="bi bi-clock me-3" style={{ fontSize: '18px' }}></i>
+            <span style={{ fontSize: '14px' }}>Office Hours</span>
+          </Link>
+
+          <Link 
+            to='/teacher/assignment-reviews' 
+            onClick={(e) => handleNavClick(e, '/teacher/assignment-reviews')}
+            className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
+            style={{ 
+              color: isActive('/teacher/assignment-reviews') ? '#fff' : '#8b92a7',
+              backgroundColor: isActive('/teacher/assignment-reviews') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+              borderLeft: isActive('/teacher/assignment-reviews') ? '3px solid #4285f4' : '3px solid transparent',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (!isActive('/teacher/assignment-reviews')) {
+                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                e.currentTarget.style.color = '#fff';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive('/teacher/assignment-reviews')) {
                 e.currentTarget.style.backgroundColor = 'transparent';
                 e.currentTarget.style.color = '#8b92a7';
               }
@@ -292,23 +373,23 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
           </Link>
 
           <Link 
-            to='/teacher-progress' 
-            onClick={(e) => handleNavClick(e, '/teacher-progress')}
+            to='/teacher/progress' 
+            onClick={(e) => handleNavClick(e, '/teacher/progress')}
             className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
             style={{ 
-              color: isActive('/teacher-progress') ? '#fff' : '#8b92a7',
-              backgroundColor: isActive('/teacher-progress') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher-progress') ? '3px solid #4285f4' : '3px solid transparent',
+              color: isActive('/teacher/progress') ? '#fff' : '#8b92a7',
+              backgroundColor: isActive('/teacher/progress') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+              borderLeft: isActive('/teacher/progress') ? '3px solid #4285f4' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              if (!isActive('/teacher-progress')) {
+              if (!isActive('/teacher/progress')) {
                 e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
                 e.currentTarget.style.color = '#fff';
               }
             }}
             onMouseLeave={(e) => {
-              if (!isActive('/teacher-progress')) {
+              if (!isActive('/teacher/progress')) {
                 e.currentTarget.style.backgroundColor = 'transparent';
                 e.currentTarget.style.color = '#8b92a7';
               }
@@ -319,23 +400,23 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
           </Link>
 
           <Link 
-            to='/teacher-profile-setting' 
-            onClick={(e) => handleNavClick(e, '/teacher-profile-setting')}
+            to='/teacher/profile-setting' 
+            onClick={(e) => handleNavClick(e, '/teacher/profile-setting')}
             className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
             style={{ 
-              color: isActive('/teacher-profile-setting') ? '#fff' : '#8b92a7',
-              backgroundColor: isActive('/teacher-profile-setting') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher-profile-setting') ? '3px solid #4285f4' : '3px solid transparent',
+              color: isActive('/teacher/profile-setting') ? '#fff' : '#8b92a7',
+              backgroundColor: isActive('/teacher/profile-setting') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+              borderLeft: isActive('/teacher/profile-setting') ? '3px solid #4285f4' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              if (!isActive('/teacher-profile-setting')) {
+              if (!isActive('/teacher/profile-setting')) {
                 e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
                 e.currentTarget.style.color = '#fff';
               }
             }}
             onMouseLeave={(e) => {
-              if (!isActive('/teacher-profile-setting')) {
+              if (!isActive('/teacher/profile-setting')) {
                 e.currentTarget.style.backgroundColor = 'transparent';
                 e.currentTarget.style.color = '#8b92a7';
               }
@@ -343,6 +424,69 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
           >
             <i className="bi bi-person-circle me-3" style={{ fontSize: '18px' }}></i>
             <span style={{ fontSize: '14px' }}>Profile Settings</span>
+          </Link>
+
+          {/* Divider */}
+          <div style={{ margin: '0.5rem 1.5rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}></div>
+
+          <Link 
+            to='/teacher/community' 
+            onClick={(e) => handleNavClick(e, '/teacher/community')}
+            className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
+            style={{ 
+              color: isActive('/teacher/community') ? '#fff' : '#8b92a7',
+              backgroundColor: isActive('/teacher/community') ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+              borderLeft: isActive('/teacher/community') ? '3px solid #8b5cf6' : '3px solid transparent',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (!isActive('/teacher/community')) {
+                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                e.currentTarget.style.color = '#fff';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive('/teacher/community')) {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#8b92a7';
+              }
+            }}
+          >
+            <i className="bi bi-chat-dots me-3" style={{ fontSize: '18px', color: isActive('/teacher/community') ? '#a78bfa' : 'inherit' }}></i>
+            <span style={{ fontSize: '14px' }}>Teacher Lounge</span>
+            <span style={{
+              marginLeft: 'auto', fontSize: '0.65rem', padding: '2px 8px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.15))',
+              color: '#a78bfa', fontWeight: 600
+            }}>CHAT</span>
+          </Link>
+
+          <Link
+            to='/teacher/games-performance'
+            onClick={(e) => handleNavClick(e, '/teacher/games-performance')}
+            className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
+            style={{
+              color: isActive('/teacher/games-performance') ? '#fff' : '#8b92a7',
+              backgroundColor: isActive('/teacher/games-performance') ? 'rgba(34, 197, 94, 0.15)' : 'transparent',
+              borderLeft: isActive('/teacher/games-performance') ? '3px solid #22c55e' : '3px solid transparent',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (!isActive('/teacher/games-performance')) {
+                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                e.currentTarget.style.color = '#fff';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive('/teacher/games-performance')) {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#8b92a7';
+              }
+            }}
+          >
+            <i className="bi bi-controller me-3" style={{ fontSize: '18px' }}></i>
+            <span style={{ fontSize: '14px' }}>Game Performance</span>
           </Link>
         </nav>
       </div>
@@ -385,8 +529,8 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
           
           <div className="d-flex gap-2">
             <Link 
-              to='/teacher-profile-setting' 
-              onClick={(e) => handleNavClick(e, '/teacher-profile-setting')}
+              to='/teacher/profile-setting' 
+              onClick={(e) => handleNavClick(e, '/teacher/profile-setting')}
               className="text-decoration-none flex-fill text-center py-2 rounded-2"
               style={{ 
                 color: '#8b92a7',
@@ -406,8 +550,8 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
               <i className="bi bi-gear me-1"></i> Settings
             </Link>
             <Link 
-              to='/teacher-logout' 
-              onClick={(e) => handleNavClick(e, '/teacher-logout')}
+              to='/teacher/logout' 
+              onClick={(e) => handleNavClick(e, '/teacher/logout')}
               className="text-decoration-none flex-fill text-center py-2 rounded-2"
               style={{ 
                 color: '#8b92a7',

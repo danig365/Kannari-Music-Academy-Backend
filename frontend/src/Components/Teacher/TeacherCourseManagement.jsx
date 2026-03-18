@@ -20,7 +20,7 @@ const TeacherCourseManagement = () => {
         <AdminLessonManagement 
             userType="teacher"
             teacherId={teacherId}
-            basePath="/teacher-course-management"
+            basePath="/teacher/course-management"
             pageTitle="My Course Management"
             showTeacherSelect={false}
             showAnalytics={false}

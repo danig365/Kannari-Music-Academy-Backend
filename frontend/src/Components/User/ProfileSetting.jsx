@@ -8,6 +8,7 @@ import LoadingSpinner from '../LoadingSpinner'
 import './ProfileSetting.css'
 
 import { API_BASE_URL } from '../../config';
+import { validateStudentProfileForm, FieldError } from '../../utils/formValidation';
 
 const baseUrl = API_BASE_URL;
 
@@ -17,6 +18,7 @@ const ProfileSetting = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
     const [loading, setLoading] = useState(true)
+    const [fieldErrors, setFieldErrors] = useState({})
 
     const [studentData, setStudentData] = useState({
         'fullname': '',
@@ -39,6 +41,7 @@ const ProfileSetting = () => {
     const [consentStatus, setConsentStatus] = useState(null);
     const [consentLoading, setConsentLoading] = useState(false);
     const [resendingEmail, setResendingEmail] = useState(false);
+    const [editingParent, setEditingParent] = useState(false);
 
     useEffect(() => {
         document.title = 'Kannari Music Academy | Settings'
@@ -60,7 +63,7 @@ const ProfileSetting = () => {
     // Authentication check
     useEffect(() => {
         if (studentLoginStatus !== 'true') {
-            window.location.href = '/user-login'
+            window.location.href = '/student/login'
         }
     }, [studentLoginStatus])
 
@@ -100,6 +103,24 @@ const ProfileSetting = () => {
     }
 
     const submitForm = () => {
+        const errors = validateStudentProfileForm({
+            fullname: studentData.fullname,
+            email: studentData.email
+        });
+        setFieldErrors(errors);
+        if (Object.keys(errors).length > 0) {
+            Swal.fire({
+                title: 'Please fix the errors below',
+                icon: 'warning',
+                toast: true,
+                timer: 2500,
+                position: 'top-right',
+                timerProgressBar: true,
+                showConfirmButton: false
+            });
+            return;
+        }
+
         const studentFormData = new FormData()
         studentFormData.append("fullname", studentData.fullname || '')
         studentFormData.append("email", studentData.email || '')
@@ -176,6 +197,15 @@ const ProfileSetting = () => {
             const res = await axios.get(`${baseUrl}/student/${studentId}/parent/status/`);
             if (res.data?.bool) {
                 setConsentStatus(res.data);
+                // Pre-fill parent form with existing data for editing
+                if (res.data.has_link) {
+                    setParentLinkForm(prev => ({
+                        ...prev,
+                        parent_fullname: res.data.parent_name || '',
+                        parent_email: res.data.parent_email || '',
+                        relationship: res.data.relationship || 'guardian',
+                    }));
+                }
             } else {
                 setConsentStatus(null);
             }
@@ -301,7 +331,9 @@ const ProfileSetting = () => {
                                     value={studentData.fullname} 
                                     onChange={handleChange} 
                                     className="form-control"
+                                    style={fieldErrors.fullname ? { border: '1px solid #ef4444' } : {}}
                                 />
+                                <FieldError error={fieldErrors.fullname} />
                             </div>
 
                             <div className="form-group">
@@ -314,7 +346,9 @@ const ProfileSetting = () => {
                                     value={studentData.email} 
                                     onChange={handleChange} 
                                     className="form-control"
+                                    style={fieldErrors.email ? { border: '1px solid #ef4444' } : {}}
                                 />
+                                <FieldError error={fieldErrors.email} />
                             </div>
 
                             <div className="form-group">
@@ -395,23 +429,23 @@ const ProfileSetting = () => {
 
                             {consentStatus && consentStatus.has_link && !consentLoading && (
                                 <div style={{
-                                    background: consentStatus.link_status === 'approved' ? '#e8f5e9' : consentStatus.link_status === 'denied' ? '#ffebee' : '#fff8e1',
-                                    border: `1px solid ${consentStatus.link_status === 'approved' ? '#a5d6a7' : consentStatus.link_status === 'denied' ? '#ef9a9a' : '#ffe082'}`,
+                                    background: consentStatus.link_status === 'approved' ? '#e8f5e9' : (consentStatus.link_status === 'denied' || consentStatus.link_status === 'revoked') ? '#ffebee' : '#fff8e1',
+                                    border: `1px solid ${consentStatus.link_status === 'approved' ? '#a5d6a7' : (consentStatus.link_status === 'denied' || consentStatus.link_status === 'revoked') ? '#ef9a9a' : '#ffe082'}`,
                                     borderRadius: '10px',
                                     padding: '1rem 1.25rem',
                                     marginBottom: '1rem'
                                 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                                        <i className={`bi ${consentStatus.link_status === 'approved' ? 'bi-check-circle-fill text-success' : consentStatus.link_status === 'denied' ? 'bi-x-circle-fill text-danger' : 'bi-clock-fill text-warning'}`} style={{ fontSize: '1.2rem' }}></i>
+                                        <i className={`bi ${consentStatus.link_status === 'approved' ? 'bi-check-circle-fill text-success' : (consentStatus.link_status === 'denied' || consentStatus.link_status === 'revoked') ? 'bi-x-circle-fill text-danger' : 'bi-clock-fill text-warning'}`} style={{ fontSize: '1.2rem' }}></i>
                                         <strong>
                                             {consentStatus.link_status === 'approved' ? 'Parent Consent Approved' :
-                                             consentStatus.link_status === 'denied' ? 'Parent Consent Denied' :
+                                             (consentStatus.link_status === 'denied' || consentStatus.link_status === 'revoked') ? 'Parent Consent Denied' :
                                              'Awaiting Parent Approval'}
                                         </strong>
                                     </div>
                                     <div style={{ fontSize: '0.9rem', color: '#555' }}>
                                         <div><strong>Parent:</strong> {consentStatus.parent_name}</div>
-                                        <div><strong>Email:</strong> {consentStatus.parent_email_masked}</div>
+                                        <div><strong>Email:</strong> {consentStatus.parent_email}</div>
                                         <div><strong>Relationship:</strong> <span style={{textTransform:'capitalize'}}>{consentStatus.relationship}</span></div>
                                         {consentStatus.live_sessions_status && (
                                             <div><strong>Live Sessions:</strong> <span style={{textTransform:'capitalize'}}>{consentStatus.live_sessions_status}</span></div>
@@ -422,31 +456,66 @@ const ProfileSetting = () => {
                                     </div>
 
                                     {consentStatus.link_status === 'pending' && (
-                                        <button
-                                            onClick={resendConsentEmail}
-                                            disabled={resendingEmail}
-                                            className="submit-btn"
-                                            style={{ marginTop: '0.75rem', background: '#5c6bc0' }}
-                                        >
-                                            {resendingEmail ? (
-                                                <><span className="spinner-border spinner-border-sm me-2"></span>Sending...</>
-                                            ) : (
-                                                <><i className="bi bi-envelope-arrow-up me-1" aria-hidden="true"></i>Resend Consent Email</>
-                                            )}
-                                        </button>
+                                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+                                            <button
+                                                onClick={resendConsentEmail}
+                                                disabled={resendingEmail}
+                                                className="submit-btn"
+                                                style={{ background: '#5c6bc0', flex: '1', minWidth: '180px' }}
+                                            >
+                                                {resendingEmail ? (
+                                                    <><span className="spinner-border spinner-border-sm me-2"></span>Sending...</>
+                                                ) : (
+                                                    <><i className="bi bi-envelope-arrow-up me-1" aria-hidden="true"></i>Resend Consent Email</>
+                                                )}
+                                            </button>
+                                            <button
+                                                onClick={() => setEditingParent(!editingParent)}
+                                                className="submit-btn"
+                                                style={{ background: editingParent ? '#78909c' : '#ff8f00', flex: '1', minWidth: '180px' }}
+                                            >
+                                                <i className={`bi ${editingParent ? 'bi-x-lg' : 'bi-pencil-square'} me-1`} aria-hidden="true"></i>
+                                                {editingParent ? 'Cancel Editing' : 'Edit Parent Details'}
+                                            </button>
+                                        </div>
                                     )}
 
-                                    {consentStatus.link_status === 'denied' && (
-                                        <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#c62828' }}>
-                                            Your parent/guardian declined consent. You may submit a new request below with updated information.
-                                        </p>
+                                    {(consentStatus.link_status === 'denied' || consentStatus.link_status === 'revoked') && (
+                                        <div style={{ marginTop: '0.75rem' }}>
+                                            <p style={{ fontSize: '0.85rem', color: '#c62828', marginBottom: '0.75rem' }}>
+                                                <i className="bi bi-exclamation-triangle-fill me-1"></i>
+                                                Your parent/guardian declined consent. You can update parent details and send a new consent request below.
+                                            </p>
+                                            <button
+                                                onClick={() => setEditingParent(true)}
+                                                className="submit-btn"
+                                                style={{ background: '#e65100', width: '100%' }}
+                                            >
+                                                <i className="bi bi-arrow-repeat me-1" aria-hidden="true"></i>
+                                                Request Consent Again
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
                             )}
 
-                            {/* Request Form - show if no active consent or if denied */}
-                            {(!consentStatus || !consentStatus.has_link || consentStatus.link_status === 'denied') && !consentLoading && (
+                            {/* Request Form - show if no active consent, denied/revoked, or editing pending */}
+                            {((!consentStatus || !consentStatus.has_link || consentStatus.link_status === 'denied' || consentStatus.link_status === 'revoked' || (consentStatus.link_status === 'pending' && editingParent)) && !consentLoading && (consentStatus?.link_status !== 'revoked' || editingParent) && (consentStatus?.link_status !== 'denied' || editingParent)) && (
                                 <>
+                                    {editingParent && (consentStatus?.link_status === 'pending' || consentStatus?.link_status === 'revoked') && (
+                                        <div style={{
+                                            background: consentStatus?.link_status === 'revoked' ? '#fce4ec' : '#fff3e0',
+                                            border: `1px solid ${consentStatus?.link_status === 'revoked' ? '#ef9a9a' : '#ffe0b2'}`,
+                                            borderRadius: '8px',
+                                            padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem',
+                                            color: consentStatus?.link_status === 'revoked' ? '#c62828' : '#e65100'
+                                        }}>
+                                            <i className="bi bi-info-circle me-1"></i>
+                                            {consentStatus?.link_status === 'revoked'
+                                                ? 'Your previous consent request was denied. Update parent details if needed and submit to send a new consent email.'
+                                                : 'Update your parent/guardian details below. A new consent email will be sent to the updated email address.'}
+                                        </div>
+                                    )}
                                     <div className="form-group">
                                         <label><i className='bi bi-person' aria-hidden="true"></i>Parent/Guardian Name</label>
                                         <input
@@ -486,8 +555,12 @@ const ProfileSetting = () => {
                                         </select>
                                     </div>
 
-                                    <button onClick={submitParentLinkRequest} className="submit-btn">
-                                        <i className='bi bi-send-check' aria-hidden="true"></i>Send Consent Request to Parent
+                                    <button onClick={() => {
+                                        submitParentLinkRequest();
+                                        setEditingParent(false);
+                                    }} className="submit-btn">
+                                        <i className={`bi ${editingParent ? 'bi-arrow-repeat' : 'bi-send-check'}`} aria-hidden="true"></i>
+                                        {editingParent ? 'Update & Resend Consent Email' : 'Send Consent Request to Parent'}
                                     </button>
                                 </>
                             )}

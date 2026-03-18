@@ -21,7 +21,7 @@ const MyCourses = () => {
     // Authentication check and redirect
     useEffect(() => {
         if (studentLoginStatus !== 'true') {
-            navigate('/user-login');
+            navigate('/student/login');
         }
     }, [studentLoginStatus, navigate]);
 

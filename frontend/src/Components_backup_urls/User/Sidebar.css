@@ -1,0 +1,30 @@
+/* Sidebar Responsive Styles - Mobile First */
+
+/* Mobile: Extra Small (< 576px) */
+@media (max-width: 575.98px) {
+    /* Sidebar is hidden by default on mobile and slides in from left */
+    /* This is handled by the transform property in the inline styles */
+}
+
+/* Small: Tablets (576px - 767px) */
+@media (min-width: 576px) and (max-width: 767.98px) {
+    /* Sidebar behavior similar to mobile */
+}
+
+/* Medium: Desktop and up (768px+) */
+@media (min-width: 768px) {
+    /* Sidebar is always visible on desktop */
+    /* No additional styles needed as inline styles handle the layout */
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+    /* Sidebar dark mode is handled by inline styles */
+}
+
+/* Smooth transitions for sidebar state changes */
+@media (prefers-reduced-motion: no-preference) {
+    [style*="transform"] {
+        transition: transform 0.3s ease;
+    }
+}

@@ -10,6 +10,16 @@ from rest_framework.response import Response
 from rest_framework import generics
 from django.contrib.flatpages.models import FlatPage
 from . serializers import TeacherSerializer,FlatPageSerializer,FaqSerializer,StudyMaterialSerializer,StudentDashboardSerializer,StudentFavoriteCourseSerializer,CategorySerializer,CourseSerializer,ChapterSerializer,StudentSerializer,StudentCourseEnrollSerializer,CourseRatingSerializer,TeacherDashboardSerializer,LessonDownloadableSerializer,ModuleLessonSerializer,SubscriptionPlanSerializer,SubscriptionSerializer,SubscriptionHistorySerializer
+from .serializers import (
+    MessageSerializer, ChatLockPolicySerializer, TeacherOfficeHoursSerializer,
+    ChatUnlockRequestSerializer, GroupMessageSerializer, GroupAnnouncementSerializer,
+    GroupResourceSerializer, GroupSessionSerializer, GroupSessionParticipantLogSerializer,
+    DiscussionThreadSerializer, MultipleChoiceQuestionSerializer,
+    MultipleChoiceQuestionStudentSerializer, MultipleChoiceAnswerSerializer,
+    ParentPolicyAcceptanceSerializer, TeacherCommunityMessageSerializer,
+    GameDefinitionSerializer, GameQuestionPublicSerializer, StudentGameProfileSerializer,
+    GameSessionSerializer, WeeklyGameLeaderboardSerializer,
+)
 from rest_framework import permissions
 from django.db.models import Q, Avg, Sum
 from django.db import transaction
@@ -19,6 +29,7 @@ from django.utils import timezone
 import os
 import uuid
 import json
+import secrets
 
 
 # ==================== AUDIT LOG HELPERS ====================
@@ -108,16 +119,18 @@ def log_access(request, access_type, was_allowed=True, denial_reason=None,
 
 
 def log_activity(request, action, description, model_name=None, object_id=None,
-                 admin=None, teacher=None, student=None):
+                 admin=None, teacher=None, student=None, parent=None):
     """Create an ActivityLog entry for any user action.
     
-    action: login, logout, create, update, delete, view, export, import
+    action: login, logout, create, update, delete, view, export, import,
+            message, submission, session_join, session_leave, session_start, session_end
     """
     try:
         models.ActivityLog.objects.create(
             admin=admin,
             teacher=teacher,
             student=student,
+            parent=parent,
             action=action,
             model_name=model_name,
             object_id=object_id,
@@ -190,11 +203,11 @@ def _send_verification_email(request, user_type, user_obj):
         token = _build_email_verification_token(user_type, user_obj.id, user_obj.email)
         if user_type == 'teacher':
             verify_path = reverse('verify-teacher-email')
-            login_path = '/teacher-login'
+            login_path = '/teacher/login'
             display_name = getattr(user_obj, 'full_name', 'Teacher')
         else:
             verify_path = reverse('verify-student-email')
-            login_path = '/user-login'
+            login_path = '/student/login'
             display_name = getattr(user_obj, 'fullname', 'Student')
 
         verify_url = request.build_absolute_uri(f"{verify_path}?token={token}")
@@ -237,10 +250,10 @@ def _finalize_email_verification(token, expected_user_type):
 
     if expected_user_type == 'teacher':
         user_obj = models.Teacher.objects.filter(id=user_id, email=email).first()
-        login_path = '/teacher-login'
+        login_path = '/teacher/login'
     else:
         user_obj = models.Student.objects.filter(id=user_id, email=email).first()
-        login_path = '/user-login'
+        login_path = '/student/login'
 
     if not user_obj:
         return None, 'User not found for this verification link.'
@@ -333,7 +346,7 @@ def _send_parental_consent_email(link, student):
     try:
         token = _build_parental_consent_token(link.id, link.parent.email, student.id)
         frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
-        consent_url = f"{frontend_url}/parent-consent/{token}"
+        consent_url = f"{frontend_url}/parent/consent/{token}"
 
         parent = link.parent
         subject = f'Parental Consent Required — {student.fullname} on Kannari Music Academy'
@@ -408,13 +421,13 @@ def _send_password_reset_email(request, user_type, user_obj):
         frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
 
         if user_type == 'teacher':
-            reset_url = f"{frontend_url}/teacher-forgot-password?token={token}"
+            reset_url = f"{frontend_url}/teacher/forgot-password?token={token}"
             display_name = getattr(user_obj, 'full_name', 'Teacher')
-            login_url = f"{frontend_url}/teacher-login"
+            login_url = f"{frontend_url}/teacher/login"
         else:
-            reset_url = f"{frontend_url}/user-forgot-password?token={token}"
+            reset_url = f"{frontend_url}/student/forgot-password?token={token}"
             display_name = getattr(user_obj, 'fullname', 'Student')
-            login_url = f"{frontend_url}/user-login"
+            login_url = f"{frontend_url}/student/login"
 
         subject = 'Reset your Kannari Music Academy account password'
         message = (
@@ -438,7 +451,7 @@ def _send_password_reset_email(request, user_type, user_obj):
 def _send_teacher_approval_status_email(teacher, is_approved):
     try:
         frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
-        login_url = f"{frontend_url}/teacher-login"
+        login_url = f"{frontend_url}/teacher/login"
 
         if is_approved:
             subject = 'Your teacher account has been approved'
@@ -499,6 +512,31 @@ def _finalize_password_reset(token, expected_user_type, new_password):
     user_obj.save(update_fields=['password'])
     return True, 'Password reset successful. You can now log in.'
 
+
+def _create_default_office_hours(teacher):
+    """Create professional default office hours for a new teacher (Mon-Fri, 9 AM - 5 PM UTC)."""
+    from datetime import time as dt_time
+    defaults = [
+        # day_of_week: 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri
+        (0, dt_time(9, 0), dt_time(17, 0), 'Available for lessons & parent messaging'),
+        (1, dt_time(9, 0), dt_time(17, 0), 'Available for lessons & parent messaging'),
+        (2, dt_time(9, 0), dt_time(17, 0), 'Available for lessons & parent messaging'),
+        (3, dt_time(9, 0), dt_time(17, 0), 'Available for lessons & parent messaging'),
+        (4, dt_time(9, 0), dt_time(17, 0), 'Available for lessons & parent messaging'),
+    ]
+    created = 0
+    for day, start, end, notes in defaults:
+        _, was_created = models.TeacherOfficeHours.objects.get_or_create(
+            teacher=teacher,
+            day_of_week=day,
+            start_time=start,
+            defaults={'end_time': end, 'is_active': True, 'notes': notes}
+        )
+        if was_created:
+            created += 1
+    return created
+
+
 class TeacherList(generics.ListCreateAPIView):
     queryset=models.Teacher.objects.all()
     serializer_class=TeacherSerializer
@@ -531,7 +569,7 @@ def teacher_login(request):
     if not email or not password:
         return JsonResponse({'bool':False, 'message': 'Email and password are required.'}, status=400)
     try:
-        teacherData=models.Teacher.objects.get(email=email,password=password)
+        teacherData=models.Teacher.objects.get(email__iexact=email,password=password)
     except models.Teacher.DoesNotExist:
         teacherData=None
     if teacherData:
@@ -637,8 +675,63 @@ class StudentList(generics.ListCreateAPIView):
             student = models.Student.objects.filter(id=response.data['id']).first()
             if student:
                 _send_verification_email(request, 'student', student)
+
+                # Phase 5: If DOB makes user <18, require parent_email and auto-create parent flow
+                if student.is_minor():
+                    parent_email = request.data.get('parent_email', '').strip()
+                    if not parent_email:
+                        # Don't delete student — just flag and warn
+                        student.parent_account_required = True
+                        student.save(update_fields=['parent_account_required'])
+                        response.data['parent_required'] = True
+                        response.data['parent_email_missing'] = True
+                        response.data['message'] = (
+                            'Registration successful. Since you are under 18, a parent/guardian '
+                            'email is required. Please provide it via your profile to complete setup.'
+                        )
+                    else:
+                        student.parent_account_required = True
+                        student.save(update_fields=['parent_account_required'])
+
+                        # Auto-create ParentAccount (or get existing)
+                        parent_name = request.data.get('parent_name', '').strip() or f"Parent of {student.fullname}"
+                        parent, created = models.ParentAccount.objects.get_or_create(
+                            email=parent_email,
+                            defaults={
+                                'fullname': parent_name,
+                                'is_verified': False,
+                            }
+                        )
+
+                        # Auto-create StudentParentLink (pending)
+                        relationship = request.data.get('parent_relationship', 'guardian')
+                        link, link_created = models.StudentParentLink.objects.get_or_create(
+                            student=student,
+                            parent=parent,
+                            defaults={
+                                'relationship': relationship,
+                                'status': 'pending',
+                            }
+                        )
+
+                        # Send consent email with verification token
+                        _send_parental_consent_email(link, student)
+
+                        response.data['parent_required'] = True
+                        response.data['parent_email_sent'] = True
+                        response.data['parent_id'] = parent.id
+                        response.data['link_id'] = link.id
+                        response.data['message'] = (
+                            'Registration successful. Since you are under 18, a consent email '
+                            f'has been sent to {parent_email}. Your parent/guardian must approve '
+                            'before you can access courses and live sessions.'
+                        )
+                else:
+                    response.data['parent_required'] = False
+
             response.data['verification_required'] = True
-            response.data['message'] = 'Registration successful. Please verify your email to log in.'
+            if not student or not student.is_minor():
+                response.data['message'] = 'Registration successful. Please verify your email to log in.'
         return response
 
 class StudentDashboard(generics.RetrieveAPIView):
@@ -652,7 +745,7 @@ def student_login(request):
     if not email or not password:
         return JsonResponse({'bool':False, 'message': 'Email and password are required.'}, status=400)
     try:
-        studentData=models.Student.objects.get(email=email,password=password)
+        studentData=models.Student.objects.get(email__iexact=email,password=password)
     except models.Student.DoesNotExist:
         studentData=None
     if studentData:
@@ -660,7 +753,29 @@ def student_login(request):
             return JsonResponse({'bool':False, 'message': 'Please verify your email before login.'}, status=403)
         log_activity(request, 'login', f'Student {studentData.fullname} logged in',
                      model_name='Student', object_id=studentData.id, student=studentData)
-        return JsonResponse({'bool':True,'student_id':studentData.id})
+
+        # Phase 5: Include minor status and messaging capability
+        is_minor = studentData.is_minor()
+        can_messages = studentData.can_send_messages()
+        has_parent_approval = studentData.has_approved_parent_with_policies()
+
+        login_response = {
+            'bool': True,
+            'student_id': studentData.id,
+            'is_minor': is_minor,
+            'can_send_messages': can_messages,
+            'parent_account_required': studentData.parent_account_required,
+            'has_parent_approval': has_parent_approval,
+        }
+
+        if is_minor and not has_parent_approval:
+            login_response['minor_notice'] = (
+                'Your account has limited access because parental consent '
+                'has not been completed. Ask your parent/guardian to check '
+                'their email for the consent link.'
+            )
+
+        return JsonResponse(login_response)
     else:
         return JsonResponse({'bool':False})
 
@@ -693,7 +808,7 @@ def request_teacher_password_reset(request):
     data = _extract_request_data(request)
     email = (data.get('email') or '').strip()
     if email:
-        teacher = models.Teacher.objects.filter(email=email).first()
+        teacher = models.Teacher.objects.filter(email__iexact=email).first()
         if teacher:
             _send_password_reset_email(request, 'teacher', teacher)
 
@@ -708,7 +823,7 @@ def request_student_password_reset(request):
     data = _extract_request_data(request)
     email = (data.get('email') or '').strip()
     if email:
-        student = models.Student.objects.filter(email=email).first()
+        student = models.Student.objects.filter(email__iexact=email).first()
         if student:
             _send_password_reset_email(request, 'student', student)
 
@@ -1819,6 +1934,19 @@ def student_request_parent_link(request, student_id):
     if authorization_mode not in ['pre_authorized', 'per_session_login']:
         return JsonResponse({'bool': False, 'message': 'Invalid authorization_mode'}, status=400)
 
+    # Check for existing pending/revoked link to a DIFFERENT parent email
+    existing_link = models.StudentParentLink.objects.filter(
+        student=student, status__in=['pending', 'revoked']
+    ).select_related('parent').first()
+
+    if existing_link and existing_link.parent.email.lower() != parent_email:
+        # Student is changing parent email — remove the old pending link
+        old_parent = existing_link.parent
+        existing_link.delete()
+        # Clean up orphan parent account if no other links reference it
+        if not models.StudentParentLink.objects.filter(parent=old_parent).exists():
+            old_parent.delete()
+
     parent, _ = models.ParentAccount.objects.get_or_create(
         email=parent_email,
         defaults={
@@ -1826,11 +1954,17 @@ def student_request_parent_link(request, student_id):
             'mobile_no': payload.get('parent_mobile_no'),
         }
     )
+    # Always update parent details when student submits the form
+    update_fields = []
     if parent.fullname != parent_fullname:
         parent.fullname = parent_fullname
-        if payload.get('parent_mobile_no'):
-            parent.mobile_no = payload.get('parent_mobile_no')
-        parent.save(update_fields=['fullname', 'mobile_no', 'updated_at'])
+        update_fields.append('fullname')
+    if payload.get('parent_mobile_no') and parent.mobile_no != payload.get('parent_mobile_no'):
+        parent.mobile_no = payload.get('parent_mobile_no')
+        update_fields.append('mobile_no')
+    if update_fields:
+        update_fields.append('updated_at')
+        parent.save(update_fields=update_fields)
 
     link, created = models.StudentParentLink.objects.get_or_create(
         student=student,
@@ -1845,7 +1979,7 @@ def student_request_parent_link(request, student_id):
     if not created:
         link.relationship = relationship
         link.authorization_mode = authorization_mode
-        if link.status == 'revoked':
+        if link.status in ('revoked', 'pending'):
             link.status = 'pending'
             link.revoked_at = None
         link.save(update_fields=['relationship', 'authorization_mode', 'status', 'revoked_at', 'updated_at'])
@@ -1915,6 +2049,27 @@ def parental_consent_verify(request):
         parent_link=link, consent_type='live_sessions'
     ).first()
 
+    # Phase 5: Include required policy documents for parent acceptance
+    required_policies = models.PolicyDocument.objects.filter(
+        is_active=True,
+        policy_type__in=['child_safety', 'terms_of_service']
+    )
+    accepted_policy_ids = set(
+        models.ParentPolicyAcceptance.objects.filter(
+            parent=link.parent
+        ).values_list('policy_id', flat=True)
+    )
+    policy_list = []
+    for p in required_policies:
+        policy_list.append({
+            'id': p.id,
+            'title': p.title,
+            'policy_type': p.policy_type,
+            'version': p.version,
+            'content': p.content,
+            'accepted': p.id in accepted_policy_ids,
+        })
+
     return JsonResponse({
         'bool': True,
         'student_name': student.fullname,
@@ -1922,11 +2077,14 @@ def parental_consent_verify(request):
         'student_dob': student.date_of_birth.isoformat() if student.date_of_birth else None,
         'parent_name': link.parent.fullname,
         'parent_email': link.parent.email,
+        'parent_id': link.parent.id,
         'relationship': link.relationship,
         'authorization_mode': link.authorization_mode,
         'link_status': link.status,
         'live_sessions_status': live_consent.status if live_consent else 'pending',
         'approved_at': link.approved_at.isoformat() if link.approved_at else None,
+        'required_policies': policy_list,
+        'all_policies_accepted': len(policy_list) == 0 or all(p['accepted'] for p in policy_list),
     })
 
 
@@ -2007,6 +2165,27 @@ def parental_consent_respond(request):
             live_consent.notes = f'Approved via email consent by {link.parent.fullname}. Signature: "{parent_signature}"'
             live_consent.save(update_fields=['status', 'approved_at', 'revoked_at', 'notes', 'updated_at'])
 
+        # Phase 5: Auto-accept all required policies (TOS + Child Safety) on consent approval
+        # The consent page shows the policies; by approving, parent accepts them.
+        accepted_policy_ids = payload_data.get('accepted_policy_ids', [])
+        required_policies = models.PolicyDocument.objects.filter(
+            is_active=True,
+            policy_type__in=['child_safety', 'terms_of_service']
+        )
+        ip_addr = _get_client_ip(request)
+        user_agent = request.META.get('HTTP_USER_AGENT', '')[:500]
+        for policy in required_policies:
+            # Accept if explicitly listed or if we're approving consent (implicit acceptance)
+            if not accepted_policy_ids or policy.id in accepted_policy_ids:
+                models.ParentPolicyAcceptance.objects.get_or_create(
+                    parent=link.parent,
+                    policy=policy,
+                    defaults={
+                        'ip_address': ip_addr,
+                        'user_agent': user_agent,
+                    }
+                )
+
         # Notify student
         _send_parental_consent_approved_email(link, student)
 
@@ -2014,6 +2193,7 @@ def parental_consent_respond(request):
             'bool': True,
             'message': 'Thank you! Your consent has been recorded. Your child can now participate in live sessions.',
             'status': 'approved',
+            'policies_accepted': True,
         })
 
     else:  # deny
@@ -2037,30 +2217,51 @@ def parental_consent_respond(request):
 
 
 def student_parent_consent_status(request, student_id):
-    """GET endpoint — returns parent link & consent status for the student's profile."""
+    """GET endpoint — returns parent link & consent status for the student's profile.
+    For 18+ students, also returns teacher_student_id for direct teacher↔student chat."""
     student = models.Student.objects.filter(id=student_id).first()
     if not student:
         return JsonResponse({'bool': False, 'message': 'Student not found'}, status=404)
+
+    # For 18+ students, find the TeacherStudent assignment for direct chat
+    teacher_id = request.GET.get('teacher_id')  # optional, narrows to specific teacher
+    teacher_student_info = None
+    if not student.is_minor():
+        ts_qs = models.TeacherStudent.objects.filter(student=student, status='active')
+        if teacher_id:
+            ts_qs = ts_qs.filter(teacher_id=teacher_id)
+        ts = ts_qs.select_related('teacher').first()
+        if ts:
+            teacher_student_info = {
+                'teacher_student_id': ts.id,
+                'teacher_id': ts.teacher.id,
+                'teacher_name': ts.teacher.full_name,
+            }
 
     link = models.StudentParentLink.objects.filter(
         student=student
     ).select_related('parent').order_by('-created_at').first()
 
     if not link:
-        return JsonResponse({
+        response_data = {
             'bool': True,
             'has_link': False,
             'is_minor': student.is_minor(),
-        })
+        }
+        if teacher_student_info:
+            response_data['teacher_student'] = teacher_student_info
+        return JsonResponse(response_data)
 
     live_consent = models.ParentalConsent.objects.filter(
         parent_link=link, consent_type='live_sessions'
     ).first()
 
-    return JsonResponse({
+    response_data = {
         'bool': True,
         'has_link': True,
         'is_minor': student.is_minor(),
+        'parent_link_id': link.id,
+        'parent_id': link.parent.id,
         'parent_name': link.parent.fullname,
         'parent_email': link.parent.email,
         'relationship': link.relationship,
@@ -2068,7 +2269,10 @@ def student_parent_consent_status(request, student_id):
         'authorization_mode': link.authorization_mode,
         'live_sessions_status': live_consent.status if live_consent else 'pending',
         'approved_at': link.approved_at.isoformat() if link.approved_at else None,
-    })
+    }
+    if teacher_student_info:
+        response_data['teacher_student'] = teacher_student_info
+    return JsonResponse(response_data)
 
 
 @csrf_exempt
@@ -2249,6 +2453,68 @@ def parent_preauthorize_sessions(request, parent_id, student_id):
     return JsonResponse({'bool': True, 'message': 'Sessions pre-authorized', 'created_count': created_count})
 
 
+@csrf_exempt
+def parent_login_request(request):
+    """Send a 6-digit verification code to the parent's email."""
+    if request.method != 'POST':
+        return JsonResponse({'bool': False, 'error': 'POST required'}, status=405)
+    data = json.loads(request.body)
+    email = data.get('email', '').strip().lower()
+    if not email:
+        return JsonResponse({'bool': False, 'error': 'Email is required'}, status=400)
+    parent = models.ParentAccount.objects.filter(email__iexact=email).first()
+    if not parent:
+        return JsonResponse({'bool': False, 'error': 'No parent account found with this email'}, status=404)
+    # Generate 6-digit code
+    code = f"{secrets.randbelow(1000000):06d}"
+    # Store in parent's model (reuse verification_token field)
+    parent.verification_token = code
+    parent.token_expires_at = timezone.now() + timezone.timedelta(minutes=15)
+    parent.save(update_fields=['verification_token', 'token_expires_at'])
+    # Send email
+    try:
+        send_mail(
+            'Kannari Music Academy — Parent Login Code',
+            f'Your verification code is: {code}\n\nThis code expires in 15 minutes.',
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=True,
+        )
+    except Exception:
+        pass
+    return JsonResponse({'bool': True, 'message': 'Verification code sent to your email'})
+
+
+@csrf_exempt
+def parent_login_verify(request):
+    """Verify the 6-digit code and log in the parent."""
+    if request.method != 'POST':
+        return JsonResponse({'bool': False, 'error': 'POST required'}, status=405)
+    data = json.loads(request.body)
+    email = data.get('email', '').strip().lower()
+    code = data.get('code', '').strip()
+    if not email or not code:
+        return JsonResponse({'bool': False, 'error': 'Email and code are required'}, status=400)
+    parent = models.ParentAccount.objects.filter(email__iexact=email).first()
+    if not parent:
+        return JsonResponse({'bool': False, 'error': 'No parent account found'}, status=404)
+    if parent.verification_token != code:
+        return JsonResponse({'bool': False, 'error': 'Invalid verification code'}, status=400)
+    if parent.token_expires_at and parent.token_expires_at < timezone.now():
+        return JsonResponse({'bool': False, 'error': 'Code has expired. Please request a new one.'}, status=400)
+    # Clear the token
+    parent.verification_token = None
+    parent.token_expires_at = None
+    parent.save(update_fields=['verification_token', 'token_expires_at'])
+    return JsonResponse({
+        'bool': True,
+        'parent_id': parent.id,
+        'parent_name': parent.fullname,
+        'email': parent.email,
+    })
+
+
+@csrf_exempt
 def parent_children(request, parent_id):
     parent = models.ParentAccount.objects.filter(id=parent_id).first()
     if not parent:
@@ -2262,6 +2528,7 @@ def parent_children(request, parent_id):
             'student_id': link.student_id,
             'student_name': link.student.fullname,
             'student_email': link.student.email,
+            'parent_link_id': link.id,
             'link_status': link.status,
             'authorization_mode': link.authorization_mode,
             'live_sessions_status': live_consent.status if live_consent else 'pending',
@@ -3791,6 +4058,13 @@ def session_go_live(request, session_id):
                 if minor_block:
                     return minor_block
             session.go_live()
+
+            # Audit log: 1:1 session started
+            log_activity(request, 'session_start',
+                         f'Teacher {session.teacher.full_name} started 1:1 session "{session.title}" (id:{session.id})',
+                         model_name='TeacherSession', object_id=session.id,
+                         teacher=session.teacher)
+
             return JsonResponse({
                 'bool': True,
                 'message': 'Session is now live',
@@ -3812,6 +4086,13 @@ def session_end(request, session_id):
             if not session.teacher.is_approved:
                 return JsonResponse({'bool': False, 'message': 'Teacher account is not approved.'}, status=403)
             session.end_session()
+
+            # Audit log: 1:1 session ended
+            log_activity(request, 'session_end',
+                         f'Teacher {session.teacher.full_name} ended session "{session.title}" (id:{session.id}) — Duration: {session.actual_duration_minutes}min',
+                         model_name='TeacherSession', object_id=session.id,
+                         teacher=session.teacher)
+
             return JsonResponse({
                 'bool': True,
                 'message': 'Session ended',
@@ -3921,6 +4202,12 @@ def student_join_live_session(request, student_id, session_id):
                     'ip_address': _get_client_ip(request),
                 }
             )
+
+            # Audit log: student joined 1:1 session
+            log_activity(request, 'session_join',
+                         f'Student {student.fullname} joined 1:1 session "{session.title}" with {session.teacher.full_name}',
+                         model_name='SessionParticipantLog', object_id=session.id,
+                         student=student)
             
             return JsonResponse({
                 'bool': True,
@@ -4744,6 +5031,12 @@ class AdminModuleLessonList(generics.ListCreateAPIView):
         # Auto-detect content type from file extension
         import os
         file = self.request.FILES.get('file')
+        
+        # Get next order number
+        module_id = self.request.data.get('module')
+        last_order = models.ModuleLesson.objects.filter(module_id=module_id).order_by('-order').first()
+        next_order = (last_order.order + 1) if last_order else 0
+        
         if file:
             ext = os.path.splitext(file.name)[1].lower()
             content_type_map = {
@@ -4754,11 +5047,6 @@ class AdminModuleLessonList(generics.ListCreateAPIView):
             }
             content_type = content_type_map.get(ext, 'video')
             
-            # Get next order number
-            module_id = self.request.data.get('module')
-            last_order = models.ModuleLesson.objects.filter(module_id=module_id).order_by('-order').first()
-            next_order = (last_order.order + 1) if last_order else 0
-            
             instance = serializer.save(content_type=content_type, order=next_order)
             
             # Audit: log successful upload
@@ -4767,7 +5055,7 @@ class AdminModuleLessonList(generics.ListCreateAPIView):
                 content_type_str='ModuleLesson', object_id=instance.id, status='success'
             )
         else:
-            serializer.save()
+            serializer.save(order=next_order)
 
 
 class AdminModuleLessonDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -4980,11 +5268,17 @@ class AdminCourseModulesWithLessons(APIView):
                     'id': lesson.id,
                     'title': lesson.title,
                     'description': lesson.description,
+                    'objectives': lesson.objectives,
                     'content_type': lesson.content_type,
                     'file': request.build_absolute_uri(lesson.file.url) if lesson.file else None,
+                    'youtube_url': lesson.youtube_url,
                     'duration_seconds': lesson.duration_seconds,
                     'duration_formatted': lesson.duration_formatted,
-                    'order': lesson.order
+                    'order': lesson.order,
+                    'is_preview': lesson.is_preview,
+                    'is_locked': lesson.is_locked,
+                    'is_premium': lesson.is_premium,
+                    'required_access_level': lesson.required_access_level,
                 } for lesson in lessons]
                 
                 modules_data.append({
@@ -5247,7 +5541,8 @@ class StudentCourseNavigation(APIView):
                     'module_id': current_module.id,
                     'module_title': current_module.title,
                     'content_type': current_lesson.content_type,
-                    'file': request.build_absolute_uri(current_lesson.file.url) if current_lesson.file else None
+                    'file': request.build_absolute_uri(current_lesson.file.url) if current_lesson.file else None,
+                    'youtube_url': current_lesson.youtube_url
                 },
                 'previous': prev_lesson,
                 'next': next_lesson,
@@ -5362,6 +5657,7 @@ class StudentModuleProgressEnhanced(APIView):
                         'objectives_list': lesson.objectives_list,
                         'content_type': lesson.content_type,
                         'file': request.build_absolute_uri(lesson.file.url) if lesson.file else None,
+                        'youtube_url': lesson.youtube_url,
                         'duration_seconds': lesson.duration_seconds,
                         'duration_formatted': lesson.duration_formatted,
                         'is_completed': is_completed,
@@ -5663,6 +5959,7 @@ class LessonDetailWithDownloadables(APIView):
                 'objectives_list': lesson.objectives_list,
                 'content_type': lesson.content_type,
                 'file': request.build_absolute_uri(lesson.file.url) if lesson.file else None,
+                'youtube_url': lesson.youtube_url,
                 'duration_seconds': lesson.duration_seconds,
                 'duration_formatted': lesson.duration_formatted,
                 'is_preview': lesson.is_preview,
@@ -5859,6 +6156,7 @@ class StudentLessonPageData(APIView):
                         'description': lesson.description,
                         'content_type': lesson.content_type,
                         'file': request.build_absolute_uri(lesson.file.url) if (lesson.file and lesson_access_allowed) else None,
+                        'youtube_url': lesson.youtube_url,
                         'duration_seconds': lesson.duration_seconds,
                         'duration_formatted': lesson.duration_formatted,
                         'is_completed': is_completed,
@@ -7440,7 +7738,21 @@ def get_audit_summary(request):
                     'recent_7_days': recent_accesses,
                     'by_type': list(access_by_type),
                     'denial_reasons': list(denial_reasons)
-                }
+                },
+                'messages': {
+                    'total': models.Message.objects.count(),
+                    'recent_7_days': models.Message.objects.filter(created_at__gte=last_7_days).count(),
+                    'by_sender_type': list(models.Message.objects.values('sender_type').annotate(count=Count('id'))),
+                    'group_messages_total': models.GroupMessage.objects.count(),
+                    'group_messages_recent': models.GroupMessage.objects.filter(created_at__gte=last_7_days).count(),
+                },
+                'activity': {
+                    'total': models.ActivityLog.objects.count(),
+                    'recent_7_days': models.ActivityLog.objects.filter(created_at__gte=last_7_days).count(),
+                    'by_action': list(models.ActivityLog.objects.values('action').annotate(count=Count('id')).order_by('-count')[:10]),
+                    'submissions_total': models.ActivityLog.objects.filter(action='submission').count(),
+                    'sessions_total': models.ActivityLog.objects.filter(action__startswith='session').count(),
+                },
             }
         })
     except Exception as e:
@@ -7542,6 +7854,73 @@ def export_audit_logs(request, log_type):
         }, status=500)
 
 
+def get_activity_logs(request):
+    """GET /audit/activity-logs/ — List ActivityLog entries with filtering for admin dashboard."""
+    qs = models.ActivityLog.objects.all().order_by('-created_at')
+
+    # Filters
+    action = request.GET.get('action', '')
+    if action:
+        qs = qs.filter(action=action)
+
+    model_name = request.GET.get('model_name', '')
+    if model_name:
+        qs = qs.filter(model_name__icontains=model_name)
+
+    search = request.GET.get('search', '')
+    if search:
+        qs = qs.filter(description__icontains=search)
+
+    date_from = request.GET.get('date_from', '')
+    if date_from:
+        qs = qs.filter(created_at__date__gte=date_from)
+
+    date_to = request.GET.get('date_to', '')
+    if date_to:
+        qs = qs.filter(created_at__date__lte=date_to)
+
+    # Pagination
+    limit = int(request.GET.get('limit', 50))
+    offset = int(request.GET.get('offset', 0))
+    total = qs.count()
+    logs = qs[offset:offset + limit]
+
+    results = []
+    for log in logs.select_related('admin', 'teacher', 'student', 'parent'):
+        actor = ''
+        actor_type = ''
+        if log.admin:
+            actor = log.admin.full_name if hasattr(log.admin, 'full_name') else str(log.admin)
+            actor_type = 'admin'
+        elif log.teacher:
+            actor = log.teacher.full_name
+            actor_type = 'teacher'
+        elif log.student:
+            actor = log.student.fullname
+            actor_type = 'student'
+        elif log.parent:
+            actor = log.parent.fullname
+            actor_type = 'parent'
+
+        results.append({
+            'id': log.id,
+            'action': log.action,
+            'actor': actor,
+            'actor_type': actor_type,
+            'model_name': log.model_name or '',
+            'object_id': log.object_id,
+            'description': log.description or '',
+            'ip_address': log.ip_address or '',
+            'created_at': log.created_at.isoformat(),
+        })
+
+    return JsonResponse({
+        'bool': True,
+        'count': total,
+        'results': results,
+    })
+
+
 # ==================== SCHOOL DASHBOARD VIEWS ====================
 
 from . serializers import (
@@ -7562,7 +7941,7 @@ def school_login(request):
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
     
     try:
-        schoolUser = models.SchoolUser.objects.select_related('school').get(email=email, password=hashed_password)
+        schoolUser = models.SchoolUser.objects.select_related('school').get(email__iexact=email, password=hashed_password)
         schoolUser.last_login = datetime.now()
         schoolUser.save()
     except models.SchoolUser.DoesNotExist:
@@ -7843,6 +8222,18 @@ class GroupClassStudentList(generics.ListAPIView):
         return models.GroupClassStudent.objects.filter(group_class_id=group_id)
 
 
+@csrf_exempt
+def teacher_groups(request, teacher_id):
+    """List all group classes assigned to this teacher via GroupClassTeacher."""
+    if request.method != 'GET':
+        return JsonResponse({'error': 'GET required'}, status=405)
+    group_ids = models.GroupClassTeacher.objects.filter(teacher_id=teacher_id).values_list('group_class_id', flat=True)
+    groups = models.GroupClass.objects.filter(id__in=group_ids, is_active=True)
+    data = [{'id': g.id, 'name': g.name, 'description': g.description, 'schedule': g.schedule,
+             'total_students': g.total_students(), 'total_teachers': g.total_teachers()} for g in groups]
+    return JsonResponse(data, safe=False)
+
+
 # Lesson Assignments
 class SchoolLessonAssignmentList(generics.ListCreateAPIView):
     serializer_class = LessonAssignmentSerializer
@@ -7850,6 +8241,55 @@ class SchoolLessonAssignmentList(generics.ListCreateAPIView):
     def get_queryset(self):
         school_id = self.kwargs['school_id']
         return models.LessonAssignment.objects.filter(school_id=school_id)
+
+    def create(self, request, *args, **kwargs):
+        """Handle creation with MC question support for school assignments too."""
+        school_id = self.kwargs['school_id']
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        submission_type = serializer.validated_data.get('submission_type')
+        mc_questions = request.data.get('mc_questions', [])
+        validated_questions = []
+
+        if submission_type == 'multiple_choice':
+            if not isinstance(mc_questions, list) or len(mc_questions) == 0:
+                return Response(
+                    {'message': 'At least one multiple-choice question is required.'},
+                    status=400
+                )
+            for idx, q in enumerate(mc_questions):
+                question_text = (q.get('question_text') or '').strip()
+                option_a = (q.get('option_a') or '').strip()
+                option_b = (q.get('option_b') or '').strip()
+                option_c = (q.get('option_c') or '').strip()
+                option_d = (q.get('option_d') or '').strip()
+                correct_option = (q.get('correct_option') or 'a').lower()
+                try:
+                    points = int(q.get('points') or 1)
+                except (TypeError, ValueError):
+                    return Response({'message': f'Question {idx + 1}: points must be a valid number.'}, status=400)
+                if not question_text:
+                    return Response({'message': f'Question {idx + 1}: question text is required.'}, status=400)
+                if not option_a or not option_b:
+                    return Response({'message': f'Question {idx + 1}: options A and B are required.'}, status=400)
+                if correct_option not in ['a', 'b', 'c', 'd']:
+                    return Response({'message': f'Question {idx + 1}: correct option must be A, B, C, or D.'}, status=400)
+                validated_questions.append({
+                    'question_text': question_text, 'option_a': option_a, 'option_b': option_b,
+                    'option_c': option_c, 'option_d': option_d, 'correct_option': correct_option,
+                    'points': max(points, 1), 'order': idx + 1,
+                })
+
+        with transaction.atomic():
+            assignment = serializer.save(school_id=school_id)
+            if submission_type == 'multiple_choice':
+                for q in validated_questions:
+                    models.MultipleChoiceQuestion.objects.create(assignment=assignment, **q)
+
+        output = self.get_serializer(assignment)
+        headers = self.get_success_headers(output.data)
+        return Response(output.data, status=201, headers=headers)
 
 
 class SchoolLessonAssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -7862,10 +8302,15 @@ class StudentLessonAssignmentList(generics.ListAPIView):
 
     def get_queryset(self):
         student_id = self.kwargs['student_id']
-        return models.LessonAssignment.objects.filter(
+        qs = models.LessonAssignment.objects.filter(
             Q(assignment_type='individual', student_id=student_id) |
             Q(assignment_type='group', group_class__group_students__student_id=student_id)
-        ).select_related('lesson', 'school').distinct()
+        ).select_related('lesson', 'school', 'teacher').distinct()
+
+        return qs.filter(
+            Q(submission_type='multiple_choice', mc_questions__isnull=False) |
+            ~Q(submission_type='multiple_choice')
+        ).distinct()
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -7898,28 +8343,64 @@ def student_submit_lesson_assignment(request, student_id, assignment_id):
     if not is_allowed:
         return JsonResponse({'bool': False, 'message': 'This assignment is not assigned to this student'}, status=403)
 
+    # Gather files based on submission_type
     audio_file = request.FILES.get('audio_file')
-    if assignment.audio_required and not audio_file:
+    video_file = request.FILES.get('video_file')
+    upload_file = request.FILES.get('file')
+    text_content = request.POST.get('text_content', '')
+
+    # Validate based on submission type
+    sub_type = assignment.submission_type
+    if sub_type == 'audio' and assignment.audio_required and not audio_file:
         return JsonResponse({'bool': False, 'message': 'Audio file is required for this assignment'}, status=400)
+    elif sub_type == 'video' and not video_file:
+        return JsonResponse({'bool': False, 'message': 'Video file is required for this assignment'}, status=400)
+    elif sub_type == 'file_upload' and not upload_file:
+        return JsonResponse({'bool': False, 'message': 'File upload is required for this assignment'}, status=400)
+    elif sub_type == 'discussion' and not text_content.strip():
+        return JsonResponse({'bool': False, 'message': 'Text content is required for discussion assignment'}, status=400)
+    elif sub_type == 'multiple_choice':
+        return JsonResponse({'bool': False, 'message': 'Use the MC answer endpoint for multiple choice submissions'}, status=400)
+
+    defaults = {
+        'submission_notes': request.POST.get('submission_notes', ''),
+    }
+    if audio_file:
+        defaults['audio_file'] = audio_file
+    if video_file:
+        defaults['video_file'] = video_file
+    if upload_file:
+        defaults['file'] = upload_file
+    if text_content.strip():
+        defaults['text_content'] = text_content
 
     submission, created = models.LessonAssignmentSubmission.objects.get_or_create(
         assignment=assignment,
         student=student,
-        defaults={
-            'audio_file': audio_file,
-            'submission_notes': request.POST.get('submission_notes', ''),
-        }
+        defaults=defaults,
     )
 
     if not created:
         if audio_file:
             submission.audio_file = audio_file
+        if video_file:
+            submission.video_file = video_file
+        if upload_file:
+            submission.file = upload_file
+        if text_content.strip():
+            submission.text_content = text_content
         submission.submission_notes = request.POST.get('submission_notes', submission.submission_notes)
         submission.points_awarded = None
         submission.teacher_feedback = None
         submission.graded_by = None
         submission.graded_at = None
         submission.save()
+
+    # Audit log: assignment submission
+    action_detail = 'submitted' if created else 'resubmitted'
+    log_activity(request, 'submission',
+                 f'Student {student.fullname} {action_detail} assignment "{assignment.title}" (type:{assignment.submission_type})',
+                 model_name='LessonAssignmentSubmission', object_id=submission.id, student=student)
 
     data = LessonAssignmentSubmissionSerializer(submission, context={'request': request}).data
     return JsonResponse({'bool': True, 'submission': data}, status=201 if created else 200)
@@ -7934,9 +8415,11 @@ class TeacherLessonAssignmentSubmissionList(generics.ListAPIView):
         if blocked_response:
             return models.LessonAssignmentSubmission.objects.none()
 
+        # Submissions for assignments created by teacher directly OR through lesson/course
         queryset = models.LessonAssignmentSubmission.objects.filter(
-            assignment__lesson__module__course__teacher_id=teacher_id
-        ).select_related('assignment', 'assignment__lesson', 'student', 'graded_by')
+            Q(assignment__teacher_id=teacher_id) |
+            Q(assignment__lesson__module__course__teacher_id=teacher_id)
+        ).select_related('assignment', 'assignment__lesson', 'student', 'graded_by').distinct()
 
         assignment_id = self.request.GET.get('assignment_id')
         if assignment_id:
@@ -7966,13 +8449,21 @@ def teacher_grade_lesson_assignment_submission(request, teacher_id, submission_i
 
     try:
         submission = models.LessonAssignmentSubmission.objects.select_related(
-            'assignment', 'assignment__lesson__module__course'
+            'assignment', 'assignment__teacher', 'assignment__lesson__module__course'
         ).get(pk=submission_id)
     except models.LessonAssignmentSubmission.DoesNotExist:
         return JsonResponse({'bool': False, 'message': 'Submission not found'}, status=404)
 
-    assignment_teacher_id = submission.assignment.lesson.module.course.teacher_id
-    if assignment_teacher_id != teacher.id:
+    # Check authorization: teacher who directly created the assignment OR
+    # teacher who owns the course via lesson->module->course chain
+    assignment = submission.assignment
+    is_authorized = False
+    if assignment.teacher_id == teacher.id:
+        is_authorized = True
+    elif assignment.lesson and assignment.lesson.module and assignment.lesson.module.course:
+        if assignment.lesson.module.course.teacher_id == teacher.id:
+            is_authorized = True
+    if not is_authorized:
         return JsonResponse({'bool': False, 'message': 'Not authorized to grade this submission'}, status=403)
 
     try:
@@ -8078,4 +8569,2720 @@ def school_progress_overview(request, school_id):
         'student_progress': student_progress,
         'group_progress': group_progress,
         'recent_completions': completion_data,
+    })
+
+
+# ==================== MESSAGING VIEWS ====================
+
+class MessageListCreate(generics.ListCreateAPIView):
+    """List and send messages. Filters by user type + id via query params.
+    Query params: sender_type, sender_id, recipient_type, recipient_id, parent_link_id"""
+    serializer_class = MessageSerializer
+
+    def get_queryset(self):
+        qs = models.Message.objects.all()
+        sender_type = self.request.GET.get('sender_type')
+        sender_id = self.request.GET.get('sender_id')
+        recipient_type = self.request.GET.get('recipient_type')
+        recipient_id = self.request.GET.get('recipient_id')
+        parent_link_id = self.request.GET.get('parent_link_id')
+
+        if parent_link_id:
+            qs = qs.filter(parent_link_id=parent_link_id)
+        if sender_type and sender_id:
+            if sender_type == 'parent':
+                qs = qs.filter(sender_parent_id=sender_id)
+            elif sender_type == 'teacher':
+                qs = qs.filter(sender_teacher_id=sender_id)
+            elif sender_type == 'admin':
+                qs = qs.filter(sender_admin_id=sender_id)
+            elif sender_type == 'student':
+                qs = qs.filter(sender_student_id=sender_id)
+        if recipient_type and recipient_id:
+            if recipient_type == 'parent':
+                qs = qs.filter(recipient_parent_id=recipient_id)
+            elif recipient_type == 'teacher':
+                qs = qs.filter(recipient_teacher_id=recipient_id)
+            elif recipient_type == 'admin':
+                qs = qs.filter(recipient_admin_id=recipient_id)
+            elif recipient_type == 'student':
+                qs = qs.filter(recipient_student_id=recipient_id)
+        return qs.order_by('created_at')
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+
+class MessageConversation(APIView):
+    """Get all messages in a conversation between two parties (via parent_link_id).
+    Also checks chat lock policy before allowing new messages."""
+
+    def get(self, request, parent_link_id):
+        try:
+            parent_link = models.StudentParentLink.objects.get(pk=parent_link_id)
+        except models.StudentParentLink.DoesNotExist:
+            return Response({'error': 'Parent link not found'}, status=404)
+
+        # Check chat lock policy
+        chat_status = {'allowed': True, 'reason': 'No lock policy found'}
+        try:
+            policy = models.ChatLockPolicy.objects.get(parent_link=parent_link)
+            allowed, reason = policy.is_chat_currently_allowed()
+            chat_status = {'allowed': allowed, 'reason': reason}
+        except models.ChatLockPolicy.DoesNotExist:
+            pass
+
+        messages = models.Message.objects.filter(parent_link=parent_link).order_by('created_at')
+        data = MessageSerializer(messages, many=True, context={'request': request}).data
+
+        return Response({
+            'chat_status': chat_status,
+            'messages': data,
+            'parent_link': {
+                'id': parent_link.id,
+                'student_name': parent_link.student.fullname if parent_link.student else None,
+                'parent_name': parent_link.parent.fullname if parent_link.parent else None,
+            }
+        })
+
+
+class DirectMessageConversation(APIView):
+    """Get all messages in a direct teacher↔student (18+) conversation.
+    Uses teacher_student_id (TeacherStudent assignment) as the conversation key.
+    No chat lock policy needed — 18+ students always have chat access."""
+
+    def get(self, request, teacher_student_id):
+        try:
+            ts = models.TeacherStudent.objects.select_related('teacher', 'student').get(pk=teacher_student_id)
+        except models.TeacherStudent.DoesNotExist:
+            return Response({'error': 'Teacher-student assignment not found'}, status=404)
+
+        # Safety check: student must be 18+
+        if ts.student.is_minor():
+            return Response({'error': 'Direct messaging is only available for students 18 and older.'}, status=403)
+
+        messages = models.Message.objects.filter(teacher_student=ts).order_by('created_at')
+        data = MessageSerializer(messages, many=True, context={'request': request}).data
+
+        return Response({
+            'chat_status': {'allowed': True, 'reason': 'Student is 18+ — direct chat allowed.'},
+            'messages': data,
+            'teacher_student': {
+                'id': ts.id,
+                'student_id': ts.student.id,
+                'student_name': ts.student.fullname,
+                'teacher_id': ts.teacher.id,
+                'teacher_name': ts.teacher.full_name,
+            }
+        })
+
+
+@csrf_exempt
+def send_message(request):
+    """Send a new message with chat lock enforcement."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    sender_type = data.get('sender_type')
+    content = data.get('content', '').strip()
+    parent_link_id = data.get('parent_link_id')
+
+    if not content:
+        return JsonResponse({'error': 'Message content is required'}, status=400)
+    if not sender_type:
+        return JsonResponse({'error': 'sender_type is required'}, status=400)
+
+    # If parent_link is specified, enforce chat lock policy
+    if parent_link_id:
+        try:
+            parent_link = models.StudentParentLink.objects.get(pk=parent_link_id)
+        except models.StudentParentLink.DoesNotExist:
+            return JsonResponse({'error': 'Parent link not found'}, status=404)
+
+        try:
+            policy = models.ChatLockPolicy.objects.get(parent_link=parent_link)
+            allowed, reason = policy.is_chat_currently_allowed()
+            if not allowed:
+                return JsonResponse({'error': f'Chat is locked: {reason}'}, status=403)
+        except models.ChatLockPolicy.DoesNotExist:
+            pass  # No policy = allowed
+
+    teacher_student_id = data.get('teacher_student_id')
+
+    # For direct teacher↔student (18+) messages, validate assignment
+    if teacher_student_id:
+        try:
+            ts = models.TeacherStudent.objects.select_related('student').get(pk=teacher_student_id)
+            if ts.student.is_minor():
+                return JsonResponse({'error': 'Direct messaging is only available for students 18 and older.'}, status=403)
+        except models.TeacherStudent.DoesNotExist:
+            return JsonResponse({'error': 'Teacher-student assignment not found'}, status=404)
+
+    msg = models.Message(
+        sender_type=sender_type,
+        content=content,
+        parent_link_id=parent_link_id,
+        teacher_student_id=teacher_student_id,
+        recipient_type=data.get('recipient_type', ''),
+    )
+
+    # Set sender
+    if sender_type == 'parent':
+        msg.sender_parent_id = data.get('sender_id')
+    elif sender_type == 'teacher':
+        msg.sender_teacher_id = data.get('sender_id')
+    elif sender_type == 'admin':
+        msg.sender_admin_id = data.get('sender_id')
+    elif sender_type == 'student':
+        msg.sender_student_id = data.get('sender_id')
+
+    # Set recipient
+    recipient_type = data.get('recipient_type')
+    if recipient_type == 'parent':
+        msg.recipient_parent_id = data.get('recipient_id')
+    elif recipient_type == 'teacher':
+        msg.recipient_teacher_id = data.get('recipient_id')
+    elif recipient_type == 'admin':
+        msg.recipient_admin_id = data.get('recipient_id')
+    elif recipient_type == 'student':
+        msg.recipient_student_id = data.get('recipient_id')
+
+    msg.save()
+
+    # Audit log: message sent
+    sender_label = f"{sender_type}:{data.get('sender_id')}"
+    recipient_label = f"{data.get('recipient_type', '?')}:{data.get('recipient_id', '?')}"
+    log_kwargs = {'model_name': 'Message', 'object_id': msg.id}
+    if sender_type == 'teacher':
+        log_kwargs['teacher'] = msg.sender_teacher
+    elif sender_type == 'student':
+        log_kwargs['student'] = msg.sender_student
+    elif sender_type == 'parent':
+        log_kwargs['parent'] = msg.sender_parent
+    elif sender_type == 'admin':
+        log_kwargs['admin'] = msg.sender_admin
+    log_activity(request, 'message',
+                 f'Message sent from {sender_label} to {recipient_label} (link:{parent_link_id or "none"})',
+                 **log_kwargs)
+
+    return JsonResponse(MessageSerializer(msg).data, status=201)
+
+
+@csrf_exempt
+def mark_messages_read(request, parent_link_id):
+    """Mark all messages as read for a particular reader in a conversation."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    reader_type = data.get('reader_type')
+    reader_id = data.get('reader_id')
+
+    if not reader_type or not reader_id:
+        return JsonResponse({'error': 'reader_type and reader_id required'}, status=400)
+
+    qs = models.Message.objects.filter(parent_link_id=parent_link_id, is_read=False)
+    # Only mark messages sent TO this reader
+    if reader_type == 'parent':
+        qs = qs.filter(recipient_parent_id=reader_id)
+    elif reader_type == 'teacher':
+        qs = qs.filter(recipient_teacher_id=reader_id)
+    elif reader_type == 'admin':
+        qs = qs.filter(recipient_admin_id=reader_id)
+    elif reader_type == 'student':
+        qs = qs.filter(recipient_student_id=reader_id)
+
+    count = qs.update(is_read=True, read_at=timezone.now())
+    return JsonResponse({'marked_read': count})
+
+
+@csrf_exempt
+def unread_message_count(request):
+    """Get unread message count for a user. Query params: user_type, user_id"""
+    user_type = request.GET.get('user_type')
+    user_id = request.GET.get('user_id')
+
+    if not user_type or not user_id:
+        return JsonResponse({'error': 'user_type and user_id required'}, status=400)
+
+    qs = models.Message.objects.filter(is_read=False)
+    if user_type == 'parent':
+        qs = qs.filter(recipient_parent_id=user_id)
+    elif user_type == 'teacher':
+        qs = qs.filter(recipient_teacher_id=user_id)
+    elif user_type == 'admin':
+        qs = qs.filter(recipient_admin_id=user_id)
+    elif user_type == 'student':
+        qs = qs.filter(recipient_student_id=user_id)
+    else:
+        return JsonResponse({'error': 'Invalid user_type'}, status=400)
+
+    return JsonResponse({'unread_count': qs.count()})
+
+
+@csrf_exempt
+def mark_direct_messages_read(request, teacher_student_id):
+    """Mark all messages as read for a reader in a direct teacher↔student (18+) conversation."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    reader_type = data.get('reader_type')
+    reader_id = data.get('reader_id')
+
+    if not reader_type or not reader_id:
+        return JsonResponse({'error': 'reader_type and reader_id required'}, status=400)
+
+    qs = models.Message.objects.filter(teacher_student_id=teacher_student_id, is_read=False)
+    if reader_type == 'teacher':
+        qs = qs.filter(recipient_teacher_id=reader_id)
+    elif reader_type == 'student':
+        qs = qs.filter(recipient_student_id=reader_id)
+    else:
+        return JsonResponse({'error': 'Invalid reader_type for direct messages'}, status=400)
+
+    count = qs.update(is_read=True, read_at=timezone.now())
+    return JsonResponse({'marked_read': count})
+
+
+def student_teacher_conversations(request, student_id):
+    """GET endpoint — List all teacher assignments for an 18+ student for direct messaging.
+    Returns teacher info + unread count for each conversation."""
+    student = models.Student.objects.filter(id=student_id).first()
+    if not student:
+        return JsonResponse({'error': 'Student not found'}, status=404)
+    if student.is_minor():
+        return JsonResponse({'error': 'Direct messaging is only available for students 18 and older.'}, status=403)
+
+    assignments = models.TeacherStudent.objects.filter(
+        student=student, status='active'
+    ).select_related('teacher')
+
+    conversations = []
+    for ts in assignments:
+        unread = models.Message.objects.filter(
+            teacher_student=ts, recipient_student=student, is_read=False
+        ).count()
+        conversations.append({
+            'teacher_student_id': ts.id,
+            'teacher_id': ts.teacher.id,
+            'teacher_name': ts.teacher.full_name,
+            'teacher_profile_img': ts.teacher.profile_img.url if ts.teacher.profile_img else None,
+            'unread_count': unread,
+        })
+
+    return JsonResponse({'conversations': conversations})
+
+
+# ==================== CHAT LOCK POLICY VIEWS ====================
+
+class ChatLockPolicyList(generics.ListAPIView):
+    """List all chat lock policies. Filter by ?locked=true/false"""
+    serializer_class = ChatLockPolicySerializer
+
+    def get_queryset(self):
+        qs = models.ChatLockPolicy.objects.all()
+        locked = self.request.GET.get('locked')
+        if locked == 'true':
+            qs = qs.filter(is_locked=True)
+        elif locked == 'false':
+            qs = qs.filter(is_locked=False)
+        return qs
+
+
+class ChatLockPolicyDetail(generics.RetrieveUpdateAPIView):
+    """Retrieve/update a chat lock policy (admin can toggle lock)."""
+    queryset = models.ChatLockPolicy.objects.all()
+    serializer_class = ChatLockPolicySerializer
+
+
+@csrf_exempt
+def chat_lock_status(request, parent_link_id):
+    """Check if chat is currently allowed for a parent-teacher pair."""
+    try:
+        parent_link = models.StudentParentLink.objects.get(pk=parent_link_id)
+    except models.StudentParentLink.DoesNotExist:
+        return JsonResponse({'error': 'Parent link not found'}, status=404)
+
+    policy, created = models.ChatLockPolicy.objects.get_or_create(
+        parent_link=parent_link,
+        defaults={'is_locked': True, 'lock_reason': 'age_default'}
+    )
+
+    allowed, reason = policy.is_chat_currently_allowed()
+    return JsonResponse({
+        'parent_link_id': parent_link_id,
+        'is_locked': policy.is_locked,
+        'lock_reason': policy.lock_reason,
+        'age_tier': policy.get_student_age_tier(),
+        'chat_allowed': allowed,
+        'reason': reason,
+    })
+
+
+@csrf_exempt
+def admin_toggle_chat_lock(request, parent_link_id):
+    """Admin manually locks or unlocks chat for a parent-teacher pair."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    try:
+        parent_link = models.StudentParentLink.objects.get(pk=parent_link_id)
+    except models.StudentParentLink.DoesNotExist:
+        return JsonResponse({'error': 'Parent link not found'}, status=404)
+
+    policy, _ = models.ChatLockPolicy.objects.get_or_create(
+        parent_link=parent_link,
+        defaults={'is_locked': True}
+    )
+
+    action = data.get('action')  # 'lock' or 'unlock'
+    if action == 'lock':
+        policy.is_locked = True
+        policy.lock_reason = data.get('reason', 'admin_lock')
+        policy.unlocked_by = None
+        policy.unlock_expires_at = None
+        policy.save()
+        return JsonResponse({'bool': True, 'message': 'Chat locked'})
+    elif action == 'unlock':
+        duration_hours = int(data.get('duration_hours', 24))
+        policy.is_locked = False
+        policy.unlocked_by = 'admin'
+        policy.unlock_expires_at = timezone.now() + timezone.timedelta(hours=duration_hours)
+        policy.save()
+
+        # Also create an unlock request log
+        models.ChatUnlockRequest.objects.create(
+            parent_link=parent_link,
+            unlocked_by_admin_id=data.get('admin_id'),
+            unlocked_by_school_id=data.get('school_id'),
+            duration_hours=duration_hours,
+            expires_at=policy.unlock_expires_at,
+            notes=data.get('notes', ''),
+        )
+        return JsonResponse({'bool': True, 'message': f'Chat unlocked for {duration_hours}h'})
+    else:
+        return JsonResponse({'error': 'action must be lock or unlock'}, status=400)
+
+
+# ==================== TEACHER OFFICE HOURS VIEWS ====================
+
+class TeacherOfficeHoursList(generics.ListCreateAPIView):
+    serializer_class = TeacherOfficeHoursSerializer
+
+    def get_queryset(self):
+        teacher_id = self.kwargs['teacher_id']
+        return models.TeacherOfficeHours.objects.filter(teacher_id=teacher_id)
+
+    def perform_create(self, serializer):
+        teacher_id = self.kwargs['teacher_id']
+        serializer.save(teacher_id=teacher_id)
+
+
+class TeacherOfficeHoursDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = models.TeacherOfficeHours.objects.all()
+    serializer_class = TeacherOfficeHoursSerializer
+
+
+# ==================== CHAT UNLOCK REQUEST VIEWS ====================
+
+class ChatUnlockRequestList(generics.ListCreateAPIView):
+    serializer_class = ChatUnlockRequestSerializer
+
+    def get_queryset(self):
+        qs = models.ChatUnlockRequest.objects.all()
+        parent_link_id = self.request.GET.get('parent_link_id')
+        if parent_link_id:
+            qs = qs.filter(parent_link_id=parent_link_id)
+        active_only = self.request.GET.get('active_only')
+        if active_only == 'true':
+            qs = qs.filter(expires_at__gt=timezone.now())
+        return qs
+
+    def perform_create(self, serializer):
+        instance = serializer.save(
+            expires_at=timezone.now() + timezone.timedelta(hours=serializer.validated_data.get('duration_hours', 24))
+        )
+
+
+# ==================== GROUP MESSAGE VIEWS ====================
+
+class GroupMessageList(generics.ListCreateAPIView):
+    """List / send messages in a group class chat.
+    Permission checks:
+    - Teachers must be assigned to the group.
+    - Students must be enrolled in the group and must be 18+ (minors cannot chat).
+    - Parents can post (on behalf of their child via the group).
+    - Admin/School can always post.
+    No private student-to-student DMs or teacher-to-minor DMs — all messages flow through the group.
+    """
+    serializer_class = GroupMessageSerializer
+
+    def get_queryset(self):
+        group_id = self.kwargs['group_id']
+        qs = models.GroupMessage.objects.filter(group_class_id=group_id, is_hidden=False)
+        return qs
+
+    def _verify_membership(self, group_id, sender_type, sender_id):
+        """Verify the sender is a member of this group."""
+        if sender_type == 'teacher':
+            return models.GroupClassTeacher.objects.filter(
+                group_class_id=group_id, teacher_id=sender_id
+            ).exists()
+        elif sender_type == 'student':
+            return models.GroupClassStudent.objects.filter(
+                group_class_id=group_id, student_id=sender_id
+            ).exists()
+        elif sender_type == 'parent':
+            # Parent can post if their child is in the group
+            try:
+                parent = models.ParentAccount.objects.get(pk=sender_id)
+                student_ids = models.StudentParentLink.objects.filter(
+                    parent=parent, is_verified=True
+                ).values_list('student_id', flat=True)
+                return models.GroupClassStudent.objects.filter(
+                    group_class_id=group_id, student_id__in=student_ids
+                ).exists()
+            except models.ParentAccount.DoesNotExist:
+                return False
+        # admin / school always allowed
+        return True
+
+    def perform_create(self, serializer):
+        group_id = self.kwargs['group_id']
+        sender_type = self.request.data.get('sender_type', 'teacher')
+        sender_id = self.request.data.get('sender_id') or self.request.data.get(
+            f'sender_{sender_type}'
+        )
+
+        # Verify group membership
+        if sender_type in ('teacher', 'student', 'parent'):
+            if not self._verify_membership(group_id, sender_type, sender_id):
+                raise serializers.ValidationError(
+                    f'You are not a member of this group class.'
+                )
+
+        # Build cached sender_name and set FK fields
+        sender_name = ''
+        extra_kwargs = {}
+        if sender_type == 'teacher':
+            try:
+                t = models.Teacher.objects.get(pk=sender_id)
+                sender_name = t.full_name
+                extra_kwargs['sender_teacher'] = t
+            except models.Teacher.DoesNotExist:
+                raise serializers.ValidationError('Teacher not found.')
+        elif sender_type == 'student':
+            try:
+                s = models.Student.objects.get(pk=sender_id)
+                # Enforce: minors cannot post in group chat
+                if s.is_minor():
+                    raise serializers.ValidationError(
+                        'Students under 18 cannot send group messages directly. '
+                        'A parent must post on their behalf.'
+                    )
+                sender_name = s.fullname
+                extra_kwargs['sender_student'] = s
+            except models.Student.DoesNotExist:
+                raise serializers.ValidationError('Student not found.')
+        elif sender_type == 'parent':
+            try:
+                p = models.ParentAccount.objects.get(pk=sender_id)
+                sender_name = p.fullname
+                extra_kwargs['sender_parent'] = p
+            except models.ParentAccount.DoesNotExist:
+                raise serializers.ValidationError('Parent not found.')
+        elif sender_type == 'admin':
+            try:
+                a = models.Admin.objects.get(pk=sender_id)
+                sender_name = a.full_name
+                extra_kwargs['sender_admin'] = a
+            except models.Admin.DoesNotExist:
+                raise serializers.ValidationError('Admin not found.')
+        elif sender_type == 'school':
+            sender_name = 'School Admin'
+
+        instance = serializer.save(
+            group_class_id=group_id,
+            sender_name=sender_name,
+            sender_type=sender_type,
+            **extra_kwargs
+        )
+
+        # Audit log: group message sent
+        log_kwargs = {'model_name': 'GroupMessage', 'object_id': instance.id}
+        if sender_type == 'teacher':
+            log_kwargs['teacher'] = extra_kwargs.get('sender_teacher')
+        elif sender_type == 'student':
+            log_kwargs['student'] = extra_kwargs.get('sender_student')
+        elif sender_type == 'parent':
+            log_kwargs['parent'] = extra_kwargs.get('sender_parent')
+        elif sender_type == 'admin':
+            log_kwargs['admin'] = extra_kwargs.get('sender_admin')
+        log_activity(self.request, 'message',
+                     f'Group message sent by {sender_type}:{sender_id} in group {group_id} ({sender_name})',
+                     **log_kwargs)
+
+
+@csrf_exempt
+def group_message_toggle_pin(request, message_id):
+    """Toggle pin status of a group message (teacher/admin only)."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        msg = models.GroupMessage.objects.get(pk=message_id)
+    except models.GroupMessage.DoesNotExist:
+        return JsonResponse({'error': 'Message not found'}, status=404)
+    msg.is_pinned = not msg.is_pinned
+    msg.save(update_fields=['is_pinned'])
+    return JsonResponse({'bool': True, 'is_pinned': msg.is_pinned})
+
+
+@csrf_exempt
+def group_message_hide(request, message_id):
+    """Hide an inappropriate group message (admin only — soft delete)."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        msg = models.GroupMessage.objects.get(pk=message_id)
+    except models.GroupMessage.DoesNotExist:
+        return JsonResponse({'error': 'Message not found'}, status=404)
+    msg.is_hidden = True
+    msg.save(update_fields=['is_hidden'])
+    return JsonResponse({'bool': True, 'message': 'Message hidden'})
+
+
+# ==================== GROUP ANNOUNCEMENT VIEWS ====================
+
+class GroupAnnouncementList(generics.ListCreateAPIView):
+    serializer_class = GroupAnnouncementSerializer
+
+    def get_queryset(self):
+        group_id = self.kwargs['group_id']
+        return models.GroupAnnouncement.objects.filter(group_class_id=group_id)
+
+    def perform_create(self, serializer):
+        group_id = self.kwargs['group_id']
+        author_type = self.request.data.get('author_type', 'teacher')
+        author_id = self.request.data.get('author_id')
+        extra = {}
+        if author_type == 'teacher' and author_id:
+            try:
+                extra['teacher'] = models.Teacher.objects.get(pk=author_id)
+            except models.Teacher.DoesNotExist:
+                pass
+        elif author_type in ('admin', 'school') and author_id:
+            try:
+                extra['admin'] = models.Admin.objects.get(pk=author_id)
+            except models.Admin.DoesNotExist:
+                pass
+        serializer.save(group_class_id=group_id, **extra)
+
+
+class GroupAnnouncementDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = models.GroupAnnouncement.objects.all()
+    serializer_class = GroupAnnouncementSerializer
+
+
+# ==================== GROUP RESOURCE VIEWS ====================
+
+class GroupResourceList(generics.ListCreateAPIView):
+    serializer_class = GroupResourceSerializer
+
+    def get_queryset(self):
+        group_id = self.kwargs['group_id']
+        return models.GroupResource.objects.filter(group_class_id=group_id)
+
+    def perform_create(self, serializer):
+        group_id = self.kwargs['group_id']
+        uploader_type = self.request.data.get('uploaded_by_type', 'teacher')
+        uploader_id = self.request.data.get('uploaded_by_id')
+        extra = {}
+        if uploader_type == 'teacher' and uploader_id:
+            try:
+                extra['teacher'] = models.Teacher.objects.get(pk=uploader_id)
+            except models.Teacher.DoesNotExist:
+                pass
+        # Auto-detect file_type from extension
+        uploaded_file = self.request.FILES.get('file')
+        if uploaded_file:
+            ext = uploaded_file.name.rsplit('.', 1)[-1].lower() if '.' in uploaded_file.name else ''
+            type_map = {'pdf': 'pdf', 'mp3': 'audio', 'wav': 'audio', 'ogg': 'audio', 'flac': 'audio',
+                        'mp4': 'video', 'mov': 'video', 'avi': 'video', 'webm': 'video',
+                        'jpg': 'image', 'jpeg': 'image', 'png': 'image', 'gif': 'image',
+                        'musicxml': 'sheet_music', 'mxl': 'sheet_music', 'mid': 'sheet_music', 'midi': 'sheet_music'}
+            extra['file_type'] = type_map.get(ext, 'other')
+        serializer.save(group_class_id=group_id, **extra)
+
+
+class GroupResourceDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = models.GroupResource.objects.all()
+    serializer_class = GroupResourceSerializer
+
+
+@csrf_exempt
+def group_resource_download(request, resource_id):
+    """Increment download count for a group resource."""
+    try:
+        resource = models.GroupResource.objects.get(pk=resource_id)
+    except models.GroupResource.DoesNotExist:
+        return JsonResponse({'error': 'Resource not found'}, status=404)
+    resource.download_count += 1
+    resource.save(update_fields=['download_count'])
+    return JsonResponse({'bool': True, 'download_count': resource.download_count})
+
+
+# ==================== GROUP SESSION VIEWS ====================
+
+class GroupSessionList(generics.ListCreateAPIView):
+    serializer_class = GroupSessionSerializer
+
+    def get_queryset(self):
+        group_id = self.kwargs['group_id']
+        qs = models.GroupSession.objects.filter(group_class_id=group_id)
+        status_filter = self.request.GET.get('status')
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        return qs
+
+    def perform_create(self, serializer):
+        group_id = self.kwargs['group_id']
+        creator_type = self.request.data.get('created_by_type', 'teacher')
+        creator_id = self.request.data.get('created_by_id') or self.request.data.get('teacher')
+        extra = {}
+        if creator_type == 'teacher' and creator_id:
+            try:
+                extra['teacher'] = models.Teacher.objects.get(pk=creator_id)
+            except models.Teacher.DoesNotExist:
+                raise serializers.ValidationError('Teacher not found.')
+        elif creator_type == 'school' and creator_id:
+            # For school-created sessions, find the primary teacher for the group
+            group_teacher = models.GroupClassTeacher.objects.filter(group_class_id=group_id).first()
+            if group_teacher:
+                extra['teacher'] = group_teacher.teacher
+            else:
+                raise serializers.ValidationError('No teacher assigned to this group.')
+        # Parse scheduled_start if provided as datetime
+        scheduled_start = self.request.data.get('scheduled_start')
+        scheduled_end = self.request.data.get('scheduled_end')
+        if scheduled_start and not self.request.data.get('scheduled_date'):
+            from datetime import datetime
+            try:
+                dt = datetime.fromisoformat(scheduled_start.replace('Z', '+00:00'))
+                extra['scheduled_date'] = dt.date()
+                extra['scheduled_time'] = dt.time()
+            except (ValueError, AttributeError):
+                pass
+        if scheduled_start and scheduled_end:
+            from datetime import datetime
+            try:
+                dt_start = datetime.fromisoformat(scheduled_start.replace('Z', '+00:00'))
+                dt_end = datetime.fromisoformat(scheduled_end.replace('Z', '+00:00'))
+                extra['duration_minutes'] = int((dt_end - dt_start).total_seconds() / 60)
+            except (ValueError, AttributeError):
+                pass
+        # Map session_type from frontend names to model choices
+        session_type = self.request.data.get('session_type', 'video_call')
+        type_map = {'practice': 'video_call', 'masterclass': 'video_call', 'recital': 'video_call',
+                    'workshop': 'video_call', 'other': 'audio_call', 'video_call': 'video_call', 'audio_call': 'audio_call'}
+        extra['session_type'] = type_map.get(session_type, 'video_call')
+        serializer.save(group_class_id=group_id, **extra)
+
+
+class GroupSessionDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = models.GroupSession.objects.all()
+    serializer_class = GroupSessionSerializer
+
+
+@csrf_exempt
+def group_session_go_live(request, session_id):
+    """Start a group live session."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        session = models.GroupSession.objects.get(pk=session_id)
+    except models.GroupSession.DoesNotExist:
+        return JsonResponse({'error': 'Session not found'}, status=404)
+    session.go_live()
+
+    # Audit log: session started
+    log_activity(request, 'session_start',
+                 f'Group session "{session.title}" (id:{session.id}) went live in group {session.group_class.name}',
+                 model_name='GroupSession', object_id=session.id,
+                 teacher=session.teacher)
+
+    return JsonResponse({
+        'bool': True,
+        'meeting_link': session.meeting_link,
+        'room_name': session.room_name,
+        'message': 'Group session is now live',
+    })
+
+
+@csrf_exempt
+def group_session_end(request, session_id):
+    """End a group live session."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        session = models.GroupSession.objects.get(pk=session_id)
+    except models.GroupSession.DoesNotExist:
+        return JsonResponse({'error': 'Session not found'}, status=404)
+    session.end_session()
+
+    # Audit log: session ended
+    log_activity(request, 'session_end',
+                 f'Group session "{session.title}" (id:{session.id}) ended — Duration: {session.actual_duration_minutes}min',
+                 model_name='GroupSession', object_id=session.id,
+                 teacher=session.teacher)
+
+    return JsonResponse({
+        'bool': True,
+        'actual_duration': session.actual_duration_minutes,
+        'message': 'Group session ended',
+    })
+
+
+@csrf_exempt
+def group_session_join(request, session_id, student_id):
+    """Student joins a group live session — logs participation."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        session = models.GroupSession.objects.get(pk=session_id)
+        student = models.Student.objects.get(pk=student_id)
+    except models.GroupSession.DoesNotExist:
+        return JsonResponse({'error': 'Session not found'}, status=404)
+    except models.Student.DoesNotExist:
+        return JsonResponse({'error': 'Student not found'}, status=404)
+
+    if not session.is_live:
+        return JsonResponse({'error': 'Session is not live yet'}, status=400)
+
+    # Check student is in group
+    in_group = models.GroupClassStudent.objects.filter(
+        group_class=session.group_class, student=student
+    ).exists()
+    if not in_group:
+        return JsonResponse({'error': 'Student is not in this group class'}, status=403)
+
+    # Check parental consent for minors
+    if student.is_minor():
+        consent = models.SessionAuthorization.objects.filter(
+            student=student, is_authorized=True
+        ).first()
+        if not consent:
+            return JsonResponse({
+                'error': 'Parental consent required for minor students to join live sessions',
+                'requires_consent': True,
+            }, status=403)
+
+    # Log participation
+    log = models.GroupSessionParticipantLog.objects.create(
+        session=session,
+        student=student,
+        participant_role='student',
+        ip_address=_get_client_ip(request)
+    )
+
+    # Audit log: student joined group session
+    log_activity(request, 'session_join',
+                 f'Student {student.fullname} joined group session "{session.title}" (id:{session.id})',
+                 model_name='GroupSessionParticipantLog', object_id=log.id,
+                 student=student)
+
+    return JsonResponse({
+        'bool': True,
+        'meeting_link': session.meeting_link,
+        'room_name': session.room_name,
+        'participant_log_id': log.id,
+    })
+
+
+@csrf_exempt
+def group_session_leave(request, session_id, log_id):
+    """Log that a participant left a group session."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        log = models.GroupSessionParticipantLog.objects.get(pk=log_id, session_id=session_id)
+    except models.GroupSessionParticipantLog.DoesNotExist:
+        return JsonResponse({'error': 'Participant log not found'}, status=404)
+
+    log.left_at = timezone.now()
+    if log.joined_at:
+        log.duration_seconds = int((log.left_at - log.joined_at).total_seconds())
+    log.save(update_fields=['left_at', 'duration_seconds'])
+
+    # Audit log: participant left session
+    actor = log.teacher or log.student
+    actor_name = (log.teacher.full_name if log.teacher else log.student.fullname) if actor else 'Unknown'
+    log_activity(request, 'session_leave',
+                 f'{actor_name} left group session (id:{session_id}) — Duration: {log.duration_seconds}s',
+                 model_name='GroupSessionParticipantLog', object_id=log.id,
+                 teacher=log.teacher, student=log.student)
+
+    return JsonResponse({'bool': True, 'duration_seconds': log.duration_seconds})
+
+
+class GroupSessionParticipantLogList(generics.ListAPIView):
+    serializer_class = GroupSessionParticipantLogSerializer
+
+    def get_queryset(self):
+        session_id = self.kwargs['session_id']
+        return models.GroupSessionParticipantLog.objects.filter(session_id=session_id)
+
+
+# ==================== TEACHER-CREATED ASSIGNMENT VIEWS ====================
+
+class TeacherAssignmentList(generics.ListCreateAPIView):
+    """Teachers list and create their own assignments."""
+    serializer_class = LessonAssignmentSerializer
+
+    def get_queryset(self):
+        teacher_id = self.kwargs['teacher_id']
+        qs = models.LessonAssignment.objects.filter(
+            Q(teacher_id=teacher_id) | Q(lesson__module__course__teacher_id=teacher_id)
+        ).distinct()
+
+        return qs.filter(
+            Q(submission_type='multiple_choice', mc_questions__isnull=False) |
+            ~Q(submission_type='multiple_choice')
+        ).distinct()
+
+    def perform_create(self, serializer):
+        serializer.save(teacher_id=self.kwargs['teacher_id'])
+
+    def create(self, request, *args, **kwargs):
+        teacher_id = self.kwargs['teacher_id']
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Validate target: individual assignments need a student
+        assignment_type = serializer.validated_data.get('assignment_type', 'individual')
+        student_id = serializer.validated_data.get('student')
+        group_class = serializer.validated_data.get('group_class')
+        if assignment_type == 'individual' and not student_id:
+            return Response(
+                {'message': 'Please select a student for individual assignments.'},
+                status=400
+            )
+        if assignment_type == 'group' and not group_class:
+            return Response(
+                {'message': 'Please select a group class for group assignments.'},
+                status=400
+            )
+
+        submission_type = serializer.validated_data.get('submission_type')
+        mc_questions = request.data.get('mc_questions', [])
+        validated_questions = []
+
+        if submission_type == 'multiple_choice':
+            if not isinstance(mc_questions, list) or len(mc_questions) == 0:
+                return Response(
+                    {'message': 'At least one multiple-choice question is required.'},
+                    status=400
+                )
+
+            for idx, q in enumerate(mc_questions):
+                question_text = (q.get('question_text') or '').strip()
+                option_a = (q.get('option_a') or '').strip()
+                option_b = (q.get('option_b') or '').strip()
+                option_c = (q.get('option_c') or '').strip()
+                option_d = (q.get('option_d') or '').strip()
+                correct_option = (q.get('correct_option') or 'a').lower()
+                try:
+                    points = int(q.get('points') or 1)
+                except (TypeError, ValueError):
+                    return Response(
+                        {'message': f'Question {idx + 1}: points must be a valid number.'},
+                        status=400
+                    )
+
+                if not question_text:
+                    return Response(
+                        {'message': f'Question {idx + 1}: question text is required.'},
+                        status=400
+                    )
+                if not option_a or not option_b:
+                    return Response(
+                        {'message': f'Question {idx + 1}: options A and B are required.'},
+                        status=400
+                    )
+                if correct_option not in ['a', 'b', 'c', 'd']:
+                    return Response(
+                        {'message': f'Question {idx + 1}: correct option must be A, B, C, or D.'},
+                        status=400
+                    )
+                if correct_option == 'c' and not option_c:
+                    return Response(
+                        {'message': f'Question {idx + 1}: option C is selected as correct but is empty.'},
+                        status=400
+                    )
+                if correct_option == 'd' and not option_d:
+                    return Response(
+                        {'message': f'Question {idx + 1}: option D is selected as correct but is empty.'},
+                        status=400
+                    )
+
+                validated_questions.append({
+                    'question_text': question_text,
+                    'option_a': option_a,
+                    'option_b': option_b,
+                    'option_c': option_c,
+                    'option_d': option_d,
+                    'correct_option': correct_option,
+                    'points': max(points, 1),
+                    'order': idx + 1,
+                })
+
+        with transaction.atomic():
+            assignment = serializer.save(teacher_id=teacher_id)
+
+            if submission_type == 'multiple_choice':
+                for q in validated_questions:
+                    models.MultipleChoiceQuestion.objects.create(
+                        assignment=assignment,
+                        question_text=q['question_text'],
+                        option_a=q['option_a'],
+                        option_b=q['option_b'],
+                        option_c=q['option_c'],
+                        option_d=q['option_d'],
+                        correct_option=q['correct_option'],
+                        points=q['points'],
+                        order=q['order'],
+                    )
+
+        output = self.get_serializer(assignment)
+        headers = self.get_success_headers(output.data)
+        return Response(output.data, status=201, headers=headers)
+
+
+class TeacherAssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
+    """Teachers can view, update, or delete their own assignments."""
+    serializer_class = LessonAssignmentSerializer
+
+    def get_queryset(self):
+        teacher_id = self.kwargs['teacher_id']
+        return models.LessonAssignment.objects.filter(
+            Q(teacher_id=teacher_id) | Q(lesson__module__course__teacher_id=teacher_id)
+        ).distinct()
+
+
+# ==================== DISCUSSION THREAD VIEWS ====================
+
+class DiscussionThreadList(generics.ListCreateAPIView):
+    serializer_class = DiscussionThreadSerializer
+
+    def get_queryset(self):
+        assignment_id = self.kwargs['assignment_id']
+        return models.DiscussionThread.objects.filter(
+            assignment_id=assignment_id, parent_reply__isnull=True
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(assignment_id=self.kwargs['assignment_id'])
+
+
+class DiscussionThreadDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = models.DiscussionThread.objects.all()
+    serializer_class = DiscussionThreadSerializer
+
+
+# ==================== MULTIPLE CHOICE VIEWS ====================
+
+class MCQuestionList(generics.ListCreateAPIView):
+    """List/create questions for an assignment (teacher/admin)."""
+    serializer_class = MultipleChoiceQuestionSerializer
+
+    def get_queryset(self):
+        assignment_id = self.kwargs['assignment_id']
+        return models.MultipleChoiceQuestion.objects.filter(assignment_id=assignment_id)
+
+    def perform_create(self, serializer):
+        serializer.save(assignment_id=self.kwargs['assignment_id'])
+
+
+class MCQuestionDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = models.MultipleChoiceQuestion.objects.all()
+    serializer_class = MultipleChoiceQuestionSerializer
+
+
+@csrf_exempt
+def student_submit_mc_answers(request, assignment_id, student_id):
+    """Student submits answers for all MC questions of an assignment. Auto-graded."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    try:
+        student = models.Student.objects.get(pk=student_id)
+        assignment = models.LessonAssignment.objects.get(pk=assignment_id)
+    except models.Student.DoesNotExist:
+        return JsonResponse({'error': 'Student not found'}, status=404)
+    except models.LessonAssignment.DoesNotExist:
+        return JsonResponse({'error': 'Assignment not found'}, status=404)
+
+    if assignment.submission_type != 'multiple_choice':
+        return JsonResponse({'error': 'This is not a multiple choice assignment'}, status=400)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    answers = data.get('answers', [])  # [{question_id, selected_option}, ...]
+    if not answers:
+        return JsonResponse({'error': 'No answers provided'}, status=400)
+
+    results = []
+    total_points = 0
+    earned_points = 0
+
+    for answer_data in answers:
+        question_id = answer_data.get('question_id')
+        selected = answer_data.get('selected_option', '')
+
+        try:
+            question = models.MultipleChoiceQuestion.objects.get(pk=question_id, assignment=assignment)
+        except models.MultipleChoiceQuestion.DoesNotExist:
+            results.append({'question_id': question_id, 'error': 'Question not found'})
+            continue
+
+        total_points += question.points
+        answer, _ = models.MultipleChoiceAnswer.objects.update_or_create(
+            question=question,
+            student=student,
+            defaults={'selected_option': selected}
+        )
+        if answer.is_correct:
+            earned_points += question.points
+
+        results.append({
+            'question_id': question_id,
+            'selected_option': selected,
+            'is_correct': answer.is_correct,
+            'points': question.points,
+        })
+
+    # Auto-create submission record
+    score_pct = round((earned_points / total_points * 100)) if total_points > 0 else 0
+    submission, _ = models.LessonAssignmentSubmission.objects.update_or_create(
+        assignment=assignment,
+        student=student,
+        defaults={
+            'text_content': f'MC Score: {earned_points}/{total_points} ({score_pct}%)',
+            'points_awarded': round(earned_points / total_points * assignment.max_points) if total_points > 0 else 0,
+            'submission_notes': 'Auto-graded multiple choice',
+        }
+    )
+
+    # Audit log: MC submission
+    log_activity(request, 'submission',
+                 f'Student {student.fullname} submitted MC quiz for assignment "{assignment.title}" — Score: {earned_points}/{total_points} ({score_pct}%)',
+                 model_name='LessonAssignmentSubmission', object_id=submission.id, student=student)
+
+    return JsonResponse({
+        'bool': True,
+        'score': f'{earned_points}/{total_points}',
+        'score_pct': score_pct,
+        'points_awarded': submission.points_awarded,
+        'results': results,
+    })
+
+
+# ==================== PARENT POLICY ACCEPTANCE VIEWS ====================
+
+class ParentPolicyAcceptanceList(generics.ListCreateAPIView):
+    serializer_class = ParentPolicyAcceptanceSerializer
+
+    def get_queryset(self):
+        parent_id = self.kwargs.get('parent_id')
+        if parent_id:
+            return models.ParentPolicyAcceptance.objects.filter(parent_id=parent_id)
+        return models.ParentPolicyAcceptance.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(
+            ip_address=_get_client_ip(self.request),
+            user_agent=self.request.META.get('HTTP_USER_AGENT', '')
+        )
+
+
+@csrf_exempt
+def parent_policy_status(request, parent_id):
+    """Check which policies a parent has accepted and which are still required."""
+    try:
+        parent = models.ParentAccount.objects.get(pk=parent_id)
+    except models.ParentAccount.DoesNotExist:
+        return JsonResponse({'error': 'Parent not found'}, status=404)
+
+    required_policies = models.PolicyDocument.objects.filter(
+        is_active=True,
+        policy_type__in=['child_safety', 'terms_of_service']
+    )
+
+    accepted_ids = set(
+        models.ParentPolicyAcceptance.objects.filter(
+            parent=parent
+        ).values_list('policy_id', flat=True)
+    )
+
+    policies = []
+    all_accepted = True
+    for policy in required_policies:
+        accepted = policy.id in accepted_ids
+        if not accepted:
+            all_accepted = False
+        policies.append({
+            'id': policy.id,
+            'title': policy.title,
+            'policy_type': policy.policy_type,
+            'accepted': accepted,
+        })
+
+    return JsonResponse({
+        'parent_id': parent_id,
+        'all_required_accepted': all_accepted,
+        'policies': policies,
+    })
+
+
+# ==================== PHASE 4: ENHANCED GROUP FEATURE VIEWS ====================
+
+@csrf_exempt
+def send_group_chat(request, group_id):
+    """Convenience POST endpoint for sending a group chat message with
+    full permission checking. Maps sender_type + sender_id into the
+    correct FK fields. 
+    
+    Rules enforced:
+    - Sender must be a member of the group (teacher/student/parent).
+    - No student-to-student private DMs (all messages go through the group).
+    - No teacher-to-minor DMs (minors cannot be direct recipients, but they
+      see the group chat via their parent or after turning 18).
+    - Minor students (under 18) cannot send messages — parent must post on behalf.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    try:
+        group = models.GroupClass.objects.get(pk=group_id, is_active=True)
+    except models.GroupClass.DoesNotExist:
+        return JsonResponse({'error': 'Group not found or inactive'}, status=404)
+
+    try:
+        data = json.loads(request.body) if request.content_type == 'application/json' else request.POST
+    except json.JSONDecodeError:
+        data = request.POST
+
+    sender_type = data.get('sender_type', 'teacher')
+    sender_id = data.get('sender_id')
+    content = data.get('content', '').strip()
+
+    if not content:
+        return JsonResponse({'error': 'Message content is required'}, status=400)
+    if not sender_id:
+        return JsonResponse({'error': 'sender_id is required'}, status=400)
+
+    # Permission check: membership
+    msg_kwargs = {'group_class': group, 'content': content, 'sender_type': sender_type}
+
+    if sender_type == 'teacher':
+        is_member = models.GroupClassTeacher.objects.filter(
+            group_class=group, teacher_id=sender_id
+        ).exists()
+        if not is_member:
+            return JsonResponse({'error': 'Teacher is not assigned to this group'}, status=403)
+        try:
+            teacher = models.Teacher.objects.get(pk=sender_id)
+            msg_kwargs['sender_teacher'] = teacher
+            msg_kwargs['sender_name'] = teacher.full_name
+        except models.Teacher.DoesNotExist:
+            return JsonResponse({'error': 'Teacher not found'}, status=404)
+
+    elif sender_type == 'student':
+        is_member = models.GroupClassStudent.objects.filter(
+            group_class=group, student_id=sender_id
+        ).exists()
+        if not is_member:
+            return JsonResponse({'error': 'Student is not in this group'}, status=403)
+        try:
+            student = models.Student.objects.get(pk=sender_id)
+            if student.is_minor():
+                return JsonResponse({
+                    'error': 'Students under 18 cannot send group messages directly. '
+                             'A parent must post on their behalf.',
+                    'requires_parent': True,
+                }, status=403)
+            msg_kwargs['sender_student'] = student
+            msg_kwargs['sender_name'] = student.fullname
+        except models.Student.DoesNotExist:
+            return JsonResponse({'error': 'Student not found'}, status=404)
+
+    elif sender_type == 'parent':
+        try:
+            parent = models.ParentAccount.objects.get(pk=sender_id)
+        except models.ParentAccount.DoesNotExist:
+            return JsonResponse({'error': 'Parent not found'}, status=404)
+        # Verify that parent's child is in the group
+        child_ids = models.StudentParentLink.objects.filter(
+            parent=parent, is_verified=True
+        ).values_list('student_id', flat=True)
+        is_member = models.GroupClassStudent.objects.filter(
+            group_class=group, student_id__in=child_ids
+        ).exists()
+        if not is_member:
+            return JsonResponse({'error': 'Your child is not in this group'}, status=403)
+        msg_kwargs['sender_parent'] = parent
+        msg_kwargs['sender_name'] = parent.fullname
+
+    elif sender_type in ('admin', 'school'):
+        msg_kwargs['sender_name'] = 'School Admin'
+        if sender_type == 'admin':
+            try:
+                admin = models.Admin.objects.get(pk=sender_id)
+                msg_kwargs['sender_admin'] = admin
+                msg_kwargs['sender_name'] = admin.full_name
+            except models.Admin.DoesNotExist:
+                pass
+    else:
+        return JsonResponse({'error': f'Invalid sender_type: {sender_type}'}, status=400)
+
+    # Check ChatLockPolicy for this group's school
+    try:
+        lock_policy = models.ChatLockPolicy.objects.filter(
+            school=group.school, is_active=True
+        ).latest('created_at')
+        if sender_type in ('student', 'parent') and lock_policy.policy_type == 'full_lock':
+            return JsonResponse({
+                'error': 'Chat is currently locked by the school.',
+                'locked': True,
+            }, status=403)
+    except models.ChatLockPolicy.DoesNotExist:
+        pass
+
+    msg = models.GroupMessage.objects.create(**msg_kwargs)
+
+    return JsonResponse({
+        'bool': True,
+        'message_id': msg.id,
+        'sender_name': msg.sender_name,
+        'content': msg.content,
+        'created_at': msg.created_at.isoformat(),
+    })
+
+
+@csrf_exempt
+def schedule_group_session(request, group_id):
+    """Convenience endpoint: POST /group/<id>/schedule-session/
+    Creates a new group session with automatic teacher/date parsing."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    try:
+        group = models.GroupClass.objects.get(pk=group_id, is_active=True)
+    except models.GroupClass.DoesNotExist:
+        return JsonResponse({'error': 'Group not found'}, status=404)
+
+    try:
+        data = json.loads(request.body) if request.content_type == 'application/json' else request.POST
+    except json.JSONDecodeError:
+        data = request.POST
+
+    title = data.get('title', '').strip()
+    if not title:
+        return JsonResponse({'error': 'Title is required'}, status=400)
+
+    # Resolve teacher
+    creator_type = data.get('created_by_type', 'teacher')
+    creator_id = data.get('created_by_id') or data.get('teacher_id')
+    teacher = None
+    if creator_type == 'teacher' and creator_id:
+        try:
+            teacher = models.Teacher.objects.get(pk=creator_id)
+        except models.Teacher.DoesNotExist:
+            return JsonResponse({'error': 'Teacher not found'}, status=404)
+    elif creator_type == 'school':
+        gt = models.GroupClassTeacher.objects.filter(group_class=group).first()
+        if gt:
+            teacher = gt.teacher
+    if not teacher:
+        return JsonResponse({'error': 'Could not determine the teacher for this session'}, status=400)
+
+    # Parse dates
+    from datetime import datetime, date, time as dt_time
+    scheduled_start = data.get('scheduled_start')
+    scheduled_date = None
+    scheduled_time = None
+    duration = int(data.get('duration_minutes', 60))
+
+    if scheduled_start:
+        try:
+            dt = datetime.fromisoformat(scheduled_start.replace('Z', '+00:00'))
+            scheduled_date = dt.date()
+            scheduled_time = dt.time()
+        except (ValueError, AttributeError):
+            return JsonResponse({'error': 'Invalid scheduled_start format'}, status=400)
+    else:
+        sd = data.get('scheduled_date')
+        st = data.get('scheduled_time')
+        if sd:
+            try:
+                scheduled_date = datetime.strptime(sd, '%Y-%m-%d').date()
+            except ValueError:
+                return JsonResponse({'error': 'Invalid date format'}, status=400)
+        if st:
+            try:
+                scheduled_time = datetime.strptime(st, '%H:%M').time()
+            except ValueError:
+                scheduled_time = dt_time(12, 0)
+        if not scheduled_date:
+            scheduled_date = date.today()
+        if not scheduled_time:
+            scheduled_time = dt_time(12, 0)
+
+    # Parse end time for duration
+    scheduled_end = data.get('scheduled_end')
+    if scheduled_end and scheduled_start:
+        try:
+            dt_end = datetime.fromisoformat(scheduled_end.replace('Z', '+00:00'))
+            dt_start = datetime.fromisoformat(scheduled_start.replace('Z', '+00:00'))
+            duration = max(int((dt_end - dt_start).total_seconds() / 60), 15)
+        except (ValueError, AttributeError):
+            pass
+
+    session = models.GroupSession.objects.create(
+        group_class=group,
+        teacher=teacher,
+        title=title,
+        description=data.get('description', ''),
+        scheduled_date=scheduled_date,
+        scheduled_time=scheduled_time,
+        duration_minutes=duration,
+        session_type=data.get('session_type', 'video_call'),
+        has_minor_participants=models.GroupClassStudent.objects.filter(
+            group_class=group
+        ).exists(),
+    )
+
+    return JsonResponse({
+        'bool': True,
+        'session_id': session.id,
+        'title': session.title,
+        'room_name': session.room_name,
+        'meeting_link': session.meeting_link,
+        'scheduled_date': str(session.scheduled_date),
+        'scheduled_time': str(session.scheduled_time),
+    })
+
+
+@csrf_exempt
+def student_join_group_session(request, student_id, session_id):
+    """Convenience endpoint: POST /student/<id>/join-group-session/<session_id>/
+    Student joins a live group session. Checks: group membership, parental consent for minors."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    try:
+        student = models.Student.objects.get(pk=student_id)
+    except models.Student.DoesNotExist:
+        return JsonResponse({'error': 'Student not found'}, status=404)
+
+    try:
+        session = models.GroupSession.objects.get(pk=session_id)
+    except models.GroupSession.DoesNotExist:
+        return JsonResponse({'error': 'Session not found'}, status=404)
+
+    if not session.is_live:
+        return JsonResponse({'error': 'Session is not live yet'}, status=400)
+
+    # Verify student is in the group
+    in_group = models.GroupClassStudent.objects.filter(
+        group_class=session.group_class, student=student
+    ).exists()
+    if not in_group:
+        return JsonResponse({'error': 'Student is not in this group class'}, status=403)
+
+    # Check parental consent for minors
+    if student.is_minor():
+        consent = models.SessionAuthorization.objects.filter(
+            student=student, is_authorized=True
+        ).first()
+        if not consent:
+            return JsonResponse({
+                'error': 'Parental consent required for minor students to join live sessions',
+                'requires_consent': True,
+            }, status=403)
+
+    # Log participation
+    log = models.GroupSessionParticipantLog.objects.create(
+        session=session,
+        student=student,
+        participant_role='student',
+        ip_address=_get_client_ip(request),
+    )
+
+    return JsonResponse({
+        'bool': True,
+        'meeting_link': session.meeting_link,
+        'room_name': session.room_name,
+        'participant_log_id': log.id,
+        'session_title': session.title,
+    })
+
+
+class GroupAssignmentList(generics.ListCreateAPIView):
+    """List/create group-type assignments for a group class.
+    GET /group/<group_id>/assignments/ — list all assignments for the group
+    POST /group/<group_id>/assignments/ — create a new assignment for the group
+    """
+    serializer_class = LessonAssignmentSerializer
+
+    def get_queryset(self):
+        group_id = self.kwargs['group_id']
+        return models.LessonAssignment.objects.filter(
+            group_class_id=group_id, assignment_type='group'
+        )
+
+    def perform_create(self, serializer):
+        group_id = self.kwargs['group_id']
+        try:
+            group = models.GroupClass.objects.get(pk=group_id)
+        except models.GroupClass.DoesNotExist:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError('Group not found.')
+
+        # Set teacher if provided
+        teacher_id = self.request.data.get('teacher_id') or self.request.data.get('teacher')
+        extra = {'group_class': group, 'assignment_type': 'group', 'school': group.school}
+        if teacher_id:
+            try:
+                extra['teacher'] = models.Teacher.objects.get(pk=teacher_id)
+            except models.Teacher.DoesNotExist:
+                pass
+        serializer.save(**extra)
+
+
+@csrf_exempt
+def student_group_assignments(request, student_id):
+    """GET /student/<id>/group-assignments/ — list all group assignments
+    for groups that the student belongs to."""
+    try:
+        student = models.Student.objects.get(pk=student_id)
+    except models.Student.DoesNotExist:
+        return JsonResponse({'error': 'Student not found'}, status=404)
+
+    group_ids = models.GroupClassStudent.objects.filter(
+        student=student
+    ).values_list('group_class_id', flat=True)
+
+    assignments = models.LessonAssignment.objects.filter(
+        group_class_id__in=group_ids, assignment_type='group'
+    ).select_related('lesson', 'school', 'teacher', 'group_class').order_by('-assigned_at')
+
+    result = []
+    for a in assignments:
+        # Check if this student has submitted
+        submission = a.submissions.filter(student=student).first()
+        result.append({
+            'id': a.id,
+            'title': a.display_title,
+            'description': a.description,
+            'submission_type': a.submission_type,
+            'submission_type_display': a.get_submission_type_display(),
+            'max_points': a.max_points,
+            'due_date': str(a.due_date) if a.due_date else None,
+            'assigned_at': a.assigned_at.isoformat(),
+            'group_name': a.group_class.name if a.group_class else None,
+            'teacher_name': a.teacher.full_name if a.teacher else None,
+            'school_name': a.school.name if a.school else None,
+            'notes': a.notes,
+            'status': a.compute_status(student_id),
+            'submission': {
+                'id': submission.id,
+                'submitted_at': submission.submitted_at.isoformat(),
+                'points_awarded': submission.points_awarded,
+                'teacher_feedback': submission.teacher_feedback,
+                'audio_file': submission.audio_file.url if submission.audio_file else None,
+                'video_file': submission.video_file.url if submission.video_file else None,
+                'file': submission.file.url if submission.file else None,
+                'text_content': submission.text_content,
+            } if submission else None,
+        })
+
+    return JsonResponse(result, safe=False)
+
+
+@csrf_exempt
+def student_my_groups(request, student_id):
+    """GET /student/<id>/my-groups/ — list all groups the student belongs to,
+    with counts for messages, sessions, announcements."""
+    try:
+        student = models.Student.objects.get(pk=student_id)
+    except models.Student.DoesNotExist:
+        return JsonResponse({'error': 'Student not found'}, status=404)
+
+    memberships = models.GroupClassStudent.objects.filter(
+        student=student
+    ).select_related('group_class', 'group_class__school')
+
+    result = []
+    for m in memberships:
+        g = m.group_class
+        result.append({
+            'id': g.id,
+            'name': g.name,
+            'description': g.description,
+            'schedule': g.schedule,
+            'school_name': g.school.name if g.school else None,
+            'is_active': g.is_active,
+            'student_count': g.total_students(),
+            'teacher_count': g.total_teachers(),
+            'teacher_name': (
+                g.group_teachers.first().teacher.full_name
+                if g.group_teachers.exists() else None
+            ),
+            'unread_messages': g.group_messages.filter(
+                is_hidden=False, created_at__gt=m.assigned_at
+            ).count(),
+            'announcement_count': g.announcements.count(),
+            'upcoming_sessions': g.group_sessions.filter(
+                status__in=['scheduled', 'live']
+            ).count(),
+            'live_now': g.group_sessions.filter(status='live').exists(),
+            'joined_at': m.assigned_at.isoformat(),
+        })
+
+    return JsonResponse(result, safe=False)
+
+
+@csrf_exempt
+def group_class_detail_extended(request, group_id):
+    """GET /group-class/<id>/ — Extended detail view for a group class 
+    with counts for chat, announcements, resources, sessions."""
+    try:
+        group = models.GroupClass.objects.get(pk=group_id)
+    except models.GroupClass.DoesNotExist:
+        return JsonResponse({'error': 'Group not found'}, status=404)
+
+    return JsonResponse({
+        'id': group.id,
+        'name': group.name,
+        'title': group.name,
+        'description': group.description,
+        'schedule': group.schedule,
+        'max_students': group.max_students,
+        'is_active': group.is_active,
+        'school_id': group.school_id,
+        'school_name': group.school.name,
+        'student_count': group.total_students(),
+        'teacher_count': group.total_teachers(),
+        'teacher_name': (
+            group.group_teachers.first().teacher.full_name
+            if group.group_teachers.exists() else None
+        ),
+        'message_count': group.group_messages.filter(is_hidden=False).count(),
+        'announcement_count': group.announcements.count(),
+        'resource_count': group.resources.count(),
+        'session_count': group.group_sessions.count(),
+        'live_sessions': group.group_sessions.filter(status='live').count(),
+        'assignment_count': group.lesson_assignments.count(),
+        'created_at': group.created_at.isoformat(),
+    })
+
+
+# ==================== PHASE 5: MINOR PARENT EMAIL SUBMISSION ====================
+
+@csrf_exempt
+def student_submit_parent_email(request, student_id):
+    """POST /student/<id>/submit-parent-email/
+    For minor students who didn't provide parent_email during registration.
+    Creates ParentAccount + StudentParentLink and sends consent email."""
+    if request.method != 'POST':
+        return JsonResponse({'bool': False, 'message': 'POST method required.'}, status=405)
+
+    try:
+        student = models.Student.objects.get(pk=student_id)
+    except models.Student.DoesNotExist:
+        return JsonResponse({'bool': False, 'message': 'Student not found'}, status=404)
+
+    if not student.is_minor():
+        return JsonResponse({'bool': False, 'message': 'This endpoint is only for minor students.'}, status=400)
+
+    data = _extract_request_data(request)
+    parent_email = (data.get('parent_email') or '').strip()
+    if not parent_email:
+        return JsonResponse({'bool': False, 'message': 'parent_email is required.'}, status=400)
+
+    # Check if student already has an approved parent link
+    existing_approved = models.StudentParentLink.objects.filter(
+        student=student, status='approved'
+    ).exists()
+    if existing_approved:
+        return JsonResponse({
+            'bool': False,
+            'message': 'You already have an approved parent link.',
+        }, status=400)
+
+    parent_name = (data.get('parent_name') or '').strip() or f"Parent of {student.fullname}"
+    relationship = data.get('parent_relationship', 'guardian')
+
+    parent, _ = models.ParentAccount.objects.get_or_create(
+        email=parent_email,
+        defaults={'fullname': parent_name, 'is_verified': False}
+    )
+
+    link, link_created = models.StudentParentLink.objects.get_or_create(
+        student=student,
+        parent=parent,
+        defaults={'relationship': relationship, 'status': 'pending'}
+    )
+
+    if not link_created and link.status == 'revoked':
+        # Re-send for previously revoked link
+        link.status = 'pending'
+        link.revoked_at = None
+        link.save(update_fields=['status', 'revoked_at', 'updated_at'])
+
+    student.parent_account_required = True
+    student.save(update_fields=['parent_account_required'])
+
+    email_sent = _send_parental_consent_email(link, student)
+
+    return JsonResponse({
+        'bool': True,
+        'message': f'Consent email sent to {parent_email}.' if email_sent
+                   else 'Parent link created but email could not be sent.',
+        'email_sent': email_sent,
+        'parent_id': parent.id,
+        'link_id': link.id,
+    })
+
+
+@csrf_exempt
+def student_minor_access_status(request, student_id):
+    """GET /student/<id>/minor-access-status/
+    Returns comprehensive access status for a minor student."""
+    try:
+        student = models.Student.objects.get(pk=student_id)
+    except models.Student.DoesNotExist:
+        return JsonResponse({'bool': False, 'message': 'Student not found'}, status=404)
+
+    is_minor = student.is_minor()
+    if not is_minor:
+        return JsonResponse({
+            'is_minor': False,
+            'can_enroll': True,
+            'can_send_messages': True,
+            'can_join_sessions': True,
+            'has_parent_approval': True,
+        })
+
+    has_approval = student.has_approved_parent_with_policies()
+    link = models.StudentParentLink.objects.filter(
+        student=student
+    ).select_related('parent').order_by('-created_at').first()
+
+    parent_info = None
+    if link:
+        parent_info = {
+            'parent_name': link.parent.fullname,
+            'parent_email': link.parent.email,
+            'link_status': link.status,
+            'approved_at': link.approved_at.isoformat() if link.approved_at else None,
+        }
+
+    return JsonResponse({
+        'is_minor': True,
+        'can_enroll': has_approval,
+        'can_send_messages': student.can_send_messages(),
+        'can_join_sessions': has_approval,
+        'has_parent_approval': has_approval,
+        'parent_account_required': student.parent_account_required,
+        'has_parent_link': link is not None,
+        'parent_info': parent_info,
+    })
+
+
+# ==================== TEACHER COMMUNITY VIEWS ====================
+
+class TeacherCommunityMessageList(generics.ListCreateAPIView):
+    """GET: list all community messages. POST: send a new message."""
+    serializer_class = TeacherCommunityMessageSerializer
+
+    def get_queryset(self):
+        return models.TeacherCommunityMessage.objects.filter(
+            is_hidden=False
+        ).select_related('teacher').order_by('created_at')
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+
+class TeacherCommunityMessageDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = models.TeacherCommunityMessage.objects.all()
+    serializer_class = TeacherCommunityMessageSerializer
+
+
+@csrf_exempt
+def teacher_community_toggle_pin(request, pk):
+    """POST - toggle pin status of a community message."""
+    if request.method != 'POST':
+        return JsonResponse({'bool': False, 'message': 'POST required'}, status=405)
+    msg = models.TeacherCommunityMessage.objects.filter(pk=pk).first()
+    if not msg:
+        return JsonResponse({'bool': False, 'message': 'Message not found'}, status=404)
+    msg.is_pinned = not msg.is_pinned
+    msg.save(update_fields=['is_pinned', 'updated_at'])
+    return JsonResponse({'bool': True, 'is_pinned': msg.is_pinned})
+
+
+@csrf_exempt
+def teacher_community_hide_message(request, pk):
+    """POST - hide a community message (moderation)."""
+    if request.method != 'POST':
+        return JsonResponse({'bool': False, 'message': 'POST required'}, status=405)
+    msg = models.TeacherCommunityMessage.objects.filter(pk=pk).first()
+    if not msg:
+        return JsonResponse({'bool': False, 'message': 'Message not found'}, status=404)
+    msg.is_hidden = True
+    msg.save(update_fields=['is_hidden', 'updated_at'])
+    return JsonResponse({'bool': True, 'message': 'Message hidden'})
+
+
+# ==================== PHASE 1 GAMES & GAMIFICATION VIEWS ====================
+
+def _access_rank(level):
+    ranks = {'free': 0, 'basic': 1, 'standard': 2, 'premium': 3, 'unlimited': 4}
+    return ranks.get(level or 'free', 0)
+
+
+def _get_student_game_access(student, game, requested_level=1):
+    """
+    Check if student can access a game (and optionally a specific level).
+    - Subscription gate: ANY active subscription required to play at all
+    - Level-based gating: levels 6+ require 'basic', levels 8+ require 'standard'
+    Returns (allowed, student_level, denial_reason_or_None)
+    """
+    from .access_control import SubscriptionAccessControl
+    active_sub = SubscriptionAccessControl.get_active_subscription(student.id)
+    student_level = 'free'
+    if active_sub and active_sub.plan:
+        student_level = active_sub.plan.access_level
+
+    # Require an active subscription to play any game
+    if not active_sub:
+        return False, 'free', (
+            "An active subscription is required to play Sonara Games. "
+            "Subscribe to unlock all games and start earning Sonara Coins!"
+        )
+
+    # Check game-level access (e.g. if a game requires a higher tier)
+    if _access_rank(student_level) < _access_rank(game.min_access_level):
+        return False, student_level, f"Requires {game.min_access_level} subscription. Current: {student_level}."
+
+    # Level-based tier gating (higher game levels need higher subscription)
+    level_tier_required = 'free'
+    if requested_level >= 8:
+        level_tier_required = 'standard'
+    elif requested_level >= 6:
+        level_tier_required = 'basic'
+
+    if _access_rank(student_level) < _access_rank(level_tier_required):
+        return False, student_level, (
+            f"Level {requested_level} requires {level_tier_required} subscription. "
+            f"Current: {student_level}. Levels 1-5 are available on your plan."
+        )
+
+    return True, student_level, None
+
+
+def _calculate_note_or_quiz_attempt(question, submitted_answer, response_time_ms, previous_streak):
+    response_time_ms = max(0, int(response_time_ms or 0))
+    is_correct = str(submitted_answer).strip().lower() == str(question.correct_answer).strip().lower()
+    feedback = 'correct' if is_correct else 'incorrect'
+    speed_bonus = 0
+    if is_correct:
+        if response_time_ms <= 2000:
+            speed_bonus = 5
+        elif response_time_ms <= 3500:
+            speed_bonus = 3
+        streak_bonus = min(previous_streak, 10)
+        points = int(question.points) + speed_bonus + streak_bonus
+        accuracy_score = 1.0
+    else:
+        points = 0
+        accuracy_score = 0.0
+    return {
+        'is_correct': is_correct,
+        'feedback': feedback,
+        'points': points,
+        'accuracy_score': accuracy_score,
+    }
+
+
+def _calculate_rhythm_attempt(expected_timestamps, submitted_taps, tolerance_ms):
+    expected = expected_timestamps or []
+    submitted = submitted_taps or []
+    tolerance = max(80, min(int(tolerance_ms or 120), 200))
+
+    if not expected or not submitted:
+        return {
+            'is_correct': False,
+            'feedback': 'try_again',
+            'points': 0,
+            'accuracy_score': 0.0,
+            'avg_delta': 9999,
+        }
+
+    pair_count = min(len(expected), len(submitted))
+    deltas = [abs(int(submitted[i]) - int(expected[i])) for i in range(pair_count)]
+    avg_delta = sum(deltas) / pair_count if pair_count else 9999
+    within = [d for d in deltas if d <= tolerance]
+    hit_ratio = (len(within) / len(expected)) if expected else 0
+
+    if hit_ratio >= 0.9 and avg_delta <= max(90, tolerance * 0.8):
+        feedback = 'perfect'
+        points = 20
+        accuracy_score = 1.0
+        is_correct = True
+    elif hit_ratio >= 0.65:
+        feedback = 'good'
+        points = 10
+        accuracy_score = round(hit_ratio, 2)
+        is_correct = True
+    else:
+        feedback = 'try_again'
+        points = 0
+        accuracy_score = round(hit_ratio, 2)
+        is_correct = False
+
+    return {
+        'is_correct': is_correct,
+        'feedback': feedback,
+        'points': points,
+        'accuracy_score': accuracy_score,
+        'avg_delta': int(avg_delta),
+    }
+
+
+def _recompute_weekly_rankings(game, week_start, week_end):
+    weekly = models.WeeklyGameLeaderboard.objects.filter(
+        game=game, week_start=week_start, week_end=week_end
+    ).order_by('-total_score', '-avg_accuracy', '-best_streak', 'updated_at')
+    for idx, row in enumerate(weekly, start=1):
+        if row.rank != idx:
+            row.rank = idx
+            row.save(update_fields=['rank', 'updated_at'])
+
+
+def _award_game_badges(student, game, profile):
+    awarded = []
+    badge_map = {
+        'note_ninja': 'note_master',
+        'rhythm_rush': 'rhythm_king',
+        'music_challenge': 'theory_champion',
+    }
+    badge_key = badge_map.get(game.game_type)
+    if not badge_key:
+        return awarded
+
+    badge = models.GameBadge.objects.filter(badge_key=badge_key, is_active=True).first()
+    if not badge:
+        return awarded
+
+    min_accuracy = badge.criteria.get('min_accuracy', 80)
+    min_level = badge.criteria.get('min_level', 3)
+    min_streak = badge.criteria.get('min_streak', 5)
+
+    if (
+        profile.accuracy_percent >= min_accuracy and
+        profile.highest_level_unlocked >= min_level and
+        profile.best_streak >= min_streak
+    ):
+        obj, created = models.StudentGameBadge.objects.get_or_create(
+            student=student,
+            badge=badge,
+            defaults={'source_game': game}
+        )
+        if created:
+            awarded.append(obj.badge.title)
+    return awarded
+
+
+@csrf_exempt
+def seed_phase1_games(request):
+    if request.method != 'POST':
+        return JsonResponse({'bool': False, 'message': 'POST required'}, status=405)
+
+    games_seed = [
+        ('note_ninja', 'Note Ninja', 'Identify notes on treble/bass staff quickly.', 'free', 20),
+        ('rhythm_rush', 'Rhythm Rush', 'Tap rhythm patterns with timing accuracy.', 'basic', 20),
+        ('music_challenge', '5-Second Music Challenge', 'Fast music theory and recognition quiz.', 'free', 20),
+    ]
+    badges_seed = [
+        ('note_master', 'Note Master', {'min_accuracy': 85, 'min_level': 3, 'min_streak': 6}),
+        ('rhythm_king', 'Rhythm King', {'min_accuracy': 80, 'min_level': 3, 'min_streak': 5}),
+        ('theory_champion', 'Theory Champion', {'min_accuracy': 85, 'min_level': 3, 'min_streak': 6}),
+    ]
+
+    created_games = 0
+    for game_type, title, desc, access_level, max_level in games_seed:
+        _, created = models.GameDefinition.objects.get_or_create(
+            game_type=game_type,
+            defaults={
+                'title': title,
+                'description': desc,
+                'min_access_level': access_level,
+                'max_level': max_level,
+                'is_active': True,
+            }
+        )
+        if created:
+            created_games += 1
+
+    created_badges = 0
+    for badge_key, title, criteria in badges_seed:
+        _, created = models.GameBadge.objects.get_or_create(
+            badge_key=badge_key,
+            defaults={
+                'title': title,
+                'description': title,
+                'criteria': criteria,
+                'is_active': True,
+            }
+        )
+        if created:
+            created_badges += 1
+
+    return JsonResponse({
+        'bool': True,
+        'message': 'Phase 1 games seeded',
+        'created_games': created_games,
+        'created_badges': created_badges,
+    })
+
+
+@csrf_exempt
+def game_definitions_list(request):
+    if request.method != 'GET':
+        return JsonResponse({'bool': False, 'message': 'GET required'}, status=405)
+    qs = models.GameDefinition.objects.filter(is_active=True).order_by('id')
+    return JsonResponse(GameDefinitionSerializer(qs, many=True).data, safe=False)
+
+
+@csrf_exempt
+def student_games_overview(request, student_id):
+    if request.method != 'GET':
+        return JsonResponse({'bool': False, 'message': 'GET required'}, status=405)
+
+    student = models.Student.objects.filter(pk=student_id).first()
+    if not student:
+        return JsonResponse({'bool': False, 'message': 'Student not found'}, status=404)
+
+    games = models.GameDefinition.objects.filter(is_active=True).order_by('id')
+    payload = []
+    total_coins = 0
+
+    # Check if student has any active subscription
+    from .access_control import SubscriptionAccessControl
+    active_sub = SubscriptionAccessControl.get_active_subscription(student.id)
+    has_subscription = active_sub is not None
+    student_level = 'free'
+    if active_sub and active_sub.plan:
+        student_level = active_sub.plan.access_level
+
+    for game in games:
+        profile, _ = models.StudentGameProfile.objects.get_or_create(student=student, game=game)
+        allowed, level, _ = _get_student_game_access(student, game)
+        total_coins += profile.sonara_coins
+        # Determine max accessible level based on subscription tier
+        if not has_subscription:
+            max_accessible = 0  # No subscription = no access
+        elif _access_rank(level) >= _access_rank('standard'):
+            max_accessible = game.max_level
+        elif _access_rank(level) >= _access_rank('basic'):
+            max_accessible = 7
+        else:
+            max_accessible = 5
+        payload.append({
+            'game': GameDefinitionSerializer(game).data,
+            'profile': StudentGameProfileSerializer(profile).data,
+            'access': {
+                'allowed': allowed,
+                'student_access_level': level,
+                'required_access_level': game.min_access_level,
+                'max_accessible_level': max_accessible,
+                'has_subscription': has_subscription,
+            }
+        })
+
+    badges = models.StudentGameBadge.objects.filter(student=student).select_related('badge', 'source_game')
+    earned_keys = set(b.badge.badge_key for b in badges)
+
+    # All badges (earned + locked)
+    all_badges_data = []
+    for badge in models.GameBadge.objects.filter(is_active=True).order_by('id'):
+        earned = badges.filter(badge=badge).first()
+        all_badges_data.append({
+            'badge_key': badge.badge_key,
+            'title': badge.title,
+            'description': badge.description,
+            'criteria': badge.criteria,
+            'earned': badge.badge_key in earned_keys,
+            'awarded_at': earned.awarded_at.isoformat() if earned else None,
+            'source_game': earned.source_game.game_type if earned and earned.source_game else None,
+        })
+
+    # Recently played sessions (last 5 completed)
+    recent_sessions = models.GameSession.objects.filter(
+        student=student, status='completed'
+    ).select_related('game').order_by('-completed_at')[:5]
+    recent_played = [
+        {
+            'id': s.id,
+            'game_type': s.game.game_type,
+            'game_title': s.game.title,
+            'level': s.level,
+            'score': s.score,
+            'correct_count': s.correct_count,
+            'wrong_count': s.wrong_count,
+            'max_streak': s.max_streak,
+            'completed_at': s.completed_at.isoformat() if s.completed_at else None,
+        }
+        for s in recent_sessions
+    ]
+
+    return JsonResponse({
+        'bool': True,
+        'student_id': student.id,
+        'sonara_coins_total': total_coins,
+        'has_subscription': has_subscription,
+        'games': payload,
+        'badges': all_badges_data,
+        'recent_sessions': recent_played,
+    })
+
+
+@csrf_exempt
+def student_sonara_coins(request, student_id):
+    """Lightweight endpoint to get just the Sonara Coins total for sidebar display."""
+    if request.method != 'GET':
+        return JsonResponse({'bool': False, 'message': 'GET required'}, status=405)
+    student = models.Student.objects.filter(pk=student_id).first()
+    if not student:
+        return JsonResponse({'bool': False, 'message': 'Student not found'}, status=404)
+    total = models.StudentGameProfile.objects.filter(student=student).aggregate(
+        total=Sum('sonara_coins'))['total'] or 0
+    from .access_control import SubscriptionAccessControl
+    has_sub = SubscriptionAccessControl.get_active_subscription(student.id) is not None
+    return JsonResponse({'bool': True, 'sonara_coins_total': total, 'has_subscription': has_sub})
+
+
+@csrf_exempt
+def student_game_start_session(request, student_id, game_type):
+    if request.method != 'POST':
+        return JsonResponse({'bool': False, 'message': 'POST required'}, status=405)
+
+    student = models.Student.objects.filter(pk=student_id).first()
+    game = models.GameDefinition.objects.filter(game_type=game_type, is_active=True).first()
+    if not student or not game:
+        return JsonResponse({'bool': False, 'message': 'Student or game not found'}, status=404)
+
+    try:
+        body = json.loads(request.body) if request.body else {}
+    except Exception:
+        body = {}
+    requested_level = int(body.get('level', 1) or 1)
+
+    allowed, level_name, denial_reason = _get_student_game_access(student, game, requested_level)
+    if not allowed:
+        return JsonResponse({
+            'bool': False,
+            'message': denial_reason,
+            'current_tier': level_name,
+            'required_tier': game.min_access_level,
+        }, status=403)
+
+    profile, _ = models.StudentGameProfile.objects.get_or_create(student=student, game=game)
+    level = max(1, min(requested_level, max(profile.highest_level_unlocked, 1), game.max_level))
+
+    session = models.GameSession.objects.create(
+        student=student,
+        game=game,
+        level=level,
+        status='active',
+    )
+
+    # Return ALL questions for this level so frontend can run the full round
+    questions_qs = models.GameQuestion.objects.filter(
+        game=game, level=level, is_active=True
+    ).order_by('order', 'id')
+    questions_list = list(questions_qs)
+
+    # Also provide the first question separately for backward compatibility
+    first_question = questions_list[0] if questions_list else None
+
+    return JsonResponse({
+        'bool': True,
+        'session': GameSessionSerializer(session).data,
+        'question': GameQuestionPublicSerializer(first_question).data if first_question else None,
+        'questions': GameQuestionPublicSerializer(questions_list, many=True).data,
+        'total_questions': len(questions_list),
+    })
+
+
+@csrf_exempt
+def student_game_submit_attempt(request, session_id):
+    if request.method != 'POST':
+        return JsonResponse({'bool': False, 'message': 'POST required'}, status=405)
+
+    session = models.GameSession.objects.select_related('student', 'game').filter(pk=session_id).first()
+    if not session:
+        return JsonResponse({'bool': False, 'message': 'Session not found'}, status=404)
+    if session.status != 'active':
+        return JsonResponse({'bool': False, 'message': 'Session is not active'}, status=400)
+
+    try:
+        data = json.loads(request.body) if request.body else {}
+    except Exception:
+        return JsonResponse({'bool': False, 'message': 'Invalid JSON payload'}, status=400)
+
+    question_id = data.get('question_id')
+    question = models.GameQuestion.objects.filter(pk=question_id, game=session.game).first() if question_id else None
+    response_time_ms = int(data.get('response_time_ms', 0) or 0)
+
+    result = {
+        'is_correct': False,
+        'feedback': 'try_again',
+        'points': 0,
+        'accuracy_score': 0.0,
+    }
+    expected_payload = {}
+    submitted_payload = {}
+
+    if session.game.game_type in ['note_ninja', 'music_challenge']:
+        if not question:
+            return JsonResponse({'bool': False, 'message': 'Question not found'}, status=404)
+        submitted_answer = data.get('answer', '')
+        result = _calculate_note_or_quiz_attempt(question, submitted_answer, response_time_ms, session.streak)
+        expected_payload = {
+            'correct_answer': question.correct_answer,
+            'prompt': question.prompt,
+        }
+        submitted_payload = {'answer': submitted_answer}
+
+    elif session.game.game_type == 'rhythm_rush':
+        expected_timestamps = data.get('expected_timestamps') or data.get('pattern') or []
+        submitted_taps = data.get('taps') or []
+        tolerance_ms = data.get('tolerance_ms', 120)
+        result = _calculate_rhythm_attempt(expected_timestamps, submitted_taps, tolerance_ms)
+        expected_payload = {
+            'expected_timestamps': expected_timestamps,
+            'tolerance_ms': int(tolerance_ms or 120),
+        }
+        submitted_payload = {'taps': submitted_taps}
+        response_time_ms = result.get('avg_delta', 0)
+    else:
+        return JsonResponse({'bool': False, 'message': 'Unsupported game type'}, status=400)
+
+    models.GameAttempt.objects.create(
+        session=session,
+        question=question,
+        expected_payload=expected_payload,
+        submitted_payload=submitted_payload,
+        response_time_ms=max(response_time_ms, 0),
+        is_correct=result['is_correct'],
+        accuracy_score=result['accuracy_score'],
+        points_earned=result['points'],
+        feedback=result['feedback'],
+    )
+
+    session.score += int(result['points'])
+    if result['is_correct']:
+        session.correct_count += 1
+        session.streak += 1
+        session.max_streak = max(session.max_streak, session.streak)
+    else:
+        session.wrong_count += 1
+        session.streak = 0
+
+    attempts = session.correct_count + session.wrong_count
+    if attempts > 0:
+        avg = session.attempts.aggregate(v=Avg('response_time_ms'))['v'] or 0
+        session.average_response_ms = int(avg)
+    session.save(update_fields=['score', 'correct_count', 'wrong_count', 'streak', 'max_streak', 'average_response_ms'])
+
+    # Determine next unseen question for this session
+    answered_qids = list(
+        models.GameAttempt.objects.filter(session=session, question__isnull=False)
+        .values_list('question_id', flat=True)
+    )
+    next_question = None
+    if session.game.game_type in ['note_ninja', 'music_challenge']:
+        next_question = models.GameQuestion.objects.filter(
+            game=session.game, level=session.level, is_active=True
+        ).exclude(id__in=answered_qids).order_by('order', 'id').first()
+
+    # Include correct_answer after submission so frontend can reveal it
+    correct_answer = None
+    if question and session.game.game_type in ['note_ninja', 'music_challenge']:
+        correct_answer = question.correct_answer
+
+    return JsonResponse({
+        'bool': True,
+        'attempt_result': {**result, 'correct_answer': correct_answer},
+        'session': {
+            'id': session.id,
+            'score': session.score,
+            'streak': session.streak,
+            'max_streak': session.max_streak,
+            'correct_count': session.correct_count,
+            'wrong_count': session.wrong_count,
+            'average_response_ms': session.average_response_ms,
+        },
+        'next_question': GameQuestionPublicSerializer(next_question).data if next_question else None,
+    })
+
+
+@csrf_exempt
+def student_game_next_question(request, session_id):
+    """Return the next unanswered question for an active game session."""
+    if request.method != 'GET':
+        return JsonResponse({'bool': False, 'message': 'GET required'}, status=405)
+
+    session = models.GameSession.objects.select_related('game').filter(pk=session_id).first()
+    if not session:
+        return JsonResponse({'bool': False, 'message': 'Session not found'}, status=404)
+    if session.status != 'active':
+        return JsonResponse({'bool': False, 'message': 'Session is not active'}, status=400)
+
+    answered_qids = list(
+        models.GameAttempt.objects.filter(session=session, question__isnull=False)
+        .values_list('question_id', flat=True)
+    )
+
+    next_q = models.GameQuestion.objects.filter(
+        game=session.game, level=session.level, is_active=True
+    ).exclude(id__in=answered_qids).order_by('order', 'id').first()
+
+    remaining = models.GameQuestion.objects.filter(
+        game=session.game, level=session.level, is_active=True
+    ).exclude(id__in=answered_qids).count()
+
+    return JsonResponse({
+        'bool': True,
+        'question': GameQuestionPublicSerializer(next_q).data if next_q else None,
+        'remaining': remaining,
+        'answered': len(answered_qids),
+    })
+
+
+@csrf_exempt
+def student_game_session_questions(request, session_id):
+    """Return all questions for a session's level (batch mode for frontend prefetch)."""
+    if request.method != 'GET':
+        return JsonResponse({'bool': False, 'message': 'GET required'}, status=405)
+
+    session = models.GameSession.objects.select_related('game').filter(pk=session_id).first()
+    if not session:
+        return JsonResponse({'bool': False, 'message': 'Session not found'}, status=404)
+
+    questions = models.GameQuestion.objects.filter(
+        game=session.game, level=session.level, is_active=True
+    ).order_by('order', 'id')
+
+    answered_qids = set(
+        models.GameAttempt.objects.filter(session=session, question__isnull=False)
+        .values_list('question_id', flat=True)
+    )
+
+    questions_data = GameQuestionPublicSerializer(questions, many=True).data
+    for q_data in questions_data:
+        q_data['answered'] = q_data['id'] in answered_qids
+
+    return JsonResponse({
+        'bool': True,
+        'session_id': session.id,
+        'level': session.level,
+        'game_type': session.game.game_type,
+        'status': session.status,
+        'questions': questions_data,
+        'total': len(questions_data),
+        'answered_count': len(answered_qids),
+        'remaining_count': len(questions_data) - len(answered_qids),
+    })
+
+
+@csrf_exempt
+def student_game_finish_session(request, session_id):
+    if request.method != 'POST':
+        return JsonResponse({'bool': False, 'message': 'POST required'}, status=405)
+
+    session = models.GameSession.objects.select_related('student', 'game').filter(pk=session_id).first()
+    if not session:
+        return JsonResponse({'bool': False, 'message': 'Session not found'}, status=404)
+
+    try:
+        data = json.loads(request.body) if request.body else {}
+    except Exception:
+        data = {}
+
+    duration = int(data.get('time_spent_seconds', session.time_spent_seconds or 0) or 0)
+    if duration < 0:
+        duration = 0
+
+    if session.status == 'active':
+        session.status = 'completed'
+        session.time_spent_seconds = duration
+        session.completed_at = timezone.now()
+        session.save(update_fields=['status', 'time_spent_seconds', 'completed_at'])
+
+    student = session.student
+    game = session.game
+    profile, _ = models.StudentGameProfile.objects.get_or_create(student=student, game=game)
+
+    attempts_count = session.correct_count + session.wrong_count
+    session_accuracy = round((session.correct_count / attempts_count) * 100, 2) if attempts_count > 0 else 0
+
+    profile.total_attempts += attempts_count
+    profile.correct_attempts += session.correct_count
+    profile.total_score += session.score
+    profile.best_score = max(profile.best_score, session.score)
+    profile.best_streak = max(profile.best_streak, session.max_streak)
+    profile.time_spent_seconds += session.time_spent_seconds
+    profile.last_played_at = timezone.now()
+
+    # ---- Level-up logic: require >= 70% accuracy to unlock next level ----
+    old_highest_level = profile.highest_level_unlocked
+    level_up = False
+    if session_accuracy >= 70 and session.level >= old_highest_level:
+        new_level = min(session.level + 1, game.max_level)
+        if new_level > old_highest_level:
+            profile.highest_level_unlocked = new_level
+            level_up = True
+
+    # ---- Balanced Sonara Coins calculation ----
+    # Base: score / 5  +  streak bonus: max_streak / 3
+    base_coins = int(session.score / 5) + (session.max_streak // 3)
+    # Level multiplier: 10% more per level above 1
+    level_multiplier = 1 + (session.level - 1) * 0.1
+    coins_before_bonus = int(base_coins * level_multiplier)
+    # Accuracy bonus
+    accuracy_bonus = 0
+    if session_accuracy == 100:
+        accuracy_bonus = 10
+    elif session_accuracy >= 90:
+        accuracy_bonus = 5
+    elif session_accuracy >= 80:
+        accuracy_bonus = 2
+    coins_earned = max(0, coins_before_bonus + accuracy_bonus)
+    # Minimum 1 coin if any correct answers
+    if session.correct_count > 0 and coins_earned == 0:
+        coins_earned = 1
+    profile.sonara_coins += coins_earned
+    profile.save()
+
+    today = timezone.now().date()
+    week_start = today - timezone.timedelta(days=today.weekday())
+    week_end = week_start + timezone.timedelta(days=6)
+
+    row, _ = models.WeeklyGameLeaderboard.objects.get_or_create(
+        student=student,
+        game=game,
+        week_start=week_start,
+        defaults={
+            'week_end': week_end,
+            'total_score': 0,
+            'attempts_count': 0,
+            'avg_accuracy': 0,
+            'best_streak': 0,
+        }
+    )
+    row.week_end = week_end
+    row.total_score += session.score
+    row.attempts_count += attempts_count
+    if row.attempts_count > 0:
+        accuracy = (session.correct_count / attempts_count) * 100 if attempts_count else 0
+        row.avg_accuracy = round(((row.avg_accuracy * (row.attempts_count - attempts_count)) + (accuracy * attempts_count)) / row.attempts_count, 2)
+    row.best_streak = max(row.best_streak, session.max_streak)
+    row.save()
+
+    _recompute_weekly_rankings(game, week_start, week_end)
+    awarded_badges = _award_game_badges(student, game, profile)
+
+    log_activity(
+        request,
+        action='submission',
+        description=f"Completed game session: {game.title} (score={session.score}, level={session.level})",
+        model_name='GameSession',
+        object_id=session.id,
+        student=student,
+    )
+
+    return JsonResponse({
+        'bool': True,
+        'session': GameSessionSerializer(session).data,
+        'profile': StudentGameProfileSerializer(profile).data,
+        'coins_earned': coins_earned,
+        'badges_awarded': awarded_badges,
+        'session_accuracy': session_accuracy,
+        'level_up': level_up,
+        'new_level_unlocked': profile.highest_level_unlocked if level_up else None,
+    })
+
+
+@csrf_exempt
+def game_weekly_leaderboard(request, game_type):
+    if request.method != 'GET':
+        return JsonResponse({'bool': False, 'message': 'GET required'}, status=405)
+
+    game = models.GameDefinition.objects.filter(game_type=game_type).first()
+    if not game:
+        return JsonResponse({'bool': False, 'message': 'Game not found'}, status=404)
+
+    today = timezone.now().date()
+    week_start = today - timezone.timedelta(days=today.weekday())
+    week_end = week_start + timezone.timedelta(days=6)
+
+    qs = models.WeeklyGameLeaderboard.objects.filter(
+        game=game, week_start=week_start, week_end=week_end
+    ).select_related('student', 'game').order_by('rank', '-total_score')[:100]
+
+    return JsonResponse({
+        'bool': True,
+        'game': game.game_type,
+        'week_start': week_start.isoformat(),
+        'week_end': week_end.isoformat(),
+        'results': WeeklyGameLeaderboardSerializer(qs, many=True).data,
+    })
+
+
+@csrf_exempt
+def teacher_students_game_performance(request, teacher_id):
+    """Enhanced teacher endpoint: game_type filter, search, sort, CSV export."""
+    import csv as csv_mod
+    if request.method != 'GET':
+        return JsonResponse({'bool': False, 'message': 'GET required'}, status=405)
+
+    teacher = models.Teacher.objects.filter(pk=teacher_id).first()
+    if not teacher:
+        return JsonResponse({'bool': False, 'message': 'Teacher not found'}, status=404)
+
+    student_ids = models.TeacherStudent.objects.filter(
+        teacher_id=teacher_id,
+        status='active'
+    ).values_list('student_id', flat=True).distinct()
+
+    game_type_filter = request.GET.get('game_type', '')
+    search_q = request.GET.get('search', '').strip().lower()
+    sort_by = request.GET.get('sort', 'student_name')  # student_name, accuracy, score, streak, coins, attempts
+    sort_dir = request.GET.get('dir', 'asc')
+
+    profiles = models.StudentGameProfile.objects.filter(student_id__in=student_ids).select_related('student', 'game')
+    if game_type_filter:
+        profiles = profiles.filter(game__game_type=game_type_filter)
+
+    # Build flat rows (one per student-game combo) for sorting/filtering/CSV
+    rows = []
+    for p in profiles:
+        rows.append({
+            'student_id': p.student_id,
+            'student_name': p.student.fullname,
+            'game_type': p.game.game_type,
+            'game_title': p.game.title,
+            'total_attempts': p.total_attempts,
+            'correct_attempts': p.correct_attempts,
+            'accuracy_percent': p.accuracy_percent,
+            'best_score': p.best_score,
+            'total_score': p.total_score,
+            'best_streak': p.best_streak,
+            'highest_level_unlocked': p.highest_level_unlocked,
+            'sonara_coins': p.sonara_coins,
+            'time_spent_seconds': p.time_spent_seconds,
+            'last_played_at': p.last_played_at.isoformat() if p.last_played_at else None,
+        })
+
+    if search_q:
+        rows = [r for r in rows if search_q in r['student_name'].lower()]
+
+    sort_key_map = {
+        'student_name': 'student_name',
+        'accuracy': 'accuracy_percent',
+        'score': 'best_score',
+        'streak': 'best_streak',
+        'coins': 'sonara_coins',
+        'attempts': 'total_attempts',
+        'level': 'highest_level_unlocked',
+    }
+    sk = sort_key_map.get(sort_by, 'student_name')
+    rows.sort(key=lambda r: r.get(sk, 0) if sk != 'student_name' else r.get(sk, '').lower(),
+              reverse=(sort_dir == 'desc'))
+
+    # CSV export
+    if request.GET.get('export') == 'csv':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="teacher_game_performance.csv"'
+        writer = csv_mod.writer(response)
+        headers = ['Student', 'Game', 'Attempts', 'Correct', 'Accuracy %', 'Best Score',
+                    'Total Score', 'Best Streak', 'Level', 'Coins', 'Time (sec)', 'Last Played']
+        writer.writerow(headers)
+        for r in rows:
+            writer.writerow([
+                r['student_name'], r['game_title'], r['total_attempts'], r['correct_attempts'],
+                r['accuracy_percent'], r['best_score'], r['total_score'], r['best_streak'],
+                r['highest_level_unlocked'], r['sonara_coins'], r['time_spent_seconds'],
+                r['last_played_at'] or ''
+            ])
+        return response
+
+    # Also group by student for a summary view
+    grouped = {}
+    for r in rows:
+        sid = r['student_id']
+        if sid not in grouped:
+            grouped[sid] = {
+                'student_id': sid,
+                'student_name': r['student_name'],
+                'total_coins': 0,
+                'total_attempts': 0,
+                'games': [],
+            }
+        grouped[sid]['total_coins'] += r['sonara_coins']
+        grouped[sid]['total_attempts'] += r['total_attempts']
+        grouped[sid]['games'].append(r)
+
+    available_games = list(models.GameDefinition.objects.filter(is_active=True).values('game_type', 'title'))
+
+    return JsonResponse({
+        'bool': True,
+        'results': list(grouped.values()),
+        'flat_rows': rows,
+        'available_games': available_games,
+        'total_students': len(grouped),
+        'total_rows': len(rows),
+    })
+
+
+@csrf_exempt
+def admin_games_analytics(request):
+    """Enhanced admin analytics: badge distribution, engagement, CSV export."""
+    import csv as csv_mod
+    from django.db.models.functions import TruncDate
+    if request.method != 'GET':
+        return JsonResponse({'bool': False, 'message': 'GET required'}, status=405)
+
+    games = models.GameDefinition.objects.filter(is_active=True)
+
+    # ── Per-game stats ──
+    game_stats = []
+    for game in games:
+        sessions = models.GameSession.objects.filter(game=game)
+        profiles = models.StudentGameProfile.objects.filter(game=game)
+        total_sessions = sessions.count()
+        completed_sessions = sessions.filter(status='completed').count()
+        total_players = profiles.values('student_id').distinct().count()
+        avg_score = sessions.aggregate(v=Avg('score'))['v'] or 0
+        avg_accuracy = 0
+        if profiles.exists():
+            avg_accuracy = round(sum(p.accuracy_percent for p in profiles) / profiles.count(), 2)
+        total_time = profiles.aggregate(v=Sum('time_spent_seconds'))['v'] or 0
+
+        game_stats.append({
+            'game_type': game.game_type,
+            'title': game.title,
+            'players': total_players,
+            'sessions': total_sessions,
+            'completed_sessions': completed_sessions,
+            'avg_score': round(avg_score, 2),
+            'avg_accuracy_percent': avg_accuracy,
+            'coins_issued': profiles.aggregate(v=Sum('sonara_coins'))['v'] or 0,
+            'total_time_seconds': total_time,
+        })
+
+    # ── Top students ──
+    top_students = list(models.StudentGameProfile.objects.values(
+        'student_id', 'student__fullname'
+    ).annotate(
+        total_coins=Sum('sonara_coins'),
+        total_score=Sum('total_score'),
+        total_attempts=Sum('total_attempts'),
+    ).order_by('-total_coins', '-total_score')[:20])
+
+    # ── Badge distribution ──
+    badge_dist = list(models.StudentGameBadge.objects.values(
+        'badge__badge_key', 'badge__title'
+    ).annotate(count=Count('id')).order_by('-count'))
+
+    total_badges_awarded = models.StudentGameBadge.objects.count()
+
+    # ── Engagement: sessions per day (last 30 days) ──
+    from django.utils import timezone as tz
+    thirty_days_ago = tz.now() - timedelta(days=30)
+    daily_sessions = list(
+        models.GameSession.objects.filter(started_at__gte=thirty_days_ago)
+        .annotate(day=TruncDate('started_at'))
+        .values('day')
+        .annotate(count=Count('id'))
+        .order_by('day')
+    )
+    for d in daily_sessions:
+        d['day'] = d['day'].isoformat()
+
+    # ── Platform totals ──
+    total_players = models.StudentGameProfile.objects.values('student_id').distinct().count()
+    total_sessions_all = models.GameSession.objects.count()
+    total_coins_issued = models.StudentGameProfile.objects.aggregate(v=Sum('sonara_coins'))['v'] or 0
+
+    # ── CSV export of top students or game stats ──
+    export = request.GET.get('export', '')
+    if export == 'game_stats_csv':
+        resp = HttpResponse(content_type='text/csv')
+        resp['Content-Disposition'] = 'attachment; filename="admin_game_stats.csv"'
+        w = csv_mod.writer(resp)
+        w.writerow(['Game', 'Players', 'Sessions', 'Completed', 'Avg Score', 'Avg Accuracy %', 'Coins Issued', 'Total Time (s)'])
+        for g in game_stats:
+            w.writerow([g['title'], g['players'], g['sessions'], g['completed_sessions'],
+                        g['avg_score'], g['avg_accuracy_percent'], g['coins_issued'], g['total_time_seconds']])
+        return resp
+
+    if export == 'top_students_csv':
+        resp = HttpResponse(content_type='text/csv')
+        resp['Content-Disposition'] = 'attachment; filename="admin_top_students.csv"'
+        w = csv_mod.writer(resp)
+        w.writerow(['Student', 'Total Coins', 'Total Score', 'Total Attempts'])
+        for s in top_students:
+            w.writerow([s['student__fullname'], s['total_coins'], s['total_score'], s['total_attempts']])
+        return resp
+
+    return JsonResponse({
+        'bool': True,
+        'game_stats': game_stats,
+        'top_students': top_students,
+        'badge_distribution': badge_dist,
+        'total_badges_awarded': total_badges_awarded,
+        'daily_sessions': daily_sessions,
+        'platform_totals': {
+            'total_players': total_players,
+            'total_sessions': total_sessions_all,
+            'total_coins_issued': total_coins_issued,
+        },
     })

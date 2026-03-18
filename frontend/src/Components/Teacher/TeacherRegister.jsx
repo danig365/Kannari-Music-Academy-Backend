@@ -7,6 +7,7 @@ import Swal from 'sweetalert2'
 
 
 import { API_BASE_URL } from '../../config';
+import { validateTeacherRegisterForm, FieldError } from '../../utils/formValidation';
 
 const baseUrl = `${API_BASE_URL}/teacher/`;
 
@@ -29,6 +30,7 @@ const TeacherRegister = () => {
             'status':''
     })
               const [loading, setLoading] = useState(false)
+    const [fieldErrors, setFieldErrors] = useState({})
 
     const handleChange=(event)=>{
         setTeacherData({
@@ -39,6 +41,27 @@ const TeacherRegister = () => {
 
     const submitForm=async()=>{
       if (loading) return
+
+      const errors = validateTeacherRegisterForm({
+        full_name: teacherData.full_name,
+        email: teacherData.email,
+        password: teacherData.password,
+        qualification: teacherData.qualification,
+        mobile_no: teacherData.mobile_no
+      });
+      setFieldErrors(errors);
+      if (Object.keys(errors).length > 0) {
+        Swal.fire({
+          title: 'Please fix the errors below',
+          icon: 'warning',
+          toast: true,
+          timer: 2500,
+          position: 'top-right',
+          timerProgressBar: true,
+          showConfirmButton: false
+        });
+        return;
+      }
 
         const teacherFormData=new FormData();
         teacherFormData.append("full_name",teacherData.full_name)
@@ -72,7 +95,7 @@ const TeacherRegister = () => {
           });
         }
         let tID = setTimeout(function () {
-          window.location.href='/teacher-login';
+          window.location.href='/teacher/login';
           window.clearTimeout(tID);
         }, 2800);
       }catch(error){
@@ -93,7 +116,7 @@ const TeacherRegister = () => {
 
     const teacherLoginStatus=localStorage.getItem('teacherLoginStatus')
     if(teacherLoginStatus=='true'){
-        window.location.href='/teacher-dashboard';
+        window.location.href='/teacher/dashboard';
     }
     
  return (
@@ -255,7 +278,7 @@ const TeacherRegister = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: '1px solid #e5e7eb',
+                    border: fieldErrors.full_name ? '1px solid #ef4444' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
@@ -267,10 +290,11 @@ const TeacherRegister = () => {
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.full_name ? '#ef4444' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
+                <FieldError error={fieldErrors.full_name} />
               </div>
 
               {/* Email Address */}
@@ -292,7 +316,7 @@ const TeacherRegister = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: '1px solid #e5e7eb',
+                    border: fieldErrors.email ? '1px solid #ef4444' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
@@ -304,10 +328,11 @@ const TeacherRegister = () => {
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.email ? '#ef4444' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
+                <FieldError error={fieldErrors.email} />
               </div>
 
               {/* Password */}
@@ -329,7 +354,7 @@ const TeacherRegister = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: '1px solid #e5e7eb',
+                    border: fieldErrors.password ? '1px solid #ef4444' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
@@ -341,10 +366,11 @@ const TeacherRegister = () => {
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.password ? '#ef4444' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
+                <FieldError error={fieldErrors.password} />
               </div>
 
               {/* Qualifications */}
@@ -366,7 +392,7 @@ const TeacherRegister = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: '1px solid #e5e7eb',
+                    border: fieldErrors.qualification ? '1px solid #ef4444' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
@@ -378,10 +404,11 @@ const TeacherRegister = () => {
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.qualification ? '#ef4444' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
+                <FieldError error={fieldErrors.qualification} />
               </div>
 
               {/* Mobile Number */}
@@ -403,7 +430,7 @@ const TeacherRegister = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: '1px solid #e5e7eb',
+                    border: fieldErrors.mobile_no ? '1px solid #ef4444' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
@@ -415,10 +442,11 @@ const TeacherRegister = () => {
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.mobile_no ? '#ef4444' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
+                <FieldError error={fieldErrors.mobile_no} />
               </div>
 
               {/* Skills */}
@@ -539,7 +567,7 @@ const TeacherRegister = () => {
 
               {/* Sign In Link */}
               <Link
-                to="/teacher-login"
+                to="/teacher/login"
                 style={{
                   width: '100%',
                   padding: '14px 24px',

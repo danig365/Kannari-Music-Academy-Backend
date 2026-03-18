@@ -63,7 +63,7 @@ const TeacherLayout = () => {
     // Redirect to login if not authenticated
     if (teacherLoginStatus !== 'true') {
         console.log('TeacherLayout - Redirecting to login (not authenticated)');
-        return <Navigate to="/teacher-login" replace />;
+        return <Navigate to="/teacher/login" replace />;
     }
 
     return (

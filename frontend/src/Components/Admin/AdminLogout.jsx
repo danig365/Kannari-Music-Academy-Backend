@@ -10,7 +10,7 @@ const AdminLogout = () => {
         localStorage.removeItem('adminId');
         localStorage.removeItem('adminRole');
         localStorage.removeItem('adminName');
-        navigate('/admin-login');
+        navigate('/admin-panel/login');
     }, [navigate]);
 
     return <LoadingSpinner fullScreen size="lg" text="Logging out..." />;

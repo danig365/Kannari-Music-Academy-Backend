@@ -150,6 +150,7 @@ class ModuleLesson(models.Model):
     objectives = models.TextField(blank=True, null=True, help_text="What students will learn in this lesson (one per line)")
     content_type = models.CharField(max_length=20, choices=CONTENT_TYPE_CHOICES, default='video')
     file = models.FileField(upload_to='lesson_content/', blank=True, null=True, max_length=500)
+    youtube_url = models.URLField(max_length=500, blank=True, null=True, help_text="Optional YouTube video link for this lesson")
     duration_seconds = models.IntegerField(default=0)  # For video/audio
     order = models.PositiveIntegerField(default=0)
     is_preview = models.BooleanField(default=False, help_text="Allow non-enrolled users to preview this lesson")
@@ -367,6 +368,40 @@ class Student(models.Model):
         )
         return age < 18
 
+    def has_approved_parent_with_policies(self):
+        """Check if minor has an approved parent link AND parent has accepted
+        all required policies (TOS + Child Safety)."""
+        if not self.is_minor():
+            return True  # Non-minors don't need parent approval
+
+        approved_link = StudentParentLink.objects.filter(
+            student=self, status='approved'
+        ).select_related('parent').first()
+        if not approved_link:
+            return False
+
+        # Check parent has accepted all required policies
+        required_count = PolicyDocument.objects.filter(
+            is_active=True,
+            policy_type__in=['child_safety', 'terms_of_service']
+        ).count()
+        if required_count == 0:
+            return True  # No policies defined yet
+
+        accepted_count = ParentPolicyAcceptance.objects.filter(
+            parent=approved_link.parent,
+            policy__is_active=True,
+            policy__policy_type__in=['child_safety', 'terms_of_service']
+        ).count()
+        return accepted_count >= required_count
+
+    def can_send_messages(self):
+        """Minor students cannot send messages unless they have an approved parent
+        who has accepted all required policies."""
+        if not self.is_minor():
+            return True
+        return self.has_approved_parent_with_policies()
+
     class Meta:
         verbose_name_plural="5. Students"
 
@@ -444,6 +479,8 @@ class ParentAccount(models.Model):
     password = models.CharField(max_length=100, null=True, blank=True)
     mobile_no = models.CharField(max_length=20, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
+    verification_token = models.CharField(max_length=64, null=True, blank=True)
+    token_expires_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -618,6 +655,7 @@ class Admin(models.Model):
 
 class PolicyDocument(models.Model):
     POLICY_TYPE_CHOICES = [
+        ('terms_of_service', 'Terms of Service'),
         ('child_safety', 'Child Safety Policy'),
         ('code_of_conduct', 'Code of Conduct'),
         ('background_check_consent', 'Background Check Consent'),
@@ -896,12 +934,19 @@ class ActivityLog(models.Model):
         ('view', 'View'),
         ('export', 'Export'),
         ('import', 'Import'),
+        ('message', 'Message Sent'),
+        ('submission', 'Assignment Submission'),
+        ('session_join', 'Session Join'),
+        ('session_leave', 'Session Leave'),
+        ('session_start', 'Session Start'),
+        ('session_end', 'Session End'),
     ]
     
     admin = models.ForeignKey(Admin, on_delete=models.SET_NULL, null=True, blank=True, related_name='activity_logs')
     teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True)
     student = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True)
-    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    parent = models.ForeignKey(ParentAccount, on_delete=models.SET_NULL, null=True, blank=True, related_name='activity_logs')
+    action = models.CharField(max_length=30, choices=ACTION_CHOICES)
     model_name = models.CharField(max_length=100, null=True, blank=True)
     object_id = models.IntegerField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -2308,17 +2353,50 @@ class GroupClassStudent(models.Model):
 
 
 class LessonAssignment(models.Model):
-    """Lessons assigned by school to individual students or group classes"""
+    """Assignments created by school or teacher for individual students or group classes.
+    Supports multiple submission types: audio, video, discussion, multiple choice, file upload."""
     ASSIGNMENT_TYPE_CHOICES = [
         ('individual', 'Individual Student'),
         ('group', 'Group Class'),
     ]
-    
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='lesson_assignments')
-    lesson = models.ForeignKey(ModuleLesson, on_delete=models.CASCADE, related_name='school_assignments')
+
+    SUBMISSION_TYPE_CHOICES = [
+        ('audio', 'Audio Submission'),
+        ('video', 'Video Submission'),
+        ('discussion', 'Discussion Thread'),
+        ('multiple_choice', 'Multiple Choice (Auto-Graded)'),
+        ('file_upload', 'File Upload'),
+    ]
+
+    STATUS_CHOICES = [
+        ('assigned', 'Assigned'),
+        ('submitted', 'Submitted'),
+        ('late', 'Late'),
+        ('graded', 'Graded'),
+    ]
+
+    # Who created the assignment (school or teacher — at least one required)
+    school = models.ForeignKey(School, on_delete=models.CASCADE, null=True, blank=True, related_name='lesson_assignments')
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True, blank=True, related_name='created_assignments',
+                                help_text="Teacher who created this assignment (when not created by school)")
+    lesson = models.ForeignKey(ModuleLesson, on_delete=models.CASCADE, null=True, blank=True, related_name='school_assignments',
+                               help_text="Optional linked lesson")
+
+    # Assignment metadata
+    title = models.CharField(max_length=300, default='', blank=True,
+                             help_text="Assignment title (falls back to lesson title if blank)")
+    description = models.TextField(null=True, blank=True,
+                                   help_text="Detailed description / instructions for students")
+    submission_type = models.CharField(max_length=20, choices=SUBMISSION_TYPE_CHOICES, default='audio',
+                                       help_text="What kind of submission students should provide")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='assigned',
+                              help_text="Overall assignment status")
+
+    # Target (individual student or group)
     assignment_type = models.CharField(max_length=20, choices=ASSIGNMENT_TYPE_CHOICES, default='individual')
     student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, blank=True, related_name='school_lesson_assignments')
     group_class = models.ForeignKey(GroupClass, on_delete=models.CASCADE, null=True, blank=True, related_name='lesson_assignments')
+
     due_date = models.DateField(null=True, blank=True)
     audio_required = models.BooleanField(default=True)
     max_points = models.PositiveIntegerField(default=100)
@@ -2330,15 +2408,46 @@ class LessonAssignment(models.Model):
         ordering = ['-assigned_at']
 
     def __str__(self):
-        target = self.student.fullname if self.student else self.group_class.name if self.group_class else 'Unknown'
-        return f"{self.school.name} - {self.lesson.title} -> {target}"
+        label = self.title or (self.lesson.title if self.lesson else 'Untitled')
+        target = self.student.fullname if self.student else (self.group_class.name if self.group_class else 'Unknown')
+        source = self.school.name if self.school else (self.teacher.full_name if self.teacher else 'Unknown')
+        return f"{source} - {label} -> {target}"
+
+    @property
+    def display_title(self):
+        return self.title or (self.lesson.title if self.lesson else 'Untitled Assignment')
+
+    def compute_status(self, student_id=None):
+        """Compute the status for a specific student (or overall)."""
+        from django.utils import timezone
+        submissions = self.submissions.all()
+        if student_id:
+            submissions = submissions.filter(student_id=student_id)
+        if not submissions.exists():
+            if self.due_date and self.due_date < timezone.now().date():
+                return 'late'
+            return 'assigned'
+        submission = submissions.first()
+        if submission.points_awarded is not None:
+            return 'graded'
+        if self.due_date and submission.submitted_at and submission.submitted_at.date() > self.due_date:
+            return 'late'
+        return 'submitted'
 
 
 class LessonAssignmentSubmission(models.Model):
-    """Student audio submissions for school lesson assignments"""
+    """Student submissions for assignments — supports audio, video, file, and text."""
     assignment = models.ForeignKey(LessonAssignment, on_delete=models.CASCADE, related_name='submissions')
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='lesson_assignment_submissions')
-    audio_file = models.FileField(upload_to='assignment_submissions/')
+
+    # Submission files (at least one populated depending on assignment.submission_type)
+    audio_file = models.FileField(upload_to='assignment_submissions/audio/', null=True, blank=True)
+    video_file = models.FileField(upload_to='assignment_submissions/video/', null=True, blank=True)
+    file = models.FileField(upload_to='assignment_submissions/files/', null=True, blank=True,
+                            help_text="Generic file upload (PDF, image, etc.)")
+    text_content = models.TextField(null=True, blank=True,
+                                    help_text="Text response (used for discussion type)")
+
     submission_notes = models.TextField(null=True, blank=True)
     points_awarded = models.PositiveIntegerField(null=True, blank=True)
     teacher_feedback = models.TextField(null=True, blank=True)
@@ -2353,7 +2462,8 @@ class LessonAssignmentSubmission(models.Model):
         unique_together = ['assignment', 'student']
 
     def __str__(self):
-        return f"{self.student.fullname} - {self.assignment.lesson.title}"
+        label = self.assignment.display_title
+        return f"{self.student.fullname} - {label}"
 
 
 class AccessLog(models.Model):
@@ -2489,6 +2599,8 @@ class SafetyReport(models.Model):
     REPORT_TYPE_CHOICES = [
         ('session', 'Session'),
         ('audio_message', 'Audio Message'),
+        ('text_message', 'Text Message'),
+        ('group_message', 'Group Message'),
         ('other', 'Other'),
     ]
 
@@ -2522,3 +2634,835 @@ class SafetyReport(models.Model):
 
     def __str__(self):
         return f"SafetyReport #{self.id} - {self.report_type} - {self.status}"
+
+
+# ==================== MESSAGING SYSTEM ====================
+
+class Message(models.Model):
+    """Text messaging between Parent <-> Teacher, Teacher <-> Student (18+), and Admin.
+    Messages are permanently stored and cannot be deleted — only hidden per-user.
+    Minors (students under 18) CANNOT send or receive direct messages — parent chats only.
+    Adult students (18+) chat directly with their teacher via teacher_student link."""
+    SENDER_TYPE_CHOICES = [
+        ('parent', 'Parent'),
+        ('teacher', 'Teacher'),
+        ('admin', 'Admin'),
+        ('student', 'Student'),
+    ]
+
+    # Sender
+    sender_type = models.CharField(max_length=20, choices=SENDER_TYPE_CHOICES)
+    sender_parent = models.ForeignKey(ParentAccount, on_delete=models.SET_NULL, null=True, blank=True,
+                                       related_name='sent_messages')
+    sender_teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True,
+                                        related_name='sent_messages')
+    sender_admin = models.ForeignKey(Admin, on_delete=models.SET_NULL, null=True, blank=True,
+                                      related_name='sent_messages')
+    sender_student = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True,
+                                        related_name='sent_messages')
+
+    # Recipient
+    recipient_type = models.CharField(max_length=20, choices=SENDER_TYPE_CHOICES)
+    recipient_parent = models.ForeignKey(ParentAccount, on_delete=models.SET_NULL, null=True, blank=True,
+                                          related_name='received_messages')
+    recipient_teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True,
+                                           related_name='received_messages')
+    recipient_admin = models.ForeignKey(Admin, on_delete=models.SET_NULL, null=True, blank=True,
+                                         related_name='received_messages')
+    recipient_student = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True,
+                                           related_name='received_messages')
+
+    # Link to the parent-student relationship (context for parent<->teacher chat — minors)
+    parent_link = models.ForeignKey(StudentParentLink, on_delete=models.SET_NULL, null=True, blank=True,
+                                     related_name='messages',
+                                     help_text="The parent-student link this conversation is about")
+
+    # Link to the teacher-student assignment (context for teacher<->student chat — 18+ adults)
+    teacher_student = models.ForeignKey(TeacherStudent, on_delete=models.SET_NULL, null=True, blank=True,
+                                         related_name='messages',
+                                         help_text="The teacher-student assignment this conversation is about (18+ only)")
+
+    content = models.TextField()
+    is_read = models.BooleanField(default=False)
+    read_at = models.DateTimeField(null=True, blank=True)
+
+    # Soft-hide per side (NOT deletion — messages are permanent)
+    is_hidden_by_sender = models.BooleanField(default=False)
+    is_hidden_by_recipient = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "61. Messages"
+        ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['sender_type', 'created_at']),
+            models.Index(fields=['recipient_type', 'created_at']),
+            models.Index(fields=['parent_link', 'created_at']),
+            models.Index(fields=['teacher_student', 'created_at']),
+        ]
+
+    def __str__(self):
+        sender = self.sender_parent or self.sender_teacher or self.sender_admin or self.sender_student or 'Unknown'
+        recipient = self.recipient_parent or self.recipient_teacher or self.recipient_admin or self.recipient_student or 'Unknown'
+        return f"{sender} → {recipient} ({self.created_at:%Y-%m-%d %H:%M})"
+
+    @property
+    def sender_display(self):
+        if self.sender_type == 'parent' and self.sender_parent:
+            return self.sender_parent.fullname
+        elif self.sender_type == 'teacher' and self.sender_teacher:
+            return self.sender_teacher.full_name
+        elif self.sender_type == 'admin' and self.sender_admin:
+            return self.sender_admin.full_name
+        elif self.sender_type == 'student' and self.sender_student:
+            return self.sender_student.fullname
+        return 'Unknown'
+
+    @property
+    def recipient_display(self):
+        if self.recipient_type == 'parent' and self.recipient_parent:
+            return self.recipient_parent.fullname
+        elif self.recipient_type == 'teacher' and self.recipient_teacher:
+            return self.recipient_teacher.full_name
+        elif self.recipient_type == 'admin' and self.recipient_admin:
+            return self.recipient_admin.full_name
+        elif self.recipient_type == 'student' and self.recipient_student:
+            return self.recipient_student.fullname
+        return 'Unknown'
+
+
+class ChatLockPolicy(models.Model):
+    """Controls whether chat is locked or unlocked for a parent-teacher pair.
+    Age-based defaults:
+      Ages 4-12: Locked by default; unlocked only during sessions or by admin.
+      Ages 13-17: Allowed only during approved hours (office hours / sessions).
+      Ages 18+: Always available.
+    """
+    LOCK_REASON_CHOICES = [
+        ('age_default', 'Age-based default lock'),
+        ('admin_lock', 'Locked by admin'),
+        ('policy', 'Policy violation'),
+    ]
+
+    UNLOCKED_BY_CHOICES = [
+        ('admin', 'Admin manual unlock'),
+        ('session', 'Active session auto-unlock'),
+        ('office_hours', 'Teacher office hours'),
+        ('system', 'System'),
+    ]
+
+    parent_link = models.OneToOneField(StudentParentLink, on_delete=models.CASCADE,
+                                        related_name='chat_lock_policy')
+    is_locked = models.BooleanField(default=True)
+    lock_reason = models.CharField(max_length=30, choices=LOCK_REASON_CHOICES, default='age_default')
+    unlocked_by = models.CharField(max_length=20, choices=UNLOCKED_BY_CHOICES, null=True, blank=True)
+    unlock_expires_at = models.DateTimeField(null=True, blank=True,
+                                              help_text="When the current unlock window expires")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "61a. Chat Lock Policies"
+
+    def __str__(self):
+        status = 'Locked' if self.is_locked else 'Unlocked'
+        return f"{self.parent_link} - {status}"
+
+    def get_student_age_tier(self):
+        """Return the age tier for the student in this parent link."""
+        student = self.parent_link.student
+        if not student.date_of_birth:
+            return '13_17'  # default to restricted if unknown
+        from django.utils import timezone
+        today = timezone.now().date()
+        age = today.year - student.date_of_birth.year - (
+            (today.month, today.day) < (student.date_of_birth.month, student.date_of_birth.day)
+        )
+        if age >= 18:
+            return '18_plus'
+        elif age >= 13:
+            return '13_17'
+        else:
+            return '4_12'
+
+    def is_chat_currently_allowed(self):
+        """Determine if chat is allowed right now, considering age, sessions, and office hours."""
+        from django.utils import timezone
+        now = timezone.now()
+        tier = self.get_student_age_tier()
+
+        # 18+ always allowed
+        if tier == '18_plus':
+            return True, 'Adult student — chat always available'
+
+        # Check if there's an active admin unlock that hasn't expired
+        if not self.is_locked and self.unlock_expires_at and self.unlock_expires_at > now:
+            return True, f'Unlocked by {self.unlocked_by} until {self.unlock_expires_at}'
+
+        # Check active unlock requests
+        active_unlock = ChatUnlockRequest.objects.filter(
+            parent_link=self.parent_link,
+            expires_at__gt=now
+        ).first()
+        if active_unlock:
+            return True, f'Admin unlock active until {active_unlock.expires_at}'
+
+        # Check if within a live session window (10 min before → 30 min after)
+        import datetime
+        teacher_ids = []
+        # Get teachers from the parent link's student's enrolled courses
+        if self.parent_link.student:
+            from django.db.models import Q
+            teacher_ids = list(
+                TeacherStudent.objects.filter(
+                    student=self.parent_link.student, status='active'
+                ).values_list('teacher_id', flat=True)
+            )
+        if teacher_ids:
+            session_window_start = now - datetime.timedelta(minutes=10)
+            session_window_end = now + datetime.timedelta(minutes=30)
+            active_session = TeacherSession.objects.filter(
+                teacher_id__in=teacher_ids,
+                student=self.parent_link.student,
+                scheduled_date=now.date(),
+            ).filter(
+                models.Q(is_live=True) |
+                models.Q(
+                    scheduled_date=now.date(),
+                    # Session time within window
+                )
+            ).first()
+            if active_session:
+                return True, 'Live session window — chat unlocked'
+
+        # Ages 13-17: check teacher office hours
+        if tier == '13_17':
+            current_day = now.weekday()  # 0=Monday
+            current_time = now.time()
+            if teacher_ids:
+                office_hour = TeacherOfficeHours.objects.filter(
+                    teacher_id__in=teacher_ids,
+                    day_of_week=current_day,
+                    is_active=True,
+                    start_time__lte=current_time,
+                    end_time__gte=current_time
+                ).first()
+                if office_hour:
+                    return True, f'Within office hours of {office_hour.teacher.full_name}'
+
+        # Default: locked for 4-12 and outside approved windows for 13-17
+        if tier == '4_12':
+            return False, 'Chat locked for students aged 4-12 (unlocked only during sessions or by admin)'
+        return False, 'Chat locked outside approved hours for students aged 13-17'
+
+
+class TeacherOfficeHours(models.Model):
+    """Weekly recurring office hours when a teacher is available for chat."""
+    DAY_CHOICES = [
+        (0, 'Monday'),
+        (1, 'Tuesday'),
+        (2, 'Wednesday'),
+        (3, 'Thursday'),
+        (4, 'Friday'),
+        (5, 'Saturday'),
+        (6, 'Sunday'),
+    ]
+
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='office_hours')
+    day_of_week = models.IntegerField(choices=DAY_CHOICES)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    notes = models.CharField(max_length=200, blank=True, default='')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "61b. Teacher Office Hours"
+        ordering = ['day_of_week', 'start_time']
+        unique_together = ['teacher', 'day_of_week', 'start_time']
+
+    def __str__(self):
+        day_name = dict(self.DAY_CHOICES).get(self.day_of_week, '?')
+        return f"{self.teacher.full_name} - {day_name} {self.start_time}-{self.end_time}"
+
+
+class ChatUnlockRequest(models.Model):
+    """Admin or school manual unlock of chat for a specific parent-teacher pair."""
+    DURATION_CHOICES = [
+        (24, '24 Hours'),
+        (168, '7 Days'),
+    ]
+
+    parent_link = models.ForeignKey(StudentParentLink, on_delete=models.CASCADE,
+                                     related_name='chat_unlock_requests')
+    unlocked_by_admin = models.ForeignKey(Admin, on_delete=models.SET_NULL, null=True, blank=True,
+                                           related_name='chat_unlocks')
+    unlocked_by_school = models.ForeignKey(School, on_delete=models.SET_NULL, null=True, blank=True,
+                                            related_name='chat_unlocks')
+    duration_hours = models.IntegerField(choices=DURATION_CHOICES, default=24)
+    unlock_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    notes = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "61c. Chat Unlock Requests"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        by = self.unlocked_by_admin or self.unlocked_by_school or 'System'
+        return f"{self.parent_link} unlocked by {by} for {self.duration_hours}h"
+
+    def is_active(self):
+        from django.utils import timezone
+        return self.expires_at > timezone.now()
+
+
+# ==================== GROUP FEATURES ====================
+
+class GroupMessage(models.Model):
+    """Messages in a group class chat. Visible to all group students, instructor, and admin.
+    No private student-to-student or teacher-to-minor messaging.
+    Messages are permanently stored — no hard delete."""
+    SENDER_TYPE_CHOICES = [
+        ('teacher', 'Teacher'),
+        ('admin', 'Admin'),
+        ('parent', 'Parent'),
+        ('student', 'Student'),  # Only 18+ students
+        ('school', 'School'),
+    ]
+
+    group_class = models.ForeignKey(GroupClass, on_delete=models.CASCADE, related_name='group_messages')
+    sender_type = models.CharField(max_length=20, choices=SENDER_TYPE_CHOICES)
+    sender_teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True,
+                                        related_name='group_messages_sent')
+    sender_admin = models.ForeignKey(Admin, on_delete=models.SET_NULL, null=True, blank=True,
+                                      related_name='group_messages_sent')
+    sender_parent = models.ForeignKey(ParentAccount, on_delete=models.SET_NULL, null=True, blank=True,
+                                       related_name='group_messages_sent')
+    sender_student = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True,
+                                        related_name='group_messages_sent')
+    sender_name = models.CharField(max_length=150, blank=True, default='',
+                                    help_text="Cached display name for performance")
+
+    content = models.TextField()
+    is_pinned = models.BooleanField(default=False)
+    is_hidden = models.BooleanField(default=False, help_text="Admin can hide inappropriate messages")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "62. Group Messages"
+        ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['group_class', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f"[{self.group_class.name}] {self.sender_name}: {self.content[:50]}"
+
+
+class GroupAnnouncement(models.Model):
+    """Instructor announcements and updates posted to a group."""
+    group_class = models.ForeignKey(GroupClass, on_delete=models.CASCADE, related_name='announcements')
+    teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True,
+                                 related_name='group_announcements')
+    admin = models.ForeignKey(Admin, on_delete=models.SET_NULL, null=True, blank=True,
+                               related_name='group_announcements')
+    title = models.CharField(max_length=300)
+    content = models.TextField()
+    file = models.FileField(upload_to='group_announcements/', null=True, blank=True)
+    is_pinned = models.BooleanField(default=False)
+    priority = models.CharField(max_length=20, default='normal',
+                                choices=[('low','Low'),('normal','Normal'),('high','High'),('urgent','Urgent')])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "62a. Group Announcements"
+        ordering = ['-is_pinned', '-created_at']
+
+    def __str__(self):
+        author = self.teacher.full_name if self.teacher else (self.admin.full_name if self.admin else 'Unknown')
+        return f"[{self.group_class.name}] {author}: {self.title}"
+
+
+class GroupResource(models.Model):
+    """Files and resources shared with a group by the instructor."""
+    FILE_TYPE_CHOICES = [
+        ('pdf', 'PDF Document'),
+        ('audio', 'Audio'),
+        ('video', 'Video'),
+        ('image', 'Image'),
+        ('sheet_music', 'Sheet Music'),
+        ('other', 'Other'),
+    ]
+
+    group_class = models.ForeignKey(GroupClass, on_delete=models.CASCADE, related_name='resources')
+    teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True,
+                                 related_name='group_resources')
+    title = models.CharField(max_length=300)
+    description = models.TextField(null=True, blank=True)
+    file = models.FileField(upload_to='group_resources/', null=True, blank=True)
+    link_url = models.URLField(null=True, blank=True, help_text="External link (if no file upload)")
+    file_type = models.CharField(max_length=20, choices=FILE_TYPE_CHOICES, default='other')
+    download_count = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "62b. Group Resources"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"[{self.group_class.name}] {self.title}"
+
+    @property
+    def file_size_formatted(self):
+        try:
+            size = self.file.size
+            for unit in ['B', 'KB', 'MB', 'GB']:
+                if size < 1024:
+                    return f"{size:.1f} {unit}"
+                size /= 1024
+            return f"{size:.1f} TB"
+        except:
+            return "Unknown"
+
+
+class GroupSession(models.Model):
+    """Group live sessions — instructor schedules for entire group.
+    Session logs saved: date, time, duration, participants."""
+    STATUS_CHOICES = [
+        ('scheduled', 'Scheduled'),
+        ('live', 'Live'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    SESSION_TYPE_CHOICES = [
+        ('video_call', 'Video Call'),
+        ('audio_call', 'Audio Call'),
+    ]
+
+    group_class = models.ForeignKey(GroupClass, on_delete=models.CASCADE, related_name='group_sessions')
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='group_teaching_sessions')
+    title = models.CharField(max_length=300)
+    description = models.TextField(null=True, blank=True)
+    scheduled_date = models.DateField()
+    scheduled_time = models.TimeField()
+    duration_minutes = models.IntegerField(default=60)
+    session_type = models.CharField(max_length=20, choices=SESSION_TYPE_CHOICES, default='video_call')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled')
+
+    # Jitsi room
+    room_name = models.CharField(max_length=200, null=True, blank=True, unique=True)
+    meeting_link = models.URLField(null=True, blank=True)
+
+    # Live state
+    is_live = models.BooleanField(default=False)
+    started_at = models.DateTimeField(null=True, blank=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
+    recording_url = models.URLField(null=True, blank=True)
+
+    # Safety
+    has_minor_participants = models.BooleanField(default=False)
+    recording_enabled = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "62c. Group Sessions"
+        ordering = ['scheduled_date', 'scheduled_time']
+
+    def __str__(self):
+        return f"[{self.group_class.name}] {self.title} - {self.scheduled_date}"
+
+    def save(self, *args, **kwargs):
+        # Auto-generate room name and meeting link
+        if not self.room_name:
+            import uuid
+            self.room_name = f"kannari-group-{self.pk or 'new'}-{uuid.uuid4().hex[:8]}"
+        if not self.meeting_link and self.session_type in ('video_call', 'audio_call'):
+            self.meeting_link = f"https://meet.jit.si/{self.room_name}"
+        # Check for minor participants
+        if self.group_class_id:
+            self.has_minor_participants = GroupClassStudent.objects.filter(
+                group_class_id=self.group_class_id,
+                student__date_of_birth__isnull=False
+            ).exists()  # Will be refined in view logic
+        super().save(*args, **kwargs)
+        if self.room_name and 'new' in self.room_name:
+            import uuid
+            self.room_name = f"kannari-group-{self.pk}-{uuid.uuid4().hex[:8]}"
+            self.meeting_link = f"https://meet.jit.si/{self.room_name}"
+            super().save(update_fields=['room_name', 'meeting_link'])
+
+    def go_live(self):
+        from django.utils import timezone
+        self.is_live = True
+        self.started_at = timezone.now()
+        self.status = 'live'
+        self.save(update_fields=['is_live', 'started_at', 'status', 'updated_at'])
+
+    def end_session(self):
+        from django.utils import timezone
+        self.is_live = False
+        self.ended_at = timezone.now()
+        self.status = 'completed'
+        self.save(update_fields=['is_live', 'ended_at', 'status', 'updated_at'])
+
+    @property
+    def actual_duration_minutes(self):
+        if self.started_at and self.ended_at:
+            delta = self.ended_at - self.started_at
+            return int(delta.total_seconds() / 60)
+        return 0
+
+
+class GroupSessionParticipantLog(models.Model):
+    """Track who joined/left group live sessions."""
+    session = models.ForeignKey(GroupSession, on_delete=models.CASCADE, related_name='participant_logs')
+    teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True,
+                                 related_name='group_session_logs')
+    student = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True,
+                                 related_name='group_session_logs')
+    participant_role = models.CharField(max_length=20, default='student')
+    joined_at = models.DateTimeField(auto_now_add=True)
+    left_at = models.DateTimeField(null=True, blank=True)
+    duration_seconds = models.IntegerField(default=0)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "62d. Group Session Participant Logs"
+        ordering = ['-joined_at']
+
+    def __str__(self):
+        actor = self.teacher.full_name if self.teacher else (self.student.fullname if self.student else 'Unknown')
+        return f"{actor} - Group Session {self.session_id}"
+
+
+# ==================== DISCUSSION & MULTIPLE CHOICE ====================
+
+class DiscussionThread(models.Model):
+    """Thread-based discussion for discussion-type assignments."""
+    AUTHOR_TYPE_CHOICES = [
+        ('student', 'Student'),
+        ('teacher', 'Teacher'),
+        ('admin', 'Admin'),
+    ]
+
+    assignment = models.ForeignKey(LessonAssignment, on_delete=models.CASCADE, related_name='discussion_threads')
+    author_type = models.CharField(max_length=20, choices=AUTHOR_TYPE_CHOICES)
+    author_student = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True,
+                                        related_name='discussion_posts')
+    author_teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True,
+                                        related_name='discussion_posts')
+    author_admin = models.ForeignKey(Admin, on_delete=models.SET_NULL, null=True, blank=True,
+                                      related_name='discussion_posts')
+    content = models.TextField()
+    parent_reply = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True,
+                                      related_name='replies', help_text="Reply to another post")
+    is_pinned = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "63. Discussion Threads"
+        ordering = ['-is_pinned', 'created_at']
+
+    def __str__(self):
+        author = self.author_student or self.author_teacher or self.author_admin or 'Unknown'
+        return f"Discussion on {self.assignment.display_title} by {author}"
+
+    @property
+    def author_display(self):
+        if self.author_type == 'student' and self.author_student:
+            return self.author_student.fullname
+        elif self.author_type == 'teacher' and self.author_teacher:
+            return self.author_teacher.full_name
+        elif self.author_type == 'admin' and self.author_admin:
+            return self.author_admin.full_name
+        return 'Unknown'
+
+
+class MultipleChoiceQuestion(models.Model):
+    """Questions for multiple-choice type assignments. Auto-graded."""
+    assignment = models.ForeignKey(LessonAssignment, on_delete=models.CASCADE, related_name='mc_questions')
+    question_text = models.TextField()
+    option_a = models.CharField(max_length=500)
+    option_b = models.CharField(max_length=500)
+    option_c = models.CharField(max_length=500, blank=True, default='')
+    option_d = models.CharField(max_length=500, blank=True, default='')
+    correct_option = models.CharField(max_length=1, choices=[
+        ('a', 'A'), ('b', 'B'), ('c', 'C'), ('d', 'D')
+    ])
+    points = models.PositiveIntegerField(default=1)
+    order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "63a. Multiple Choice Questions"
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return f"Q{self.order}: {self.question_text[:80]}"
+
+
+class MultipleChoiceAnswer(models.Model):
+    """Student answers for multiple-choice questions. Auto-graded on save."""
+    question = models.ForeignKey(MultipleChoiceQuestion, on_delete=models.CASCADE, related_name='answers')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='mc_answers')
+    selected_option = models.CharField(max_length=1, choices=[
+        ('a', 'A'), ('b', 'B'), ('c', 'C'), ('d', 'D')
+    ])
+    is_correct = models.BooleanField(default=False)
+    answered_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "63b. Multiple Choice Answers"
+        unique_together = ['question', 'student']
+
+    def __str__(self):
+        return f"{self.student.fullname} - Q{self.question.order}: {self.selected_option} ({'✓' if self.is_correct else '✗'})"
+
+    def save(self, *args, **kwargs):
+        # Auto-grade on save
+        self.is_correct = (self.selected_option == self.question.correct_option)
+        super().save(*args, **kwargs)
+
+
+# ==================== PARENT POLICY ACCEPTANCE ====================
+
+class ParentPolicyAcceptance(models.Model):
+    """Tracks which policy documents a parent has accepted.
+    Required: TOS + Child Safety Policy before minor account activation."""
+    parent = models.ForeignKey(ParentAccount, on_delete=models.CASCADE, related_name='policy_acceptances')
+    policy = models.ForeignKey(PolicyDocument, on_delete=models.CASCADE, related_name='parent_acceptances')
+    accepted_at = models.DateTimeField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "63c. Parent Policy Acceptances"
+        unique_together = ['parent', 'policy']
+
+    def __str__(self):
+        return f"{self.parent.fullname} accepted '{self.policy.title}' on {self.accepted_at:%Y-%m-%d}"
+
+
+# ==================== TEACHER COMMUNITY ====================
+
+class TeacherCommunityMessage(models.Model):
+    """Global teacher lounge — a single shared chat room for all teachers."""
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='community_messages')
+    content = models.TextField()
+    is_pinned = models.BooleanField(default=False)
+    is_hidden = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "64. Teacher Community Messages"
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.teacher.fullname}: {self.content[:50]}" 
+
+
+# ==================== STUDENT GAMES & GAMIFICATION ====================
+
+class GameDefinition(models.Model):
+    GAME_TYPE_CHOICES = [
+        ('note_ninja', 'Note Ninja'),
+        ('rhythm_rush', 'Rhythm Rush'),
+        ('music_challenge', '5-Second Music Challenge'),
+    ]
+
+    ACCESS_LEVEL_CHOICES = [
+        ('free', 'Free'),
+        ('basic', 'Basic'),
+        ('standard', 'Standard'),
+        ('premium', 'Premium'),
+    ]
+
+    game_type = models.CharField(max_length=30, choices=GAME_TYPE_CHOICES, unique=True)
+    title = models.CharField(max_length=120)
+    description = models.TextField(blank=True, default='')
+    is_active = models.BooleanField(default=True)
+    min_access_level = models.CharField(max_length=20, choices=ACCESS_LEVEL_CHOICES, default='free')
+    max_level = models.PositiveIntegerField(default=20)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "65. Game Definitions"
+
+    def __str__(self):
+        return self.title
+
+
+class GameQuestion(models.Model):
+    game = models.ForeignKey(GameDefinition, on_delete=models.CASCADE, related_name='questions')
+    level = models.PositiveIntegerField(default=1)
+    prompt = models.TextField()
+    question_payload = models.JSONField(default=dict, blank=True)
+    choices = models.JSONField(default=list, blank=True)
+    correct_answer = models.CharField(max_length=255, blank=True, default='')
+    time_limit_seconds = models.PositiveIntegerField(default=5)
+    points = models.PositiveIntegerField(default=10)
+    is_active = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "66. Game Questions"
+        ordering = ['game_id', 'level', 'order', 'id']
+
+    def __str__(self):
+        return f"{self.game.title} L{self.level} - Q{self.id}"
+
+
+class StudentGameProfile(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='game_profiles')
+    game = models.ForeignKey(GameDefinition, on_delete=models.CASCADE, related_name='student_profiles')
+    total_attempts = models.PositiveIntegerField(default=0)
+    correct_attempts = models.PositiveIntegerField(default=0)
+    total_score = models.IntegerField(default=0)
+    best_score = models.IntegerField(default=0)
+    best_streak = models.PositiveIntegerField(default=0)
+    highest_level_unlocked = models.PositiveIntegerField(default=1)
+    time_spent_seconds = models.PositiveIntegerField(default=0)
+    sonara_coins = models.PositiveIntegerField(default=0)
+    last_played_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "67. Student Game Profiles"
+        unique_together = ['student', 'game']
+
+    @property
+    def accuracy_percent(self):
+        if self.total_attempts == 0:
+            return 0
+        return round((self.correct_attempts / self.total_attempts) * 100, 2)
+
+    def __str__(self):
+        return f"{self.student.fullname} - {self.game.title}"
+
+
+class GameSession(models.Model):
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('completed', 'Completed'),
+        ('abandoned', 'Abandoned'),
+    ]
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='game_sessions')
+    game = models.ForeignKey(GameDefinition, on_delete=models.CASCADE, related_name='sessions')
+    level = models.PositiveIntegerField(default=1)
+    score = models.IntegerField(default=0)
+    streak = models.PositiveIntegerField(default=0)
+    max_streak = models.PositiveIntegerField(default=0)
+    correct_count = models.PositiveIntegerField(default=0)
+    wrong_count = models.PositiveIntegerField(default=0)
+    average_response_ms = models.PositiveIntegerField(default=0)
+    time_spent_seconds = models.PositiveIntegerField(default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "68. Game Sessions"
+        ordering = ['-started_at']
+
+    def __str__(self):
+        return f"{self.student.fullname} - {self.game.game_type} ({self.status})"
+
+
+class GameAttempt(models.Model):
+    FEEDBACK_CHOICES = [
+        ('perfect', 'Perfect'),
+        ('good', 'Good'),
+        ('try_again', 'Try Again'),
+        ('correct', 'Correct'),
+        ('incorrect', 'Incorrect'),
+    ]
+
+    session = models.ForeignKey(GameSession, on_delete=models.CASCADE, related_name='attempts')
+    question = models.ForeignKey(GameQuestion, on_delete=models.SET_NULL, null=True, blank=True, related_name='attempts')
+    expected_payload = models.JSONField(default=dict, blank=True)
+    submitted_payload = models.JSONField(default=dict, blank=True)
+    response_time_ms = models.PositiveIntegerField(default=0)
+    is_correct = models.BooleanField(default=False)
+    accuracy_score = models.FloatField(default=0)
+    points_earned = models.IntegerField(default=0)
+    feedback = models.CharField(max_length=20, choices=FEEDBACK_CHOICES, default='try_again')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "69. Game Attempts"
+        ordering = ['id']
+
+    def __str__(self):
+        return f"Session {self.session_id} Attempt {self.id}"
+
+
+class GameBadge(models.Model):
+    BADGE_KEY_CHOICES = [
+        ('note_master', 'Note Master'),
+        ('rhythm_king', 'Rhythm King'),
+        ('theory_champion', 'Theory Champion'),
+    ]
+
+    badge_key = models.CharField(max_length=40, choices=BADGE_KEY_CHOICES, unique=True)
+    title = models.CharField(max_length=100)
+    description = models.TextField(blank=True, default='')
+    criteria = models.JSONField(default=dict, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "70. Game Badges"
+
+    def __str__(self):
+        return self.title
+
+
+class StudentGameBadge(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='game_badges')
+    badge = models.ForeignKey(GameBadge, on_delete=models.CASCADE, related_name='student_badges')
+    source_game = models.ForeignKey(GameDefinition, on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='awarded_badges')
+    awarded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "71. Student Game Badges"
+        unique_together = ['student', 'badge']
+
+    def __str__(self):
+        return f"{self.student.fullname} - {self.badge.title}"
+
+
+class WeeklyGameLeaderboard(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='weekly_game_rankings')
+    game = models.ForeignKey(GameDefinition, on_delete=models.CASCADE, related_name='weekly_rankings')
+    week_start = models.DateField()
+    week_end = models.DateField()
+    total_score = models.IntegerField(default=0)
+    attempts_count = models.PositiveIntegerField(default=0)
+    avg_accuracy = models.FloatField(default=0)
+    best_streak = models.PositiveIntegerField(default=0)
+    rank = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "72. Weekly Game Leaderboard"
+        unique_together = ['student', 'game', 'week_start']
+        ordering = ['week_start', 'game', 'rank']
+
+    def __str__(self):
+        return f"{self.game.title} {self.week_start} - {self.student.fullname}"

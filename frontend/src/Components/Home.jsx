@@ -139,7 +139,7 @@ const Home = () => {
             }}
           >
             <Link
-              to="/user-register"
+              to="/student/register"
               style={{
                 padding: '16px 32px',
                 background: 'white',

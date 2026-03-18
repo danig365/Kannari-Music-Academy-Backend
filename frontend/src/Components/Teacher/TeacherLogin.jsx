@@ -7,6 +7,7 @@ import firebase from '../firebase'
 import Swal from 'sweetalert2'
 
 import { API_BASE_URL } from '../../config';
+import { validateLoginForm, FieldError } from '../../utils/formValidation';
 
 const baseUrl = API_BASE_URL;
 
@@ -25,6 +26,7 @@ const TeacherLogin = () => {
       
       const [errorMsg, setErrorMsg]=useState('')
       const [loading, setLoading] = useState(false)
+      const [fieldErrors, setFieldErrors] = useState({})
 
       const getTeacherLoginErrorMessage = (rawMessage) => {
         const message = (rawMessage || '').toLowerCase()
@@ -48,6 +50,10 @@ const TeacherLogin = () => {
     const submitForm=async()=>{
       if (loading) return
 
+        const errors = validateLoginForm(teacherLoginData);
+        setFieldErrors(errors);
+        if (Object.keys(errors).length > 0) return;
+
         const teacherFormData=new FormData;
         teacherFormData.append('email',teacherLoginData.email)
         teacherFormData.append('password',teacherLoginData.password)
@@ -63,7 +69,7 @@ const TeacherLogin = () => {
           localStorage.setItem('teacherQualification', res.data.teacher_qualification);
           localStorage.setItem('teacherMobile', res.data.teacher_mobile);
           localStorage.setItem('teacherProfileImg', res.data.teacher_profile_img || '');
-          window.location.href='/teacher-overview';
+          window.location.href='/teacher/overview';
         }else{
           const message = getTeacherLoginErrorMessage(res.data?.message || 'Please enter valid login details.')
           setErrorMsg(message)
@@ -96,7 +102,7 @@ const TeacherLogin = () => {
     }
 
     if(teacherLoginStatus=='true'){
-        window.location.href='/teacher-dashboard';
+        window.location.href='/teacher/dashboard';
     }
 
     useEffect(()=>{
@@ -251,7 +257,7 @@ const TeacherLogin = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: '1px solid #e5e7eb',
+                    border: fieldErrors.email ? '1px solid #ef4444' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
@@ -263,10 +269,11 @@ const TeacherLogin = () => {
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.email ? '#ef4444' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
+                <FieldError error={fieldErrors.email} />
               </div>
 
               {/* Password */}
@@ -288,7 +295,7 @@ const TeacherLogin = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: '1px solid #e5e7eb',
+                    border: fieldErrors.password ? '1px solid #ef4444' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
@@ -300,13 +307,14 @@ const TeacherLogin = () => {
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.password ? '#ef4444' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
+                <FieldError error={fieldErrors.password} />
                 <div style={{ marginTop: '8px', textAlign: 'right' }}>
                   <Link
-                    to="/teacher-forgot-password"
+                    to="/teacher/forgot-password"
                     style={{ fontSize: '13px', color: '#667eea', textDecoration: 'none', fontWeight: '500' }}
                   >
                     Forgot password?
@@ -393,7 +401,7 @@ const TeacherLogin = () => {
 
               {/* Sign Up Link */}
               <Link
-                to="/teacher-register"
+                to="/teacher/register"
                 style={{
                   width: '100%',
                   padding: '14px 24px',

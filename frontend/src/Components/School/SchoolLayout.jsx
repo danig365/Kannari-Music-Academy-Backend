@@ -45,7 +45,7 @@ const SchoolLayout = () => {
     }, [navigate]);
 
     if (schoolLoginStatus !== 'true') {
-        return <Navigate to="/school-login" replace />;
+        return <Navigate to="/school/login" replace />;
     }
 
     return (

@@ -307,7 +307,7 @@ const StudentSubscriptions = () => {
 
     useEffect(() => {
         if (studentLoginStatus !== 'true') {
-            navigate('/user-login');
+            navigate('/student/login');
         } else {
             document.title = 'Subscribe to Plans | Kannari Music Academy';
             getStudentId();
@@ -490,24 +490,43 @@ const StudentSubscriptions = () => {
                                     position: 'absolute',
                                     top: '12px',
                                     right: '12px',
-                                    background: levelColor,
-                                    color: 'white',
-                                    padding: '4px 10px',
-                                    borderRadius: '16px',
-                                    fontSize: '11px',
-                                    fontWeight: 600,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px'
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'flex-end',
+                                    gap: '6px',
+                                    zIndex: 2
                                 }}>
-                                    <i className="bi bi-award me-1"></i>
-                                    {formatAccessLevel(accessLevel)}
+                                    <span style={{
+                                        background: levelColor,
+                                        color: 'white',
+                                        padding: '4px 10px',
+                                        borderRadius: '16px',
+                                        fontSize: '11px',
+                                        fontWeight: 600,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.5px'
+                                    }}>
+                                        <i className="bi bi-award me-1"></i>
+                                        {formatAccessLevel(accessLevel)}
+                                    </span>
+                                    {isSubscribedToPlan(plan.id) && (
+                                        <span style={{
+                                            background: '#10b981',
+                                            color: 'white',
+                                            padding: '4px 10px',
+                                            borderRadius: '16px',
+                                            fontSize: '11px',
+                                            fontWeight: 600,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.5px'
+                                        }}>
+                                            <i className="bi bi-check-circle me-1"></i>SUBSCRIBED
+                                        </span>
+                                    )}
                                 </div>
 
                                 <div className="plan-header">
                                     <h5>{plan.name}</h5>
-                                    <span className={`badge bg-${plan.status === 'active' ? 'success' : 'secondary'}`}>
-                                        {plan.status}
-                                    </span>
                                 </div>
                                 <p className="plan-description">{plan.description}</p>
                                 

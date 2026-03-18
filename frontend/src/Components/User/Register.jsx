@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import Swal from 'sweetalert2'
 
 import { API_BASE_URL } from '../../config';
+import { validateStudentRegisterForm, FieldError } from '../../utils/formValidation';
 
 const baseUrl = `${API_BASE_URL}/student/`;
 
@@ -25,19 +26,61 @@ const Register = () => {
         'username':'',
         'date_of_birth':'',
         'interseted_categories':'',
+        'parent_email':'',
+        'parent_name':'',
         'status':''
     });
     const [loading, setLoading] = useState(false)
+    const [isMinor, setIsMinor] = useState(false)
+    const [fieldErrors, setFieldErrors] = useState({})
 
     const handleChange=(event)=>{
+        const { name, value } = event.target;
         setStudentData({
             ...studentData,
-            [event.target.name]:event.target.value
+            [name]: value
         });
+
+        // Check if user is under 18 when DOB changes
+        if (name === 'date_of_birth' && value) {
+            const dob = new Date(value);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const monthDiff = today.getMonth() - dob.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+            setIsMinor(age < 18);
+        } else if (name === 'date_of_birth' && !value) {
+            setIsMinor(false);
+        }
     }
 
     const submitForm=async()=>{
       if (loading) return
+
+      const errors = validateStudentRegisterForm({
+        fullname: studentData.fullname,
+        email: studentData.email,
+        password: studentData.password,
+        username: studentData.username,
+        date_of_birth: studentData.date_of_birth,
+        parent_email: studentData.parent_email,
+        isMinor
+      });
+      setFieldErrors(errors);
+      if (Object.keys(errors).length > 0) {
+        Swal.fire({
+          title: 'Please fix the errors below',
+          icon: 'warning',
+          toast: true,
+          timer: 2500,
+          position: 'top-right',
+          timerProgressBar: true,
+          showConfirmButton: false
+        });
+        return;
+      }
 
         const studentFormData=new FormData();
         studentFormData.append("fullname",studentData.fullname)
@@ -48,6 +91,12 @@ const Register = () => {
             studentFormData.append("date_of_birth",studentData.date_of_birth)
         }
         studentFormData.append("interseted_categories",studentData.interseted_categories)
+        if(isMinor && studentData.parent_email.trim()) {
+            studentFormData.append("parent_email", studentData.parent_email.trim())
+        }
+        if(isMinor && studentData.parent_name.trim()) {
+            studentFormData.append("parent_name", studentData.parent_name.trim())
+        }
 
       setLoading(true)
         try{
@@ -59,21 +108,26 @@ const Register = () => {
             'username':'',
             'date_of_birth':'',
             'interseted_categories':'',
+            'parent_email':'',
+            'parent_name':'',
             'status':'success'
           });
           if(response.status==200 || response.status==201){
+            const isMinorReg = response.data?.parent_required === true;
             Swal.fire({
-              title:'Registered! Please verify your email.',
+              title: isMinorReg 
+                ? 'Registered! A consent email has been sent to your parent/guardian.'
+                : 'Registered! Please verify your email.',
               icon:'success',
               toast:true,
-              timer:2000,
+              timer: isMinorReg ? 4000 : 2000,
               position:'top-right',
               timerProgressBar: true,
               showConfirmButton: false
             });
           }
           let tID = setTimeout(function () {
-            window.location.href='/user-login';
+            window.location.href='/student/login';
             window.clearTimeout(tID);
           }, 2500);
         }catch(error){
@@ -244,7 +298,7 @@ const Register = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: '1px solid #e5e7eb',
+                    border: fieldErrors.fullname ? '1px solid #ef4444' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
@@ -256,10 +310,11 @@ const Register = () => {
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.fullname ? '#ef4444' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
+                <FieldError error={fieldErrors.fullname} />
               </div>
 
               {/* Email Address */}
@@ -281,7 +336,7 @@ const Register = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: '1px solid #e5e7eb',
+                    border: fieldErrors.email ? '1px solid #ef4444' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
@@ -293,10 +348,11 @@ const Register = () => {
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.email ? '#ef4444' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
+                <FieldError error={fieldErrors.email} />
               </div>
 
               {/* Username */}
@@ -318,7 +374,7 @@ const Register = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: '1px solid #e5e7eb',
+                    border: fieldErrors.username ? '1px solid #ef4444' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
@@ -330,10 +386,11 @@ const Register = () => {
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.username ? '#ef4444' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
+                <FieldError error={fieldErrors.username} />
               </div>
 
               {/* Password */}
@@ -355,7 +412,7 @@ const Register = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: '1px solid #e5e7eb',
+                    border: fieldErrors.password ? '1px solid #ef4444' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
@@ -367,10 +424,11 @@ const Register = () => {
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.password ? '#ef4444' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
+                <FieldError error={fieldErrors.password} />
               </div>
 
               {/* Date of Birth */}
@@ -392,7 +450,7 @@ const Register = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: '1px solid #e5e7eb',
+                    border: fieldErrors.date_of_birth ? '1px solid #ef4444' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
@@ -404,10 +462,11 @@ const Register = () => {
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.date_of_birth ? '#ef4444' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
+                <FieldError error={fieldErrors.date_of_birth} />
                 <p style={{
                   fontSize: '13px',
                   color: '#6b7280',
@@ -415,6 +474,92 @@ const Register = () => {
                   marginBottom: 0
                 }}>Required for child safety compliance. Students under 18 need parental consent for certain features.</p>
               </div>
+
+              {/* Minor Notice + Parent Email Fields */}
+              {isMinor && (
+                <>
+                  <div style={{
+                    padding: '16px',
+                    background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                    border: '1px solid #f59e0b',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    gap: '12px',
+                    alignItems: 'flex-start'
+                  }}>
+                    <div style={{
+                      width: '36px', height: '36px', borderRadius: '50%',
+                      background: '#f59e0b', display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', flexShrink: 0
+                    }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5">
+                        <path d="M12 9v4m0 4h.01M10.29 3.86l-8.8 15.32A2 2 0 003.23 22h17.54a2 2 0 001.74-2.82l-8.8-15.32a2 2 0 00-3.42 0z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p style={{ margin: '0 0 4px', fontWeight: '600', color: '#92400e', fontSize: '14px' }}>
+                        Under 18 — Parent/Guardian Required
+                      </p>
+                      <p style={{ margin: 0, fontSize: '13px', color: '#78350f', lineHeight: '1.5' }}>
+                        Since you are under 18, a parent or guardian email is <strong>required</strong>. 
+                        They will receive a verification email and must approve your account before you can 
+                        access messaging and live session features.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Parent/Guardian Name */}
+                  <div>
+                    <label style={{
+                      display: 'block', fontSize: '14px', fontWeight: '500',
+                      color: '#374151', marginBottom: '8px'
+                    }}>Parent/Guardian Name <span style={{ color: '#9ca3af', fontWeight: '400' }}>(optional)</span></label>
+                    <input
+                      type="text"
+                      onChange={handleChange}
+                      name="parent_name"
+                      value={studentData.parent_name}
+                      placeholder="e.g., Sarah Chen"
+                      style={{
+                        width: '100%', padding: '12px 16px', fontSize: '15px',
+                        border: '1px solid #e5e7eb', borderRadius: '8px', outline: 'none',
+                        transition: 'all 0.2s', boxSizing: 'border-box', color: '#1a1a1a'
+                      }}
+                      onFocus={(e) => { e.target.style.borderColor = '#f59e0b'; e.target.style.boxShadow = '0 0 0 3px rgba(245, 158, 11, 0.1)'; }}
+                      onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.boxShadow = 'none'; }}
+                    />
+                  </div>
+
+                  {/* Parent/Guardian Email */}
+                  <div>
+                    <label style={{
+                      display: 'block', fontSize: '14px', fontWeight: '500',
+                      color: '#374151', marginBottom: '8px'
+                    }}>Parent/Guardian Email <span style={{ color: '#dc2626', fontWeight: '600' }}>*</span></label>
+                    <input
+                      type="email"
+                      onChange={handleChange}
+                      name="parent_email"
+                      value={studentData.parent_email}
+                      placeholder="parent@email.com"
+                      required
+                      style={{
+                        width: '100%', padding: '12px 16px', fontSize: '15px',
+                        border: fieldErrors.parent_email ? '1px solid #ef4444' : `1px solid ${studentData.parent_email.trim() ? '#e5e7eb' : '#fbbf24'}`,
+                        borderRadius: '8px', outline: 'none',
+                        transition: 'all 0.2s', boxSizing: 'border-box', color: '#1a1a1a',
+                        backgroundColor: '#fffbeb'
+                      }}
+                      onFocus={(e) => { e.target.style.borderColor = '#f59e0b'; e.target.style.boxShadow = '0 0 0 3px rgba(245, 158, 11, 0.1)'; }}
+                      onBlur={(e) => { e.target.style.borderColor = fieldErrors.parent_email ? '#ef4444' : (studentData.parent_email.trim() ? '#e5e7eb' : '#fbbf24'); e.target.style.boxShadow = 'none'; }}
+                    />
+                    <FieldError error={fieldErrors.parent_email} />
+                    <p style={{ fontSize: '12px', color: '#b45309', marginTop: '6px', marginBottom: 0 }}>
+                      Your parent/guardian will receive a consent email to verify and approve your account.
+                    </p>
+                  </div>
+                </>
+              )}
 
               {/* Interested Categories */}
               <div>
@@ -540,7 +685,7 @@ const Register = () => {
 
               {/* Sign In Link */}
               <Link
-                to="/user-login"
+                to="/student/login"
                 style={{
                   width: '100%',
                   padding: '14px 24px',

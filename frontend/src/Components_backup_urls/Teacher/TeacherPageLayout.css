@@ -1,0 +1,187 @@
+/* Teacher Page Layout - Consistent with TeacherLayout */
+
+.teacher-page-wrapper {
+    width: 100%;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.teacher-page-wrapper .container-fluid {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 !important;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.teacher-page-content {
+    width: 100%;
+    padding: 32px 40px;
+    flex: 1;
+}
+
+/* Override Bootstrap container for teacher pages */
+.teacher-page-wrapper .container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 !important;
+    margin: 0;
+}
+
+.teacher-page-wrapper .row {
+    margin: 0;
+    gap: 0;
+}
+
+.teacher-page-wrapper .col-md-12,
+.teacher-page-wrapper .col-12 {
+    padding: 0;
+    margin: 0;
+}
+
+/* Card styling */
+.teacher-page-wrapper .card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0;
+}
+
+.teacher-page-wrapper .card-header {
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px 24px;
+    font-weight: 600;
+    color: #1f2937;
+    border-radius: 8px 8px 0 0;
+}
+
+.teacher-page-wrapper .card-body {
+    padding: 24px;
+}
+
+/* Table responsive wrapper */
+.teacher-page-wrapper .table-responsive {
+    margin-bottom: 0;
+}
+
+.teacher-page-wrapper .table {
+    margin-bottom: 0;
+    border-collapse: collapse;
+}
+
+.teacher-page-wrapper .table thead th {
+    background: #f9fafb;
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 16px;
+    border: 1px solid #e5e7eb;
+}
+
+.teacher-page-wrapper .table tbody td {
+    padding: 12px 16px;
+    border: 1px solid #e5e7eb;
+    color: #374151;
+}
+
+.teacher-page-wrapper .table tbody tr:hover {
+    background: #f9fafb;
+}
+
+/* Form styling */
+.teacher-page-wrapper .form-label {
+    color: #374151;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.teacher-page-wrapper .form-control,
+.teacher-page-wrapper .form-select {
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #374151;
+}
+
+.teacher-page-wrapper .form-control:focus,
+.teacher-page-wrapper .form-select:focus {
+    border-color: #4285f4;
+    box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+}
+
+/* Button styling */
+.teacher-page-wrapper .btn {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 8px 16px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.teacher-page-wrapper .btn-primary {
+    background: #4285f4;
+    border-color: #4285f4;
+}
+
+.teacher-page-wrapper .btn-primary:hover {
+    background: #3b78e0;
+    border-color: #3b78e0;
+}
+
+.teacher-page-wrapper .btn-success {
+    background: #10b981;
+    border-color: #10b981;
+}
+
+.teacher-page-wrapper .btn-danger {
+    background: #ef4444;
+    border-color: #ef4444;
+}
+
+.teacher-page-wrapper .btn-secondary {
+    background: #6b7280;
+    border-color: #6b7280;
+}
+
+/* Remove margins that Bootstrap adds */
+.teacher-page-wrapper .mt-4 {
+    margin-top: 0 !important;
+}
+
+.teacher-page-wrapper .mb-3 {
+    margin-bottom: 12px !important;
+}
+
+.teacher-page-wrapper .mb-2 {
+    margin-bottom: 8px !important;
+}
+
+@media (max-width: 768px) {
+    .teacher-page-content {
+        padding: 24px 16px;
+    }
+
+    .teacher-page-wrapper .card-header {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+
+    .teacher-page-wrapper .card-body {
+        padding: 16px;
+    }
+
+    .teacher-page-wrapper .table {
+        font-size: 13px;
+    }
+
+    .teacher-page-wrapper .table thead th,
+    .teacher-page-wrapper .table tbody td {
+        padding: 8px 12px;
+    }
+}

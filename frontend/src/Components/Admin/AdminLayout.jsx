@@ -63,7 +63,7 @@ const AdminLayout = () => {
     // Redirect to login if not authenticated
     if (adminLoginStatus !== 'true') {
         console.log('AdminLayout - Redirecting to login (not authenticated)');
-        return <Navigate to="/admin-login" replace />;
+        return <Navigate to="/admin-panel/login" replace />;
     }
 
     return (

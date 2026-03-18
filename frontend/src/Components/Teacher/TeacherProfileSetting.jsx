@@ -6,11 +6,13 @@ import Swal from 'sweetalert2'
 import LoadingSpinner from '../LoadingSpinner'
 
 import { API_BASE_URL } from '../../config';
+import { validateTeacherProfileForm, FieldError } from '../../utils/formValidation';
 
 const baseUrl = API_BASE_URL;
 
 const TeacherProfileSetting = () => {
     const [loading, setLoading] = useState(true);
+    const [fieldErrors, setFieldErrors] = useState({});
     
     useEffect(()=>{
         document.title='LMS | Settings'
@@ -109,6 +111,24 @@ const TeacherProfileSetting = () => {
       }
 
     const submitForm=()=>{
+        const errors = validateTeacherProfileForm({
+            full_name: teacherData.full_name,
+            email: teacherData.email
+        });
+        setFieldErrors(errors);
+        if (Object.keys(errors).length > 0) {
+            Swal.fire({
+                title: 'Please fix the errors below',
+                icon: 'warning',
+                toast: true,
+                timer: 2500,
+                position: 'top-right',
+                timerProgressBar: true,
+                showConfirmButton: false
+            });
+            return;
+        }
+
         const teacherFormData=new FormData();
         teacherFormData.append("full_name",teacherData.full_name || '')
         teacherFormData.append("email",teacherData.email || '')
@@ -236,7 +256,7 @@ const TeacherProfileSetting = () => {
 
     const teacherLoginStatus=localStorage.getItem('teacherLoginStatus')
     if(teacherLoginStatus!=='true'){
-        window.location.href='/teacher-login';
+        window.location.href='/teacher/login';
     }
 
     if (loading) {
@@ -427,7 +447,7 @@ const TeacherProfileSetting = () => {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
+                    border: fieldErrors.full_name ? '2px solid #ef4444' : '2px solid #e5e7eb',
                     borderRadius: '12px',
                     fontSize: '14px',
                     fontWeight: 400,
@@ -441,10 +461,11 @@ const TeacherProfileSetting = () => {
                     e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.full_name ? '#ef4444' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
+                <FieldError error={fieldErrors.full_name} />
               </div>
 
               {/* Email */}
@@ -464,7 +485,7 @@ const TeacherProfileSetting = () => {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
+                    border: fieldErrors.email ? '2px solid #ef4444' : '2px solid #e5e7eb',
                     borderRadius: '12px',
                     fontSize: '14px',
                     fontWeight: 400,
@@ -478,10 +499,11 @@ const TeacherProfileSetting = () => {
                     e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.email ? '#ef4444' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
+                <FieldError error={fieldErrors.email} />
               </div>
 
               {/* Profile Image */}

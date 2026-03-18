@@ -178,7 +178,13 @@ urlpatterns =[
       path('parent/<int:parent_id>/student/<int:student_id>/authorize/', views.parent_authorize_student),
       path('parent/<int:parent_id>/student/<int:student_id>/live-consent/', views.parent_manage_live_consent),
       path('parent/<int:parent_id>/student/<int:student_id>/preauthorize-sessions/', views.parent_preauthorize_sessions),
+
+      # Phase 5: Minor registration & access
+      path('student/<int:student_id>/submit-parent-email/', views.student_submit_parent_email),
+      path('student/<int:student_id>/minor-access-status/', views.student_minor_access_status),
       path('parent/<int:parent_id>/children/', views.parent_children),
+      path('parent/login/request/', views.parent_login_request),
+      path('parent/login/verify/', views.parent_login_verify),
       path('session/<int:session_id>/student/<int:student_id>/parental-status/', views.session_parental_status),
       path('admin/minors/consent-status/', views.admin_minors_consent_status),
         
@@ -344,6 +350,7 @@ urlpatterns =[
         # Audit Summary & Export
         path('audit/summary/', views.get_audit_summary),
         path('audit/export/<str:log_type>/', views.export_audit_logs),
+        path('audit/activity-logs/', views.get_activity_logs),
 
         # ==================== SCHOOL DASHBOARD URLS ====================
         
@@ -394,5 +401,106 @@ urlpatterns =[
         path('student/<int:student_id>/audio-messages/', views.StudentAudioMessageList.as_view()),
         path('audio-message/<int:pk>/read/', views.mark_audio_message_read),
         path('student/<int:student_id>/unread-audio-count/', views.student_unread_audio_count),
+
+        # ==================== MESSAGING URLS ====================
+
+        path('messages/', views.MessageListCreate.as_view()),
+        path('messages/conversation/<int:parent_link_id>/', views.MessageConversation.as_view()),
+        path('messages/direct-conversation/<int:teacher_student_id>/', views.DirectMessageConversation.as_view()),
+        path('messages/send/', views.send_message),
+        path('messages/mark-read/<int:parent_link_id>/', views.mark_messages_read),
+        path('messages/mark-read-direct/<int:teacher_student_id>/', views.mark_direct_messages_read),
+        path('messages/unread-count/', views.unread_message_count),
+        path('student/<int:student_id>/teacher-conversations/', views.student_teacher_conversations),
+
+        # ==================== CHAT LOCK & UNLOCK URLS ====================
+
+        path('chat-lock-policies/', views.ChatLockPolicyList.as_view()),
+        path('chat-lock-policy/<int:pk>/', views.ChatLockPolicyDetail.as_view()),
+        path('chat-lock-status/<int:parent_link_id>/', views.chat_lock_status),
+        path('admin/chat-lock/<int:parent_link_id>/toggle/', views.admin_toggle_chat_lock),
+        path('chat-unlock-requests/', views.ChatUnlockRequestList.as_view()),
+
+        # ==================== TEACHER OFFICE HOURS URLS ====================
+
+        path('teacher/<int:teacher_id>/office-hours/', views.TeacherOfficeHoursList.as_view()),
+        path('office-hours/<int:pk>/', views.TeacherOfficeHoursDetail.as_view()),
+
+        # ==================== GROUP MESSAGING & FEATURES URLS ====================
+
+        # Group Messages (chat)
+        path('group/<int:group_id>/messages/', views.GroupMessageList.as_view()),
+        path('group-message/<int:message_id>/toggle-pin/', views.group_message_toggle_pin),
+        path('group-message/<int:message_id>/hide/', views.group_message_hide),
+
+        # Group Announcements
+        path('group/<int:group_id>/announcements/', views.GroupAnnouncementList.as_view()),
+        path('group-announcement/<int:pk>/', views.GroupAnnouncementDetail.as_view()),
+
+        # Group Resources
+        path('group/<int:group_id>/resources/', views.GroupResourceList.as_view()),
+        path('group-resource/<int:pk>/', views.GroupResourceDetail.as_view()),
+        path('group-resource/<int:resource_id>/download/', views.group_resource_download),
+
+        # Group Sessions (live video)
+        path('group/<int:group_id>/sessions/', views.GroupSessionList.as_view()),
+        path('group-session/<int:pk>/', views.GroupSessionDetail.as_view()),
+        path('group-session/<int:session_id>/go-live/', views.group_session_go_live),
+        path('group-session/<int:session_id>/end/', views.group_session_end),
+        path('group-session/<int:session_id>/join/<int:student_id>/', views.group_session_join),
+        path('group-session/<int:session_id>/leave/<int:log_id>/', views.group_session_leave),
+        path('group-session/<int:session_id>/participants/', views.GroupSessionParticipantLogList.as_view()),
+
+        # Phase 4: Convenience group endpoints
+        path('group/<int:group_id>/chat/send/', views.send_group_chat),
+        path('group/<int:group_id>/schedule-session/', views.schedule_group_session),
+        path('student/<int:student_id>/join-group-session/<int:session_id>/', views.student_join_group_session),
+        path('group/<int:group_id>/assignments/', views.GroupAssignmentList.as_view()),
+        path('student/<int:student_id>/group-assignments/', views.student_group_assignments),
+        path('student/<int:student_id>/my-groups/', views.student_my_groups),
+        path('group-class/<int:group_id>/', views.group_class_detail_extended),
+
+        # ==================== TEACHER ASSIGNMENT MANAGEMENT URLS ====================
+
+        path('teacher/<int:teacher_id>/assignments/', views.TeacherAssignmentList.as_view()),
+        path('teacher/<int:teacher_id>/assignment/<int:pk>/', views.TeacherAssignmentDetail.as_view()),
+        path('teacher/<int:teacher_id>/groups/', views.teacher_groups),
+
+        # ==================== DISCUSSION THREAD URLS ====================
+
+        path('assignment/<int:assignment_id>/discussions/', views.DiscussionThreadList.as_view()),
+        path('discussion/<int:pk>/', views.DiscussionThreadDetail.as_view()),
+
+        # ==================== MULTIPLE CHOICE URLS ====================
+
+        path('assignment/<int:assignment_id>/mc-questions/', views.MCQuestionList.as_view()),
+        path('mc-question/<int:pk>/', views.MCQuestionDetail.as_view()),
+        path('assignment/<int:assignment_id>/mc-submit/<int:student_id>/', views.student_submit_mc_answers),
+
+        # ==================== PARENT POLICY ACCEPTANCE URLS ====================
+
+        path('parent/<int:parent_id>/policy-acceptances/', views.ParentPolicyAcceptanceList.as_view()),
+        path('parent/<int:parent_id>/policy-status/', views.parent_policy_status),
+
+        # ==================== TEACHER COMMUNITY URLS ====================
+
+        path('teacher-community/messages/', views.TeacherCommunityMessageList.as_view()),
+        path('teacher-community/message/<int:pk>/', views.TeacherCommunityMessageDetail.as_view()),
+        path('teacher-community/message/<int:pk>/toggle-pin/', views.teacher_community_toggle_pin),
+        path('teacher-community/message/<int:pk>/hide/', views.teacher_community_hide_message),
+
+        # ==================== PHASE 1 GAMES & GAMIFICATION URLS ====================
+        path('games/seed-phase1/', views.seed_phase1_games),
+        path('games/', views.game_definitions_list),
+        path('student/<int:student_id>/games/overview/', views.student_games_overview),
+        path('student/<int:student_id>/games/sonara-coins/', views.student_sonara_coins),
+        path('student/<int:student_id>/games/<str:game_type>/start/', views.student_game_start_session),
+        path('games/session/<int:session_id>/attempt/', views.student_game_submit_attempt),
+        path('games/session/<int:session_id>/next-question/', views.student_game_next_question),
+        path('games/session/<int:session_id>/questions/', views.student_game_session_questions),
+        path('games/session/<int:session_id>/finish/', views.student_game_finish_session),
+        path('games/leaderboard/<str:game_type>/', views.game_weekly_leaderboard),
+        path('teacher/<int:teacher_id>/games/students-performance/', views.teacher_students_game_performance),
+        path('admin/games/analytics/', views.admin_games_analytics),
 
 ]

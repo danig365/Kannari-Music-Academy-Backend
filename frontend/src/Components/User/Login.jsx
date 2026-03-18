@@ -5,6 +5,7 @@ import axios from 'axios'
 import { Link } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import { API_BASE_URL } from '../../config'
+import { validateLoginForm, FieldError } from '../../utils/formValidation'
 
 const baseUrl = API_BASE_URL
 
@@ -23,6 +24,7 @@ const Login = () => {
 
       const [errorMsg, setErrorMsg]=useState('')
       const [loading, setLoading] = useState(false)
+      const [fieldErrors, setFieldErrors] = useState({})
 
       const handleChange=(event)=>{
         setStudentLoginData({
@@ -34,6 +36,10 @@ const Login = () => {
     const submitForm=async()=>{
       if (loading) return
 
+        const errors = validateLoginForm(studentLoginData);
+        setFieldErrors(errors);
+        if (Object.keys(errors).length > 0) return;
+
         const studentFormData=new FormData;
         studentFormData.append('email',studentLoginData.email)
         studentFormData.append('password',studentLoginData.password)
@@ -44,7 +50,7 @@ const Login = () => {
         if(res.data.bool==true){
           localStorage.setItem('studentLoginStatus',true);
           localStorage.setItem('studentId',res.data.student_id);
-          window.location.href='/user-dashboard';
+          window.location.href='/student/dashboard';
         }else{
           const message = res.data?.message || 'Please enter valid login details.'
           setErrorMsg(message)
@@ -77,7 +83,7 @@ const Login = () => {
     }
 
     if(studentLoginStatus=='true'){
-        window.location.href='/user-dashboard';
+        window.location.href='/student/dashboard';
     }
 
     useEffect(()=>{
@@ -231,7 +237,7 @@ const Login = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: '1px solid #e5e7eb',
+                    border: fieldErrors.email ? '1px solid #ef4444' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
@@ -243,10 +249,11 @@ const Login = () => {
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.email ? '#ef4444' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
+                <FieldError error={fieldErrors.email} />
               </div>
 
               {/* Password */}
@@ -268,7 +275,7 @@ const Login = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: '1px solid #e5e7eb',
+                    border: fieldErrors.password ? '1px solid #ef4444' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
@@ -280,13 +287,14 @@ const Login = () => {
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.password ? '#ef4444' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
+                <FieldError error={fieldErrors.password} />
                 <div style={{ marginTop: '8px', textAlign: 'right' }}>
                   <Link
-                    to="/user-forgot-password"
+                    to="/student/forgot-password"
                     style={{ fontSize: '13px', color: '#667eea', textDecoration: 'none', fontWeight: '500' }}
                   >
                     Forgot password?
@@ -373,7 +381,7 @@ const Login = () => {
 
               {/* Sign Up Link */}
               <Link
-                to="/user-register"
+                to="/student/register"
                 style={{
                   width: '100%',
                   padding: '14px 24px',

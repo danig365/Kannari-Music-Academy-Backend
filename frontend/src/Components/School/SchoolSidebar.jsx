@@ -28,12 +28,13 @@ const SchoolSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onN
     };
 
     const navItems = [
-        { path: '/school-dashboard', icon: 'bi-grid', label: 'Dashboard' },
+        { path: '/school/dashboard', icon: 'bi-grid', label: 'Dashboard' },
         { path: '/school/teachers', icon: 'bi-person-check', label: 'Teachers' },
         { path: '/school/students', icon: 'bi-people', label: 'Students' },
         { path: '/school/group-classes', icon: 'bi-diagram-3', label: 'Group Classes' },
         { path: '/school/lesson-assignments', icon: 'bi-journal-bookmark', label: 'Lesson Assignments' },
         { path: '/school/progress', icon: 'bi-graph-up', label: 'Progress Overview' },
+        { path: '/school/chat-locks', icon: 'bi-shield-lock', label: 'Chat Lock Management' },
     ];
 
     return (
@@ -146,8 +147,8 @@ const SchoolSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onN
                             <i className="bi bi-gear me-1"></i> Settings
                         </Link>
                         <Link
-                            to="/school-logout"
-                            onClick={(e) => handleNavClick(e, '/school-logout')}
+                            to="/school/logout"
+                            onClick={(e) => handleNavClick(e, '/school/logout')}
                             className="text-decoration-none flex-fill text-center py-2 rounded-2"
                             style={{
                                 color: '#8b92a7',

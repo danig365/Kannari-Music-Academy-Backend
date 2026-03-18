@@ -1,0 +1,347 @@
+/* ============================================
+   STREAK CALENDAR STYLES
+   Game-like activity calendar with streaks
+   ============================================ */
+
+.streak-calendar-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 24px;
+    color: #111827;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #F3F4F6;
+    border-left: 4px solid #FF6B6B;
+}
+
+.streak-calendar-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    pointer-events: none;
+}
+
+.streak-calendar-card.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+}
+
+/* Header */
+.streak-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.streak-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.streak-title i {
+    font-size: 24px;
+    color: #FF6B6B;
+    animation: none;
+}
+
+@keyframes flicker {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+.streak-title h5 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+}
+
+/* Streak Stats */
+.streak-stats {
+    display: flex;
+    gap: 16px;
+}
+
+.streak-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 16px;
+    background: #F9FAFB;
+    border-radius: 12px;
+    position: relative;
+    min-width: 70px;
+    border: 1px solid #E5E7EB;
+}
+
+.streak-stat.current {
+    background: rgba(255, 107, 107, 0.08);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.streak-stat.best {
+    background: rgba(255, 193, 7, 0.08);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.streak-number {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    color: #FF6B6B;
+}
+
+.streak-label {
+    font-size: 11px;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+}
+
+.fire-emoji, .trophy-emoji {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    font-size: 16px;
+    animation: bounce 1s ease infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+/* Activity Summary */
+.activity-summary {
+    display: flex;
+    gap: 20px;
+    padding: 12px 16px;
+    background: #F9FAFB;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    border: 1px solid #E5E7EB;
+}
+
+.activity-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #374151;
+}
+
+.activity-stat i {
+    color: #4ECB71;
+    font-size: 16px;
+}
+
+/* Calendar Container */
+.calendar-container {
+    margin-bottom: 16px;
+}
+
+.month-labels {
+    display: grid;
+    grid-template-columns: 40px repeat(12, 1fr);
+    margin-bottom: 8px;
+    font-size: 11px;
+    color: #6B7280;
+}
+
+.month-label {
+    text-align: left;
+}
+
+.calendar-grid {
+    display: flex;
+    gap: 4px;
+}
+
+.day-labels {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-right: 4px;
+}
+
+.day-labels span {
+    height: 12px;
+    font-size: 10px;
+    color: #9CA3AF;
+    display: flex;
+    align-items: center;
+}
+
+.calendar-weeks {
+    display: flex;
+    gap: 3px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.calendar-week {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.calendar-cell {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    border: 2px solid transparent;
+}
+
+.calendar-cell:hover:not(.future) {
+    transform: scale(1.3);
+    z-index: 10;
+    box-shadow: 0 0 8px rgba(255, 107, 107, 0.3);
+}
+
+.calendar-cell.today {
+    border-color: #4285F4 !important;
+    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+}
+
+.calendar-cell.future {
+    opacity: 0.2;
+    cursor: default;
+}
+
+.today-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 4px;
+    height: 4px;
+    background: #4285f4;
+    border-radius: 50%;
+}
+
+/* Legend */
+.calendar-legend {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    margin-top: 12px;
+}
+
+.legend-label {
+    font-size: 10px;
+    color: #6B7280;
+    margin: 0 4px;
+}
+
+.legend-cell {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+
+/* Tooltip */
+.calendar-tooltip {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #111827;
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 12px;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(5px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.calendar-tooltip strong {
+    color: #FFFFFF;
+}
+
+.calendar-tooltip span {
+    color: #D1D5DB;
+}
+
+/* Motivation Message */
+.streak-motivation {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(76, 175, 80, 0.08);
+    border-radius: 10px;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    font-size: 13px;
+    color: #065F46;
+}
+
+.streak-motivation.start {
+    background: rgba(66, 133, 244, 0.08);
+    border-color: rgba(66, 133, 244, 0.3);
+    color: #1E3A8A;
+}
+
+.motivation-emoji {
+    font-size: 20px;
+    animation: pulse 2s ease infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+    .streak-calendar-card {
+        padding: 16px;
+    }
+    
+    .streak-header {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .streak-stats {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .activity-summary {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .calendar-cell {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .calendar-weeks {
+        overflow-x: auto;
+        padding-bottom: 8px;
+    }
+}

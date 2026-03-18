@@ -3,6 +3,7 @@ import axios from 'axios';
 import { API_BASE_URL, JITSI_BASE_URL } from '../../config';
 import Swal from 'sweetalert2';
 import Sidebar from './Sidebar';
+import './EnhancedDashboard.css';
 
 const StudentSessions = () => {
   const studentId = localStorage.getItem('studentId');
@@ -71,7 +72,7 @@ const StudentSessions = () => {
             confirmButtonText: 'View Plans',
             showCancelButton: true
           }).then(result => {
-            if (result.isConfirmed) window.location.href = '/subscriptions';
+            if (result.isConfirmed) window.location.href = '/student/subscriptions';
           });
         } else {
           Swal.fire({ icon: 'info', title: 'Cannot Join', text: res.data.message });
@@ -87,7 +88,7 @@ const StudentSessions = () => {
           confirmButtonText: 'View Plans',
           showCancelButton: true
         }).then(result => {
-          if (result.isConfirmed) window.location.href = '/subscriptions';
+          if (result.isConfirmed) window.location.href = '/student/subscriptions';
         });
       } else if (data?.requires_parental_consent) {
         Swal.fire({
@@ -191,14 +192,18 @@ const StudentSessions = () => {
       {isMobile && sidebarOpen && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999 }} onClick={() => setSidebarOpen(false)} />
       )}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #e2e8f0', backgroundColor: '#fff' }}>
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#64748b', display: isMobile ? 'block' : 'none' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto', marginLeft: isMobile ? 0 : '250px' }}>
+        <div className="mobile-header">
+          <button 
+            className="sidebar-toggle"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label="Toggle sidebar"
+          >
             <i className="bi bi-list"></i>
           </button>
-          <span style={{ fontWeight: '600', color: '#1e293b', marginLeft: '8px' }}>Kannari Music Academy</span>
+          <div className="logo-mini">Kannari Music Academy</div>
         </div>
-    <div style={{ padding: '32px', maxWidth: '1000px', margin: '0 auto', width: '100%' }}>
+    <div style={{ padding: '32px', width: '100%' }}>
       <div style={{ marginBottom: '32px' }}>
         <h2 style={{ margin: 0, color: '#1e293b', fontWeight: '700' }}>My Sessions</h2>
         <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px' }}>Join live video sessions with your teachers</p>

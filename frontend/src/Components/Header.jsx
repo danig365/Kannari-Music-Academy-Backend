@@ -76,7 +76,7 @@ const Header = () => {
                         <div className="dropdown-menu dropdown-menu-custom">
                         {teacherLoginStatus !='true' && 
                         <>
-                          <Link className="dropdown-item dropdown-item-custom" to="/teacher-login">
+                          <Link className="dropdown-item dropdown-item-custom" to="/teacher/login">
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
                                   <polyline points="10 17 15 12 10 7"/>
@@ -84,7 +84,7 @@ const Header = () => {
                               </svg>
                               Login
                           </Link>
-                          <Link className="dropdown-item dropdown-item-custom" to="/teacher-register">
+                          <Link className="dropdown-item dropdown-item-custom" to="/teacher/register">
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                                   <circle cx="8.5" cy="7" r="4"/>
@@ -97,7 +97,7 @@ const Header = () => {
                         }
                         {teacherLoginStatus ==='true' && 
                         <>
-                          <Link className="dropdown-item dropdown-item-custom" to="/teacher-dashboard">
+                          <Link className="dropdown-item dropdown-item-custom" to="/teacher/dashboard">
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <rect x="3" y="3" width="7" height="9"/>
                                   <rect x="14" y="3" width="7" height="5"/>
@@ -106,7 +106,7 @@ const Header = () => {
                               </svg>
                               Dashboard
                           </Link>
-                          <Link className="dropdown-item dropdown-item-custom dropdown-item-logout" to="/teacher-logout">
+                          <Link className="dropdown-item dropdown-item-custom dropdown-item-logout" to="/teacher/logout">
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                                   <polyline points="16 17 21 12 16 7"/>
@@ -131,7 +131,7 @@ const Header = () => {
                         <div className="dropdown-menu dropdown-menu-custom">
                         {studentLoginStatus !='true' && 
                         <>
-                          <Link className="dropdown-item dropdown-item-custom" to="/user-login">
+                          <Link className="dropdown-item dropdown-item-custom" to="/student/login">
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
                                   <polyline points="10 17 15 12 10 7"/>
@@ -139,7 +139,7 @@ const Header = () => {
                               </svg>
                               Login
                           </Link>
-                          <Link className="dropdown-item dropdown-item-custom" to="/user-register">
+                          <Link className="dropdown-item dropdown-item-custom" to="/student/register">
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                                   <circle cx="8.5" cy="7" r="4"/>
@@ -152,7 +152,7 @@ const Header = () => {
                         }
                         {studentLoginStatus === 'true' &&
                         <>
-                          <Link className="dropdown-item dropdown-item-custom" to="/user-dashboard">
+                          <Link className="dropdown-item dropdown-item-custom" to="/student/dashboard">
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <rect x="3" y="3" width="7" height="9"/>
                                   <rect x="14" y="3" width="7" height="5"/>
@@ -161,7 +161,7 @@ const Header = () => {
                               </svg>
                               Dashboard
                           </Link>
-                          <Link className="dropdown-item dropdown-item-custom dropdown-item-logout" to="/user-logout">
+                          <Link className="dropdown-item dropdown-item-custom dropdown-item-logout" to="/student/logout">
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                                   <polyline points="16 17 21 12 16 7"/>
@@ -186,7 +186,7 @@ const Header = () => {
                         <div className="dropdown-menu dropdown-menu-custom">
                         {adminLoginStatus !=='true' && 
                         <>
-                          <Link className="dropdown-item dropdown-item-custom" to="/admin-login">
+                          <Link className="dropdown-item dropdown-item-custom" to="/admin-panel/login">
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
                                   <polyline points="10 17 15 12 10 7"/>
@@ -198,7 +198,7 @@ const Header = () => {
                         }
                         {adminLoginStatus === 'true' &&
                         <>
-                          <Link className="dropdown-item dropdown-item-custom" to="/admin-dashboard">
+                          <Link className="dropdown-item dropdown-item-custom" to="/admin-panel/dashboard">
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <rect x="3" y="3" width="7" height="9"/>
                                   <rect x="14" y="3" width="7" height="5"/>
@@ -207,7 +207,7 @@ const Header = () => {
                               </svg>
                               Dashboard
                           </Link>
-                          <Link className="dropdown-item dropdown-item-custom dropdown-item-logout" to="/admin-logout">
+                          <Link className="dropdown-item dropdown-item-custom dropdown-item-logout" to="/admin-panel/logout">
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                                   <polyline points="16 17 21 12 16 7"/>
@@ -232,7 +232,7 @@ const Header = () => {
                         <div className="dropdown-menu dropdown-menu-custom">
                         {schoolLoginStatus !=='true' && 
                         <>
-                          <Link className="dropdown-item dropdown-item-custom" to="/school-login">
+                          <Link className="dropdown-item dropdown-item-custom" to="/school/login">
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
                                   <polyline points="10 17 15 12 10 7"/>
@@ -244,7 +244,7 @@ const Header = () => {
                         }
                         {schoolLoginStatus === 'true' &&
                         <>
-                          <Link className="dropdown-item dropdown-item-custom" to="/school-dashboard">
+                          <Link className="dropdown-item dropdown-item-custom" to="/school/dashboard">
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <rect x="3" y="3" width="7" height="9"/>
                                   <rect x="14" y="3" width="7" height="5"/>
@@ -253,7 +253,7 @@ const Header = () => {
                               </svg>
                               Dashboard
                           </Link>
-                          <Link className="dropdown-item dropdown-item-custom dropdown-item-logout" to="/school-logout">
+                          <Link className="dropdown-item dropdown-item-custom dropdown-item-logout" to="/school/logout">
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                                   <polyline points="16 17 21 12 16 7"/>
@@ -264,6 +264,19 @@ const Header = () => {
                         </>
                         }
                         </div>
+                    </div>
+
+                    {/* Parent Link */}
+                    <div className="nav-item nav-dropdown-custom">
+                        <Link to="/parent/login" className="nav-link nav-link-custom">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                            Parent
+                        </Link>
                     </div>
                 </div>
             </div>

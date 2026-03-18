@@ -6,6 +6,8 @@ import AuditSummary from './AuditSummary';
 import UploadLogsTable from './UploadLogsTable';
 import PaymentLogsTable from './PaymentLogsTable';
 import AccessLogsTable from './AccessLogsTable';
+import MessageLogsTable from './MessageLogsTable';
+import ActivityLogsTable from './ActivityLogsTable';
 import './AuditLogsDashboard.css';
 
 const AuditLogsDashboard = () => {
@@ -64,7 +66,7 @@ const AuditLogsDashboard = () => {
   };
 
   return (
-    <div className="audit-logs-dashboard py-4" style={{ maxWidth: '1400px', margin: '0 auto' }}>
+    <div className="audit-logs-dashboard py-4">
       {/* Header */}
       <div className="dashboard-header mb-4">
         {/* Title Row */}
@@ -237,6 +239,36 @@ const AuditLogsDashboard = () => {
                 )}
               </button>
             </li>
+            <li className="nav-item" role="presentation">
+              <button 
+                className={`nav-link ${activeTab === 'messages' ? 'active' : ''}`}
+                onClick={() => setActiveTab('messages')}
+                type="button"
+                role="tab"
+              >
+                <i className="bi bi-chat-dots"></i> Messages
+                {summaryData && summaryData.messages && (
+                  <span className="badge bg-purple ms-2" style={{ backgroundColor: '#7c3aed' }}>
+                    {summaryData.messages.total || 0}
+                  </span>
+                )}
+              </button>
+            </li>
+            <li className="nav-item" role="presentation">
+              <button 
+                className={`nav-link ${activeTab === 'activity' ? 'active' : ''}`}
+                onClick={() => setActiveTab('activity')}
+                type="button"
+                role="tab"
+              >
+                <i className="bi bi-activity"></i> Activity Logs
+                {summaryData && summaryData.activity && (
+                  <span className="badge bg-secondary ms-2">
+                    {summaryData.activity.total || 0}
+                  </span>
+                )}
+              </button>
+            </li>
           </ul>
 
           <div className="tab-content">
@@ -258,6 +290,16 @@ const AuditLogsDashboard = () => {
             {/* Access Logs Tab */}
             {activeTab === 'access' && (
               <AccessLogsTable key={refreshKey} />
+            )}
+
+            {/* Messages Tab */}
+            {activeTab === 'messages' && (
+              <MessageLogsTable key={refreshKey} />
+            )}
+
+            {/* Activity Logs Tab */}
+            {activeTab === 'activity' && (
+              <ActivityLogsTable key={refreshKey} />
             )}
           </div>
         </div>

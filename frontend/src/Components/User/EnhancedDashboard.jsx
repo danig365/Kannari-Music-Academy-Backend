@@ -25,7 +25,7 @@ const EnhancedDashboard = () => {
     // Authentication check and fetch data
     useEffect(() => {
         if (studentLoginStatus !== 'true') {
-            navigate('/user-login');
+            navigate('/student/login');
         } else {
             document.title = 'LMS | Student Dashboard';
             if (studentId) {
@@ -218,7 +218,7 @@ const EnhancedDashboard = () => {
                                     <h3>{dashboardData?.enrolled_courses || 0}</h3>
                                     <p>Total Courses</p>
                                 </div>
-                                <Link to="/my-courses" className="stat-link" aria-label="View all courses">
+                                <Link to="/student/my-courses" className="stat-link" aria-label="View all courses">
                                     <i className="bi bi-arrow-right-circle-fill"></i>
                                 </Link>
                             </div>

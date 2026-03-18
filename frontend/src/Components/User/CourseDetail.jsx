@@ -65,7 +65,7 @@ const CourseDetail = () => {
           icon: 'warning',
           confirmButtonColor: '#4285f4'
         }).then(() => {
-          navigate('/user-login');
+          navigate('/student/login');
         });
       }
     }, [studentLoginStatus, navigate]);
@@ -212,7 +212,7 @@ const CourseDetail = () => {
                     confirmButtonColor: '#3b82f6'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        navigate('/subscriptions');
+                        navigate('/student/subscriptions');
                     }
                 });
                 return;
@@ -246,7 +246,7 @@ const CourseDetail = () => {
                 confirmButtonColor: '#3b82f6'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    navigate('/subscriptions');
+                    navigate('/student/subscriptions');
                 }
             });
             return;
@@ -288,7 +288,7 @@ const CourseDetail = () => {
                     confirmButtonColor: '#3b82f6'
                 }).then((swalResult) => {
                     if (swalResult.isConfirmed) {
-                        navigate('/subscriptions');
+                        navigate('/student/subscriptions');
                     }
                 });
             }
@@ -484,7 +484,7 @@ const CourseDetail = () => {
         <div className="course-back-section">
           <div className="course-back-container">
             <Link 
-              to='/my-courses'
+              to='/student/my-courses'
               className="course-back-link"
             >
               <i className="bi bi-arrow-left course-back-icon" aria-hidden="true"></i>
@@ -564,7 +564,7 @@ const CourseDetail = () => {
                       </button>
                     ) : (
                       <Link 
-                        to='/subscriptions' 
+                        to='/student/subscriptions' 
                         className='course-btn course-btn-enroll'
                         style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}
                       >
@@ -574,7 +574,7 @@ const CourseDetail = () => {
                   )}
                   {enrolledStatus === 'success' && userLoginStatus === 'success' &&
                     <Link 
-                      to={`/learn/${course_id}`} 
+                      to={`/student/learn/${course_id}`} 
                       className='course-btn course-btn-learn'
                     >
                       <i className='bi bi-play-fill'></i> {courseProgress && courseProgress.progress_percentage > 0 ? 'Continue Learning' : 'Start Learning'}
@@ -582,7 +582,7 @@ const CourseDetail = () => {
                   }
                   {userLoginStatus !== 'success' && 
                     <Link 
-                      to='/user-login' 
+                      to='/student/login' 
                       className='course-btn course-btn-login'
                     >
                       Login to Enroll

@@ -1,0 +1,688 @@
+.student-subscriptions {
+    background: linear-gradient(160deg, #f0f9ff 0%, #e0f2fe 50%, #f0f9ff 100%);
+    padding: 1.5rem;
+    border-radius: 12px;
+    min-height: 100vh;
+}
+
+.student-subscriptions .subscription-header {
+    font-size: clamp(1.5rem, 2.5vw, 2rem);
+    color: #1a1a1a;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid rgba(59, 130, 246, 0.15);
+    padding-bottom: 1rem;
+    letter-spacing: -0.01em;
+}
+
+.student-subscriptions .subscription-header i {
+    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Navigation Tabs */
+.student-subscriptions .nav-tabs {
+    border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+.student-subscriptions .nav-tabs .nav-link {
+    color: #6b7280;
+    border: none;
+    font-weight: 600;
+    padding: 0.75rem 1.25rem;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 10px 10px 0 0;
+}
+
+.student-subscriptions .nav-tabs .nav-link:hover {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.student-subscriptions .nav-tabs .nav-link.active {
+    color: #ffffff;
+    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    border: none;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+}
+
+/* Plans Grid */
+.student-subscriptions .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.student-subscriptions .plan-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.75rem;
+    box-shadow: 0 1px 4px rgba(59, 130, 246, 0.06),
+                0 4px 12px rgba(59, 130, 246, 0.04);
+    border: 1px solid rgba(59, 130, 246, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.student-subscriptions .plan-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.12),
+                0 8px 24px rgba(59, 130, 246, 0.06);
+    border-color: rgba(59, 130, 246, 0.18);
+}
+
+.plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.student-subscriptions .plan-header h5 {
+    margin: 0;
+    font-size: 1.35rem;
+    color: #1a1a1a;
+    font-weight: 700;
+}
+
+.student-subscriptions .plan-description {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-bottom: 1.25rem;
+    min-height: 40px;
+}
+
+.plan-price {
+    margin: 0;
+    padding: 0;
+    border-top: none;
+    border-bottom: none;
+}
+
+.student-subscriptions .price-main {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+}
+
+.student-subscriptions .price-duration {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.price-discount {
+    color: #6c757d;
+    text-decoration: line-through;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.student-subscriptions .plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 1.25rem 0;
+    flex-grow: 1;
+}
+
+.student-subscriptions .feature {
+    padding: 0.5rem 0;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+.feature i {
+    font-size: 1rem;
+}
+
+.student-subscriptions .plan-card .btn {
+    margin-top: auto;
+    padding: 0.7rem 1.25rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 44px;
+}
+
+.student-subscriptions .plan-card .btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    border: none;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+}
+
+.student-subscriptions .plan-card .btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #2563eb, #0891b2);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
+}
+
+.student-subscriptions .plan-card .btn-secondary {
+    background: rgba(59, 130, 246, 0.08);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.student-subscriptions .plan-card .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Subscription Card */
+.student-subscriptions .subscription-card {
+    border: 1px solid rgba(59, 130, 246, 0.08);
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #ffffff;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(59, 130, 246, 0.06),
+                0 4px 12px rgba(59, 130, 246, 0.04);
+    position: relative;
+}
+
+.student-subscriptions .subscription-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #06b6d4);
+}
+
+.student-subscriptions .subscription-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.12),
+                0 8px 24px rgba(59, 130, 246, 0.06);
+    border-color: rgba(59, 130, 246, 0.15);
+}
+
+.student-subscriptions .subscription-card .card-body {
+    padding: 1.75rem;
+}
+
+.student-subscriptions .subscription-card .card-title {
+    color: #1a1a1a;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.student-subscriptions .subscription-details {
+    list-style: none;
+    padding: 1rem 0;
+    margin: 0;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.student-subscriptions .subscription-details li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    background: rgba(59, 130, 246, 0.04);
+    border: 1px solid rgba(59, 130, 246, 0.08);
+    color: #374151;
+    font-size: 0.9rem;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.student-subscriptions .subscription-details li:hover {
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.15);
+}
+
+.student-subscriptions .subscription-details strong {
+    color: #1a1a1a;
+    font-weight: 700;
+    margin-right: 1rem;
+    min-width: 120px;
+}
+
+.student-subscriptions .subscription-details li.text-success {
+    background: rgba(16, 185, 129, 0.06);
+    border-color: rgba(16, 185, 129, 0.12);
+    color: #047857;
+}
+
+.student-subscriptions .subscription-details li.text-success strong {
+    color: #047857;
+}
+
+.student-subscriptions .subscription-card .badge {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 20px;
+    text-transform: capitalize;
+    font-weight: 600;
+}
+
+.student-subscriptions .subscription-card .badge.bg-success {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0) !important;
+    color: #047857;
+}
+
+.student-subscriptions .subscription-card .badge.bg-warning {
+    background: linear-gradient(135deg, #fef3c7, #fde68a) !important;
+    color: #b45309;
+}
+
+.student-subscriptions .subscription-card .badge.bg-danger {
+    background: linear-gradient(135deg, #fee2e2, #fecaca) !important;
+    color: #7f1d1d;
+}
+
+.subscription-details li i {
+    min-width: 20px;
+    color: #007bff;
+}
+
+.subscription-details li.text-success i {
+    color: #155724;
+}
+
+.subscription-card .fw-600 {
+    font-weight: 600;
+}
+
+.subscription-card .fw-700 {
+    font-weight: 700;
+}
+
+/* Payment Modal */
+.modal.show {
+    display: block !important;
+}
+
+.modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    border-bottom: 2px solid #e9ecef;
+    padding: 1.5rem;
+}
+
+.modal-header .modal-title {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+/* Payment Form */
+.payment-form {
+    margin-top: 1.5rem;
+}
+
+.payment-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.student-subscriptions .payment-form label {
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+    display: block;
+    font-size: 0.9rem;
+}
+
+.student-subscriptions .payment-form .form-control {
+    border-radius: 10px;
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(59, 130, 246, 0.02);
+}
+
+.student-subscriptions .payment-form .form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+    background: #ffffff;
+    outline: none;
+}
+
+.payment-form .form-control::placeholder {
+    color: #adb5bd;
+}
+
+.student-subscriptions .card-element {
+    padding: 12px 10px !important;
+    border: 1px solid rgba(59, 130, 246, 0.15) !important;
+    border-radius: 10px !important;
+    background: rgba(59, 130, 246, 0.02) !important;
+    font-size: 0.95rem !important;
+    transition: border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.student-subscriptions .card-element.StripeElement--focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08) !important;
+    background: #ffffff !important;
+}
+
+.student-subscriptions .card-element.StripeElement--invalid {
+    border-color: #ef4444 !important;
+}
+
+.student-subscriptions .payment-form .btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    border: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    min-height: 44px;
+}
+
+.student-subscriptions .payment-form .btn-success {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.student-subscriptions .payment-form .btn-success:hover:not(:disabled) {
+    background: linear-gradient(135deg, #059669, #10b981);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+}
+
+.student-subscriptions .payment-form .btn-success:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.student-subscriptions .payment-form .btn-secondary {
+    background: rgba(59, 130, 246, 0.08);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.student-subscriptions .payment-form .btn-secondary:hover {
+    background: rgba(59, 130, 246, 0.15);
+}
+
+/* Plan Summary */
+.student-subscriptions .plan-summary {
+    background: #ffffff;
+    border: 1px solid rgba(59, 130, 246, 0.08);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.75rem;
+    box-shadow: 0 1px 4px rgba(59, 130, 246, 0.06);
+}
+
+.student-subscriptions .summary-item {
+    padding: 0.75rem 0;
+    font-weight: 500;
+    color: #374151;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.student-subscriptions .summary-item span:first-child {
+    color: #6b7280;
+}
+
+.student-subscriptions .summary-item span:last-child {
+    color: #1a1a1a;
+    font-weight: 700;
+}
+
+.student-subscriptions .summary-item.total {
+    padding: 1rem 0;
+    border-top: 1px solid rgba(59, 130, 246, 0.12);
+    margin-top: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.student-subscriptions .summary-item.total span:last-child {
+    color: #3b82f6;
+    font-size: 1.4rem;
+}
+
+.student-subscriptions .summary-item.discount {
+    color: #10b981;
+}
+
+.student-subscriptions .summary-item.discount span:first-child {
+    color: #10b981;
+}
+
+.student-subscriptions .summary-item.discount span:last-child {
+    color: #10b981;
+}
+
+/* Checkout Modal Improvements */
+.modal.d-block.show {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    animation: slideInUp 0.3s ease;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.student-subscriptions .modal-dialog {
+    max-width: 480px;
+    width: 90%;
+    margin: 0;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.modal-dialog.modal-dialog-centered {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.modal-content {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border-bottom: none;
+    padding: 2rem 1.5rem;
+    color: white;
+}
+
+.modal-header .modal-title {
+    font-weight: 700;
+    color: white;
+    font-size: 1.4rem;
+}
+
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.7;
+}
+
+.modal-header .btn-close:hover {
+    opacity: 1;
+}
+
+.modal-body {
+    padding: 2rem 1.5rem;
+    background-color: #fff;
+}
+
+/* Error Messages */
+.payment-form .alert {
+    border-radius: 8px;
+    border: 1px solid #f5c6cb;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background-color: #f8d7da;
+    color: #721c24;
+    font-weight: 500;
+}
+
+.payment-form .alert-danger {
+    border-color: #f5c6cb;
+}
+
+/* Processing State */
+.btn-success:disabled {
+    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+    position: relative;
+    color: white;
+}
+
+.btn-success:disabled::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .subscription-header {
+        font-size: 1.5rem;
+    }
+
+    .plans-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .nav-tabs .nav-link {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .plan-price {
+        margin: 1rem 0;
+        padding: 1rem 0;
+    }
+
+    .price-main {
+        font-size: 2rem;
+    }
+    
+    .modal-dialog {
+        max-width: 95% !important;
+        width: 95% !important;
+    }
+    
+    .modal-body {
+        padding: 1.5rem 1rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .student-subscriptions {
+        padding: 10px;
+    }
+
+    .plan-card {
+        padding: 1.5rem;
+    }
+
+    .modal-dialog {
+        margin: 10px;
+        max-width: calc(100% - 20px) !important;
+    }
+    
+    .modal-header {
+        padding: 1.5rem 1rem !important;
+    }
+    
+    .payment-form .btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Spinner Animation */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.25em;
+}
+
+/* Additional Enhancements */
+.modal-backdrop {
+    backdrop-filter: blur(4px);
+}
+
+/* Card validation states */
+.card-element.StripeElement--complete {
+    border-color: #28a745;
+}
+
+/* Success State */
+.payment-success-message {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.payment-success-message i {
+    font-size: 1.25rem;
+}
+
+/* Alert Info */
+.student-subscriptions .alert-info {
+    background: #ffffff;
+    border: 1px solid rgba(59, 130, 246, 0.12);
+    color: #1a1a1a;
+    padding: 1.1rem 1.25rem;
+    border-radius: 12px;
+    font-weight: 500;
+    font-size: 0.9rem;
+}

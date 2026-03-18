@@ -47,7 +47,7 @@ const TeacherDashboard = () => {
           </div>
           <div className='stat-content'>
             <div className='stat-label'>Total Courses</div>
-            <Link to="/teacher-my-course" className='stat-value'>
+            <Link to="/teacher/my-courses" className='stat-value'>
               {dashbarData.total_teacher_course || 0}
             </Link>
           </div>
@@ -59,7 +59,7 @@ const TeacherDashboard = () => {
           </div>
           <div className='stat-content'>
             <div className='stat-label'>Total Students</div>
-            <Link to="/my-users" className='stat-value'>
+            <Link to="/teacher/my-users" className='stat-value'>
               {dashbarData.total_teacher_students || 0}
             </Link>
           </div>
@@ -71,7 +71,7 @@ const TeacherDashboard = () => {
           </div>
           <div className='stat-content'>
             <div className='stat-label'>Total Chapters</div>
-            <Link to="/teacher-my-course" className='stat-value'>
+            <Link to="/teacher/my-courses" className='stat-value'>
               {dashbarData.total_teacher_chapters || 0}
             </Link>
           </div>

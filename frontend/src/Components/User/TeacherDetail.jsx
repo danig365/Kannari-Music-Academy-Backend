@@ -20,7 +20,7 @@ const TeacherDetail = () => {
     // Authentication check
     useEffect(() => {
         if (studentLoginStatus !== 'true') {
-            navigate('/user-login');
+            navigate('/student/login');
         }
     }, [studentLoginStatus, navigate]);
 

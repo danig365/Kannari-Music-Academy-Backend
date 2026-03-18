@@ -263,7 +263,7 @@ const TeacherProgress = () => {
             color: '#6b7280',
             margin: '0 0 24px 0'
           }}>Once you have students assigned, their progress will appear here.</p>
-          <Link to='/teacher-students' style={{
+          <Link to='/teacher/students' style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',

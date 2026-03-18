@@ -14,7 +14,7 @@ This guide walks through **three complete flows** so you can test:
 
 | Role | How to Get |
 |------|-----------|
-| **Admin** | Login at `/admin-login` — Email: `admin@kannari.com` / Password: `admin` |
+| **Admin** | Login at `/admin-panel/login` — Email: `admin@kannari.com` / Password: `admin` |
 | **Teacher A** (unverified) | Register fresh in Flow A below |
 | **Teacher B** (verified) | Register fresh in Flow B below |
 | **Minor Student** | Register fresh — set date of birth to make them under 18 |
@@ -31,7 +31,7 @@ Before students can enroll in courses, access lessons, or join sessions, they **
 
 ### P1. Admin Creates a Subscription Plan
 
-1. Login as admin → `/admin-login`
+1. Login as admin → `/admin-panel/login`
 2. Go to `/admin/subscriptions` → click **Manage Plans** tab
 3. Click **"+ New Plan"** button
 4. Fill in:
@@ -68,14 +68,14 @@ Before students can enroll in courses, access lessons, or join sessions, they **
 
 ### A2. Teacher Login (First Attempt — Blocked)
 
-1. Go to `/teacher-login`
+1. Go to `/teacher/login`
 2. Enter the email/password you just registered
 3. **Expected:** You see a message: **"Your account is pending admin approval. Please wait for the administrator to review and approve your registration."**
 4. You **cannot** log in yet
 
 ### A3. Admin Approves Teacher (Basic Approval Only)
 
-1. Open a new tab → `/admin-login` → login as admin
+1. Open a new tab → `/admin-panel/login` → login as admin
 2. Go to `/admin/users-management` → click **Teachers** tab
 3. Find `Test Teacher Unverified` in the list
 4. Notice the badges:
@@ -88,7 +88,7 @@ Before students can enroll in courses, access lessons, or join sessions, they **
 
 ### A4. Teacher Login (Second Attempt — Succeeds)
 
-1. Go back to teacher tab → `/teacher-login`
+1. Go back to teacher tab → `/teacher/login`
 2. Login with the same credentials
 3. **Expected:** Login succeeds → redirected to `/teacher-dashboard`
 
@@ -105,7 +105,7 @@ Before students can enroll in courses, access lessons, or join sessions, they **
 
 ### A6. Register a Minor Student
 
-1. Open another browser/incognito → go to `/user-register`
+1. Open another browser/incognito → go to `/student/register`
 2. Fill in:
    - Full Name: `Test Minor Student`
    - Email: use another email
@@ -113,7 +113,7 @@ Before students can enroll in courses, access lessons, or join sessions, they **
    - **Date of Birth:** set to any date that makes them **under 18** (e.g., `2012-03-15`) — this field is on the registration form itself, right after Password
    - Interests: anything
 3. Click **Complete Profile Setup**
-4. Verify email if prompted → login at `/user-login`
+4. Verify email if prompted → login at `/student/login`
 
 ### A6b. Admin Creates & Activates Subscription for the Minor Student
 

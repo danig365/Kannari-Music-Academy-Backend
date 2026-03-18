@@ -163,7 +163,7 @@ const CourseAnalytics = () => {
             <div className="analytics-header">
                 <div className="d-flex align-items-center gap-3">
                     <Link
-                        to="/admin/lesson-management"
+                        to="/admin-panel/lesson-management"
                         className="btn back-btn"
                     >
                         <i className="bi bi-arrow-left"></i>

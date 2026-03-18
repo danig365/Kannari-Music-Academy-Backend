@@ -1537,7 +1537,7 @@ const TeacherStudents = () => {
                     marginBottom: '16px'
                   }}></i>
                   <p style={{ color: '#6b7280', marginBottom: '20px', fontSize: '15px' }}>You don't have any courses yet.</p>
-                  <Link to='/teacher-course-management' style={{
+                  <Link to='/teacher/course-management' style={{
                     padding: '10px 20px',
                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     color: 'white',

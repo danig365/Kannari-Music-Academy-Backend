@@ -11,7 +11,7 @@ const SchoolLogout = () => {
         localStorage.removeItem('schoolId');
         localStorage.removeItem('schoolName');
         localStorage.removeItem('schoolEmail');
-        navigate('/school-login');
+        navigate('/school/login');
     }, [navigate]);
 
     return <LoadingSpinner fullScreen size="lg" text="Logging out..." />;

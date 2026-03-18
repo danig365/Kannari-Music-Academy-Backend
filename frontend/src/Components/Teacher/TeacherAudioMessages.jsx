@@ -104,7 +104,7 @@ const TeacherAudioMessages = () => {
   };
 
   return (
-    <div style={{ padding: '32px', maxWidth: '1000px', margin: '0 auto' }}>
+    <div>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>

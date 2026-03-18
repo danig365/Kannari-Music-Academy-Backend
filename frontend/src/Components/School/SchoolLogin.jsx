@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 import { API_BASE_URL } from '../../config';
+import { validateLoginForm, FieldError } from '../../utils/formValidation';
 
 const baseUrl = API_BASE_URL;
 
@@ -14,12 +15,13 @@ const SchoolLogin = () => {
     });
     const [errorMsg, setErrorMsg] = useState('');
     const [loading, setLoading] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState({});
 
     useEffect(() => {
         document.title = 'School Login | Kannari Music Academy';
         const schoolLoginStatus = localStorage.getItem('schoolLoginStatus');
         if (schoolLoginStatus === 'true') {
-            navigate('/school-dashboard');
+            navigate('/school/dashboard');
         }
     }, [navigate]);
 
@@ -33,6 +35,11 @@ const SchoolLogin = () => {
 
     const submitForm = async (e) => {
         e.preventDefault();
+
+        const errors = validateLoginForm(loginData);
+        setFieldErrors(errors);
+        if (Object.keys(errors).length > 0) return;
+
         setLoading(true);
         
         const formData = new FormData();
@@ -47,7 +54,7 @@ const SchoolLogin = () => {
                 localStorage.setItem('schoolId', response.data.school_id);
                 localStorage.setItem('schoolName', response.data.school_name);
                 localStorage.setItem('schoolEmail', response.data.school_email);
-                navigate('/school-dashboard');
+                navigate('/school/dashboard');
             } else {
                 setErrorMsg('Invalid email or password');
             }
@@ -207,7 +214,7 @@ const SchoolLogin = () => {
                                             width: '100%',
                                             padding: '12px 16px',
                                             fontSize: '15px',
-                                            border: '1px solid #e5e7eb',
+                                            border: fieldErrors.email ? '1px solid #ef4444' : '1px solid #e5e7eb',
                                             borderRadius: '8px',
                                             outline: 'none',
                                             transition: 'all 0.2s',
@@ -219,10 +226,11 @@ const SchoolLogin = () => {
                                             e.target.style.boxShadow = '0 0 0 3px rgba(25, 118, 210, 0.1)';
                                         }}
                                         onBlur={(e) => {
-                                            e.target.style.borderColor = '#e5e7eb';
+                                            e.target.style.borderColor = fieldErrors.email ? '#ef4444' : '#e5e7eb';
                                             e.target.style.boxShadow = 'none';
                                         }}
                                     />
+                                    <FieldError error={fieldErrors.email} />
                                 </div>
 
                                 {/* Password */}
@@ -245,7 +253,7 @@ const SchoolLogin = () => {
                                             width: '100%',
                                             padding: '12px 16px',
                                             fontSize: '15px',
-                                            border: '1px solid #e5e7eb',
+                                            border: fieldErrors.password ? '1px solid #ef4444' : '1px solid #e5e7eb',
                                             borderRadius: '8px',
                                             outline: 'none',
                                             transition: 'all 0.2s',
@@ -257,13 +265,12 @@ const SchoolLogin = () => {
                                             e.target.style.boxShadow = '0 0 0 3px rgba(25, 118, 210, 0.1)';
                                         }}
                                         onBlur={(e) => {
-                                            e.target.style.borderColor = '#e5e7eb';
+                                            e.target.style.borderColor = fieldErrors.password ? '#ef4444' : '#e5e7eb';
                                             e.target.style.boxShadow = 'none';
                                         }}
                                     />
+                                    <FieldError error={fieldErrors.password} />
                                 </div>
-
-                                {/* Submit Button */}
                                 <button
                                     type="submit"
                                     disabled={loading}

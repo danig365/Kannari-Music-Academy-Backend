@@ -1,0 +1,766 @@
+/* AdminLessonManagement Responsive Styles */
+
+/* Color Scheme */
+:root {
+    --primary-color: #4285f4;
+    --text-dark: #1a2332;
+    --text-light: #6b7280;
+    --bg-light: #f5f7fa;
+    --border-light: #e9ecef;
+}
+
+/* Desktop Base Styles */
+.lesson-management-container {
+    padding: 24px;
+}
+
+.lesson-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.lesson-header > div:first-child {
+    flex: 1;
+}
+
+.lesson-header button {
+    flex-shrink: 0;
+    align-self: flex-start;
+}
+
+.lesson-header h2 {
+    color: var(--text-dark);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: -0.5px;
+    margin: 0;
+}
+
+.lesson-header p {
+    color: var(--text-light);
+    font-size: 14px;
+    margin: 0;
+}
+
+.lesson-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-card i {
+    font-size: 32px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-card h3 {
+    color: var(--text-dark);
+    font-weight: 700;
+    font-size: 24px;
+    margin: 8px 0;
+    width: 100%;
+}
+
+.stat-card p {
+    color: var(--text-light);
+    font-size: 13px;
+    margin: 0;
+    width: 100%;
+}
+
+.filter-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: center;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+}
+
+.input-group-text {
+    background: #f8f9fa;
+    border: 1px solid var(--border-light);
+    border-right: none;
+    padding: 10px 14px;
+    color: var(--text-light);
+}
+
+.form-control,
+.form-select {
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+}
+
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.course-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.course-card:hover {
+    box-shadow: 0 4px 16px rgba(66, 133, 244, 0.15);
+    transform: translateY(-2px);
+}
+
+.course-card img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+}
+
+.course-card-body {
+    padding: 16px;
+}
+
+.course-badge {
+    background: #e8f4fd;
+    color: #1976d2;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    display: inline-block;
+    margin-bottom: 8px;
+}
+
+.course-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.course-actions button {
+    background: #e3f2fd;
+    color: #1976d2;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.course-actions button:hover {
+    background: #bbdefb;
+}
+
+.course-actions button.delete {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.course-actions button.delete:hover {
+    background: #ffcdd2;
+}
+
+.module-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 16px;
+}
+
+.module-header {
+    background: #f8fafc;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-light);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s ease;
+}
+
+.module-header:hover {
+    background: #f1f5f9;
+}
+
+.module-title-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.module-number {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #4285f4 0%, #3b5998 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.module-header h6 {
+    color: var(--text-dark);
+    font-weight: 600;
+    margin: 0;
+}
+
+.module-header small {
+    color: var(--text-light);
+    font-size: 13px;
+}
+
+.module-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.module-actions button {
+    background: #e3f2fd;
+    color: #1976d2;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.module-actions button.add {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.module-actions button.delete {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.lesson-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.lesson-item {
+    padding: 14px 20px;
+    border-left: 4px solid var(--primary-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-light);
+    transition: background 0.2s ease;
+}
+
+.lesson-item:hover {
+    background: #f8fafc;
+}
+
+.lesson-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.lesson-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.lesson-actions a,
+.lesson-actions button {
+    background: #e3f2fd;
+    color: #1976d2;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.lesson-actions button.delete {
+    background: #ffebee;
+    color: #c62828;
+}
+
+/* Modal Styles */
+.modal-dialog {
+    max-width: 600px;
+}
+
+.modal-dialog.modal-lg {
+    max-width: 800px;
+}
+
+.modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--border-light);
+    padding: 20px 24px;
+}
+
+.modal-title {
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border-light);
+    padding: 16px 24px;
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4285f4 0%, #3b5998 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+}
+
+.btn-cancel {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.btn-cancel:hover {
+    background: #e5e7eb;
+}
+
+/* Empty State Styles */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.empty-state i {
+    font-size: 48px;
+    color: #d1d5db;
+    margin-bottom: 16px;
+}
+
+.empty-state h5 {
+    color: #374151;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    color: var(--text-light);
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+/* ============== TABLET (768px and below) ============== */
+@media (max-width: 768px) {
+    .lesson-management-container {
+        padding: 16px;
+    }
+
+    .lesson-header {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+
+    .lesson-header h2 {
+        font-size: 22px;
+    }
+
+    .lesson-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        padding: 16px;
+    }
+
+    .stat-card h3 {
+        font-size: 20px;
+    }
+
+    .filter-row {
+        grid-template-columns: 1fr;
+    }
+
+    .courses-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+    }
+
+    .course-card-body {
+        padding: 14px;
+    }
+
+    .module-header {
+        padding: 12px 16px;
+    }
+
+    .lesson-item {
+        padding: 12px 16px;
+    }
+
+    .modal-dialog {
+        margin: 12px;
+    }
+
+    .modal-body {
+        padding: 16px;
+    }
+}
+
+/* ============== MOBILE (480px and below) ============== */
+@media (max-width: 480px) {
+    .lesson-management-container {
+        padding: 12px;
+    }
+
+    .lesson-header {
+        gap: 8px;
+    }
+
+    .lesson-header h2 {
+        font-size: 18px;
+    }
+
+    .lesson-header h2 i {
+        display: none;
+    }
+
+    .lesson-header p {
+        font-size: 12px;
+    }
+
+    .lesson-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .stat-card {
+        padding: 12px;
+    }
+
+    .stat-card i {
+        font-size: 24px;
+        margin-bottom: 8px;
+    }
+
+    .stat-card h3 {
+        font-size: 18px;
+        margin: 6px 0;
+    }
+
+    .stat-card p {
+        font-size: 12px;
+    }
+
+    .filter-card {
+        padding: 12px 16px;
+        margin-bottom: 16px;
+    }
+
+    .input-group-text,
+    .form-control,
+    .form-select {
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+
+    .courses-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .course-card-body {
+        padding: 12px;
+    }
+
+    .course-badge {
+        padding: 3px 8px;
+        font-size: 10px;
+    }
+
+    .module-header {
+        padding: 10px 12px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .module-title-section {
+        width: 100%;
+    }
+
+    .module-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .module-actions button {
+        padding: 5px 8px;
+        font-size: 12px;
+    }
+
+    .lesson-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px 12px;
+        gap: 8px;
+    }
+
+    .lesson-info {
+        width: 100%;
+    }
+
+    .lesson-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .lesson-actions a,
+    .lesson-actions button {
+        padding: 5px 8px;
+        font-size: 12px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    .modal-dialog {
+        margin: 8px;
+        max-width: 95vw !important;
+    }
+
+    .modal-header,
+    .modal-footer {
+        padding: 12px 16px;
+    }
+
+    .modal-body {
+        padding: 16px;
+    }
+
+    .modal-title {
+        font-size: 16px;
+    }
+
+    .empty-state {
+        padding: 30px 16px;
+    }
+
+    .empty-state i {
+        font-size: 40px;
+    }
+
+    .empty-state h5 {
+        font-size: 16px;
+    }
+
+    .empty-state p {
+        font-size: 13px;
+    }
+}
+
+/* ============== EXTRA SMALL (360px and below) ============== */
+@media (max-width: 360px) {
+    .lesson-management-container {
+        padding: 8px;
+    }
+
+    .lesson-header {
+        gap: 6px;
+    }
+
+    .lesson-header h2 {
+        font-size: 16px;
+    }
+
+    .lesson-header p {
+        font-size: 11px;
+    }
+
+    .lesson-stats-grid {
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .stat-card {
+        padding: 10px;
+    }
+
+    .stat-card i {
+        font-size: 20px;
+        margin-bottom: 6px;
+    }
+
+    .stat-card h3 {
+        font-size: 16px;
+        margin: 4px 0;
+    }
+
+    .stat-card p {
+        font-size: 11px;
+    }
+
+    .filter-card {
+        padding: 10px 12px;
+        margin-bottom: 12px;
+    }
+
+    .input-group-text,
+    .form-control,
+    .form-select {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    .courses-grid {
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .course-card-body {
+        padding: 10px;
+    }
+
+    .course-card-body h6 {
+        font-size: 13px;
+    }
+
+    .course-badge {
+        padding: 2px 6px;
+        font-size: 9px;
+    }
+
+    .module-header {
+        padding: 8px 10px;
+    }
+
+    .module-number {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+
+    .module-header h6 {
+        font-size: 14px;
+    }
+
+    .lesson-item {
+        padding: 8px 10px;
+    }
+
+    .lesson-actions a,
+    .lesson-actions button {
+        padding: 4px 6px;
+        font-size: 11px;
+    }
+
+    .btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .modal-dialog {
+        margin: 4px;
+    }
+
+    .modal-header,
+    .modal-footer {
+        padding: 10px 12px;
+    }
+
+    .modal-body {
+        padding: 12px;
+    }
+
+    .modal-title {
+        font-size: 14px;
+    }
+
+    .empty-state {
+        padding: 24px 12px;
+    }
+
+    .empty-state i {
+        font-size: 36px;
+    }
+
+    .empty-state h5 {
+        font-size: 14px;
+    }
+
+    .empty-state p {
+        font-size: 12px;
+    }
+}

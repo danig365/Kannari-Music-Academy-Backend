@@ -126,7 +126,7 @@ const AchievementBadges = ({ studentId, compact = false }) => {
                     )}
                     
                     {earnedAchievements.length > 5 && (
-                        <Link to="/my-achievements" className="more-badges">
+                        <Link to="/student/my-achievements" className="more-badges">
                             +{earnedAchievements.length - 5}
                         </Link>
                     )}
@@ -145,7 +145,7 @@ const AchievementBadges = ({ studentId, compact = false }) => {
                     </div>
                 </div>
                 
-                <Link to="/my-achievements" className="view-all-btn">
+                <Link to="/student/my-achievements" className="view-all-btn">
                     View All Achievements
                     <i className="bi bi-arrow-right"></i>
                 </Link>
