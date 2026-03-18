@@ -431,11 +431,13 @@
   text-align: left;
 }
 
-.mc-choice-btn:hover:not(:disabled) {
-  border-color: #fbbf24;
-  background: rgba(251, 191, 36, 0.12);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(251, 191, 36, 0.2);
+@media (hover: hover) and (pointer: fine) {
+  .mc-choice-btn:hover:not(:disabled) {
+    border-color: #fbbf24;
+    background: rgba(251, 191, 36, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(251, 191, 36, 0.2);
+  }
 }
 
 .mc-choice-btn:active:not(:disabled) {

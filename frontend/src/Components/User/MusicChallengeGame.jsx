@@ -61,7 +61,7 @@ const MusicChallengeGame = () => {
   const [startError, setStartError] = useState('');
 
   /* timer */
-  const [timeLeft, setTimeLeft]     = useState(5);
+  const [timeLeft, setTimeLeft]     = useState(8);
   const timerRef                    = useRef(null);
   const questionStartRef            = useRef(null);
 
@@ -102,7 +102,7 @@ const MusicChallengeGame = () => {
 
   const startTimer = useCallback(() => {
     stopTimer();
-    const limit = question?.time_limit_seconds || 5;
+    const limit = question?.time_limit_seconds || 8;
     setTimeLeft(limit);
     const t0 = Date.now();
     timerRef.current = setInterval(() => {
@@ -283,9 +283,17 @@ const MusicChallengeGame = () => {
   const highestUnlocked = profile?.highest_level_unlocked || 1;
   const maxAccessible = access?.max_accessible_level || 5;
   const hasSubscription = access?.has_subscription !== false;
-  const timerPercent = ((question?.time_limit_seconds || 5) > 0)
-    ? (timeLeft / (question?.time_limit_seconds || 5)) * 100 : 0;
+  const timerPercent = ((question?.time_limit_seconds || 8) > 0)
+    ? (timeLeft / (question?.time_limit_seconds || 8)) * 100 : 0;
   const cat = catInfo(question?.question_payload?.category);
+
+  useEffect(() => {
+    if (phase !== PHASE.PLAYING) return;
+    setSelectedChoice(null);
+    if (document.activeElement && document.activeElement.classList?.contains('mc-choice-btn')) {
+      document.activeElement.blur();
+    }
+  }, [phase, qIndex, question?.id]);
 
   /* ── Network error state ───────────────────────────────── */
   const [networkError, setNetworkError] = useState('');
@@ -449,7 +457,7 @@ const MusicChallengeGame = () => {
             </div>
 
             {/* Choices */}
-            <div className="mc-choices-grid">
+            <div className="mc-choices-grid" key={question.id}>
               {(question.choices || []).map((c, i) => {
                 let cls = 'mc-choice-btn';
                 if (phase === PHASE.FEEDBACK && fbResult) {
@@ -459,9 +467,12 @@ const MusicChallengeGame = () => {
                 }
                 return (
                   <button
-                    key={i}
+                    key={`${question.id}-${i}`}
                     className={cls}
-                    onClick={() => handleAnswer(c)}
+                    onClick={(e) => {
+                      e.currentTarget.blur();
+                      handleAnswer(c);
+                    }}
                     disabled={phase === PHASE.FEEDBACK}
                   >
                     <span className="mc-choice-key">{i + 1}</span>

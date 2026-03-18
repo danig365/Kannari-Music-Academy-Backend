@@ -484,11 +484,13 @@
   transition: all 0.2s;
 }
 
-.nn-choice-btn:hover:not(:disabled) {
-  border-color: #06bbcc;
-  background: rgba(6, 187, 204, 0.12);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(6, 187, 204, 0.2);
+@media (hover: hover) and (pointer: fine) {
+  .nn-choice-btn:hover:not(:disabled) {
+    border-color: #06bbcc;
+    background: rgba(6, 187, 204, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(6, 187, 204, 0.2);
+  }
 }
 
 .nn-choice-btn:active:not(:disabled) {

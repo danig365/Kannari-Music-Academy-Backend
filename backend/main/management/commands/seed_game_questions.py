@@ -65,9 +65,6 @@ class Command(BaseCommand):
             {'level': 2, 'prompt': 'Identify the note in the fourth space of the treble clef',
              'question_payload': {'clef': 'treble', 'position': 'space_4', 'note': 'E5'},
              'choices': ['D', 'F', 'E', 'G'], 'correct_answer': 'E', 'time_limit_seconds': 8, 'points': 10},
-            {'level': 2, 'prompt': 'The spaces of the treble clef spell which word?',
-             'question_payload': {'clef': 'treble', 'position': 'all_spaces', 'note': 'FACE'},
-             'choices': ['FACE', 'FADE', 'CAFE', 'CAGE'], 'correct_answer': 'FACE', 'time_limit_seconds': 8, 'points': 10},
             {'level': 2, 'prompt': 'Which note sits between the second and third lines of the treble clef?',
              'question_payload': {'clef': 'treble', 'position': 'space_2', 'note': 'A4'},
              'choices': ['A', 'B', 'G', 'C'], 'correct_answer': 'A', 'time_limit_seconds': 8, 'points': 10},
@@ -226,6 +223,11 @@ class Command(BaseCommand):
              'question_payload': {'clef': 'treble', 'position': 'line_1', 'note': 'E4'},
              'choices': ['E', 'F', 'D', 'G'], 'correct_answer': 'E', 'time_limit_seconds': 5, 'points': 24},
         ]
+
+        GameQuestion.objects.filter(
+            game=game,
+            prompt='The spaces of the treble clef spell which word?'
+        ).delete()
 
         questions = self._extend_note_ninja_levels(questions)
         created = self._bulk_create(game, questions)
@@ -425,6 +427,9 @@ class Command(BaseCommand):
             {'level': 2, 'prompt': 'What does "pp" (pianissimo) mean?',
              'question_payload': {'category': 'symbols'},
              'choices': ['Very soft', 'Very loud', 'Medium soft', 'Silence'], 'correct_answer': 'Very soft', 'time_limit_seconds': 5, 'points': 10},
+            {'level': 2, 'prompt': 'The spaces of the treble clef spell which word?',
+             'question_payload': {'category': 'theory'},
+             'choices': ['FACE', 'FADE', 'CAFE', 'CAGE'], 'correct_answer': 'FACE', 'time_limit_seconds': 8, 'points': 10},
 
             # ===== LEVEL 3 – Rhythm values =====
             {'level': 3, 'prompt': 'How many beats does a whole note get in 4/4 time?',
@@ -566,6 +571,10 @@ class Command(BaseCommand):
              'choices': ['Same pitch, different note name', 'Same name, different pitch', 'A type of key change', 'A scale degree'], 'correct_answer': 'Same pitch, different note name', 'time_limit_seconds': 5, 'points': 24},
         ]
 
+        for question in questions:
+            base_time = int(question.get('time_limit_seconds', 5) or 5)
+            question['time_limit_seconds'] = max(8, base_time)
+
         questions = self._extend_music_challenge_levels(questions)
         created = self._bulk_create(game, questions)
         self.stdout.write(f'  Music Challenge: {created} questions created')
@@ -630,7 +639,7 @@ class Command(BaseCommand):
                     'level': level,
                     'prompt': f"Lv{level} • {template['prompt']}",
                     'question_payload': payload,
-                    'time_limit_seconds': max(3, int(template.get('time_limit_seconds', 5)) - (1 if level >= 14 else 0)),
+                    'time_limit_seconds': max(7, int(template.get('time_limit_seconds', 8)) - (1 if level >= 16 else 0)),
                     'points': int(template.get('points', 10)) + ((level - 10) * 2),
                 })
         return questions + generated
@@ -639,25 +648,67 @@ class Command(BaseCommand):
     # Helper: bulk-insert questions, skip duplicates by (game, level, prompt)
     # ------------------------------------------------------------------
     def _bulk_create(self, game, questions):
-        existing = set(
-            GameQuestion.objects.filter(game=game).values_list('level', 'prompt')
-        )
+        existing_map = {
+            (row.level, row.prompt): row
+            for row in GameQuestion.objects.filter(game=game)
+        }
         to_create = []
+        to_update = []
         for idx, q in enumerate(questions):
             key = (q['level'], q['prompt'])
-            if key in existing:
+            payload = q.get('question_payload', {})
+            choices = q.get('choices', [])
+            correct_answer = q.get('correct_answer', '')
+            time_limit_seconds = q.get('time_limit_seconds', 5)
+            points = q.get('points', 10)
+            order = idx + 1
+
+            existing_row = existing_map.get(key)
+            if existing_row:
+                changed = False
+                if existing_row.question_payload != payload:
+                    existing_row.question_payload = payload
+                    changed = True
+                if existing_row.choices != choices:
+                    existing_row.choices = choices
+                    changed = True
+                if existing_row.correct_answer != correct_answer:
+                    existing_row.correct_answer = correct_answer
+                    changed = True
+                if existing_row.time_limit_seconds != time_limit_seconds:
+                    existing_row.time_limit_seconds = time_limit_seconds
+                    changed = True
+                if existing_row.points != points:
+                    existing_row.points = points
+                    changed = True
+                if existing_row.order != order:
+                    existing_row.order = order
+                    changed = True
+                if existing_row.is_active is not True:
+                    existing_row.is_active = True
+                    changed = True
+                if changed:
+                    to_update.append(existing_row)
                 continue
+
             to_create.append(GameQuestion(
                 game=game,
                 level=q['level'],
                 prompt=q['prompt'],
-                question_payload=q.get('question_payload', {}),
-                choices=q.get('choices', []),
-                correct_answer=q.get('correct_answer', ''),
-                time_limit_seconds=q.get('time_limit_seconds', 5),
-                points=q.get('points', 10),
+                question_payload=payload,
+                choices=choices,
+                correct_answer=correct_answer,
+                time_limit_seconds=time_limit_seconds,
+                points=points,
                 is_active=True,
-                order=idx + 1,
+                order=order,
             ))
-        GameQuestion.objects.bulk_create(to_create)
+
+        if to_create:
+            GameQuestion.objects.bulk_create(to_create)
+        if to_update:
+            GameQuestion.objects.bulk_update(
+                to_update,
+                ['question_payload', 'choices', 'correct_answer', 'time_limit_seconds', 'points', 'is_active', 'order']
+            )
         return len(to_create)

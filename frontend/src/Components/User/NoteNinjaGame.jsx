@@ -312,6 +312,14 @@ const NoteNinjaGame = () => {
   const noteClef = notePayload.clef || 'treble';
   const noteName = notePayload.note || 'E4';
 
+  useEffect(() => {
+    if (phase !== PHASE.PLAYING) return;
+    setSelectedAnswer(null);
+    if (document.activeElement && document.activeElement.classList?.contains('nn-choice-btn')) {
+      document.activeElement.blur();
+    }
+  }, [phase, currentQIndex]);
+
   let staffHighlight = null;
   if (phase === PHASE.FEEDBACK && lastResult) {
     staffHighlight = lastResult.is_correct ? 'correct' : 'incorrect';
@@ -527,7 +535,7 @@ const NoteNinjaGame = () => {
 
             <p className="nn-prompt">{currentQuestion.prompt}</p>
 
-            <div className="nn-choices">
+            <div className="nn-choices" key={currentQuestion.id}>
               {(currentQuestion.choices || []).map((choice, i) => {
                 let btnClass = 'nn-choice-btn';
                 if (phase === PHASE.FEEDBACK && lastResult) {
@@ -540,10 +548,13 @@ const NoteNinjaGame = () => {
                 }
                 return (
                   <button
-                    key={i}
+                    key={`${currentQuestion.id}-${i}`}
                     className={btnClass}
                     disabled={phase === PHASE.FEEDBACK}
-                    onClick={() => handleAnswer(choice)}
+                    onClick={(e) => {
+                      e.currentTarget.blur();
+                      handleAnswer(choice);
+                    }}
                   >
                     {choice}
                   </button>
