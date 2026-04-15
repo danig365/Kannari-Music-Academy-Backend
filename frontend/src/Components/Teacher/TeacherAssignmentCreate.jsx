@@ -28,6 +28,8 @@ const TeacherAssignmentCreate = () => {
   const teacherId = localStorage.getItem('teacherId') || localStorage.getItem('teacher_id');
 
   const [assignments, setAssignments] = useState([]);
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [courses, setCourses] = useState([]);
   const [students, setStudents] = useState([]);
   const [groups, setGroups] = useState([]);
@@ -36,6 +38,7 @@ const TeacherAssignmentCreate = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savingTemplate, setSavingTemplate] = useState(false);
 
   const [form, setForm] = useState({
     title: '', description: '', submission_type: 'audio', max_points: 100,
@@ -47,6 +50,7 @@ const TeacherAssignmentCreate = () => {
 
   useEffect(() => {
     fetchAssignments();
+    fetchTemplates();
     fetchCourses();
     fetchStudents();
     fetchGroups();
@@ -59,6 +63,20 @@ const TeacherAssignmentCreate = () => {
       setAssignments(Array.isArray(res.data) ? res.data : []);
     } catch (err) { console.error('Error:', err); }
     setLoading(false);
+  };
+
+  const fetchTemplates = async () => {
+    if (!teacherId) {
+      setTemplates([]);
+      return;
+    }
+    try {
+      const res = await axios.get(`${baseUrl}/teacher/${teacherId}/assignment-templates/`);
+      setTemplates(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error('Error loading templates:', err);
+      setTemplates([]);
+    }
   };
 
   const fetchCourses = async () => {
@@ -139,6 +157,120 @@ const TeacherAssignmentCreate = () => {
     setMcQuestions(prev => prev.filter((_, i) => i !== idx));
   };
 
+  const applyTemplate = (template) => {
+    if (!template) return;
+    setForm(prev => ({
+      ...prev,
+      title: template.title || '',
+      description: template.description || '',
+      submission_type: template.submission_type || 'audio',
+      max_points: template.max_points || 100,
+    }));
+
+    if (template.submission_type === 'multiple_choice') {
+      const mapped = Array.isArray(template.mc_questions)
+        ? template.mc_questions.map((q) => ({
+            question_text: q.question_text || '',
+            option_a: q.option_a || '',
+            option_b: q.option_b || '',
+            option_c: q.option_c || '',
+            option_d: q.option_d || '',
+            correct_option: q.correct_option || 'a',
+            points: q.points || 1,
+          }))
+        : [];
+      setMcQuestions(mapped);
+    } else {
+      setMcQuestions([]);
+    }
+  };
+
+  const validateMcQuestions = () => {
+    if (mcQuestions.length === 0) {
+      return 'Please add at least one multiple-choice question.';
+    }
+    for (let i = 0; i < mcQuestions.length; i++) {
+      const q = mcQuestions[i];
+      if (!q.question_text?.trim()) return `Question ${i + 1}: question text is required.`;
+      if (!q.option_a?.trim() || !q.option_b?.trim()) return `Question ${i + 1}: options A and B are required.`;
+      if (q.correct_option === 'c' && !q.option_c?.trim()) return `Question ${i + 1}: option C is marked correct but empty.`;
+      if (q.correct_option === 'd' && !q.option_d?.trim()) return `Question ${i + 1}: option D is marked correct but empty.`;
+    }
+    return null;
+  };
+
+  const handleSaveTemplate = async () => {
+    if (!form.title.trim()) {
+      Swal.fire({ icon: 'warning', text: 'Title is required to save a template.' });
+      return;
+    }
+
+    if (form.submission_type === 'multiple_choice') {
+      const mcError = validateMcQuestions();
+      if (mcError) {
+        Swal.fire({ icon: 'warning', text: mcError });
+        return;
+      }
+    }
+
+    setSavingTemplate(true);
+    try {
+      const payload = {
+        title: form.title,
+        description: form.description,
+        submission_type: form.submission_type,
+        max_points: parseInt(form.max_points) || 100,
+        audio_required: true,
+      };
+
+      if (form.submission_type === 'multiple_choice') {
+        payload.mc_questions = mcQuestions.map((q) => ({
+          question_text: q.question_text,
+          option_a: q.option_a,
+          option_b: q.option_b,
+          option_c: q.option_c || '',
+          option_d: q.option_d || '',
+          correct_option: q.correct_option,
+          points: q.points || 1,
+        }));
+      }
+
+      await axios.post(`${baseUrl}/teacher/${teacherId}/assignment-templates/`, payload);
+      await fetchTemplates();
+      Swal.fire({ icon: 'success', title: 'Template saved!', timer: 1500 });
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: err.response?.data?.message || JSON.stringify(err.response?.data) || 'Failed to save template',
+      });
+    }
+    setSavingTemplate(false);
+  };
+
+  const handleDeleteTemplate = async (templateId) => {
+    const result = await Swal.fire({
+      title: 'Delete Template?',
+      text: 'This template will be removed permanently.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'Yes, delete it',
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+      await axios.delete(`${baseUrl}/teacher/${teacherId}/assignment-template/${templateId}/`);
+      if (selectedTemplateId && String(templateId) === String(selectedTemplateId)) {
+        setSelectedTemplateId('');
+      }
+      await fetchTemplates();
+      Swal.fire({ icon: 'success', title: 'Template deleted', timer: 1200 });
+    } catch (err) {
+      Swal.fire({ icon: 'error', text: 'Failed to delete template.' });
+    }
+  };
+
   const handleSave = async () => {
     if (!form.title.trim()) { Swal.fire({ icon: 'warning', text: 'Title is required' }); return; }
 
@@ -151,29 +283,10 @@ const TeacherAssignmentCreate = () => {
     }
 
     if (form.submission_type === 'multiple_choice') {
-      if (mcQuestions.length === 0) {
-        Swal.fire({ icon: 'warning', text: 'Please add at least one multiple-choice question.' });
+      const mcError = validateMcQuestions();
+      if (mcError) {
+        Swal.fire({ icon: 'warning', text: mcError });
         return;
-      }
-
-      for (let i = 0; i < mcQuestions.length; i++) {
-        const q = mcQuestions[i];
-        if (!q.question_text?.trim()) {
-          Swal.fire({ icon: 'warning', text: `Question ${i + 1}: question text is required.` });
-          return;
-        }
-        if (!q.option_a?.trim() || !q.option_b?.trim()) {
-          Swal.fire({ icon: 'warning', text: `Question ${i + 1}: options A and B are required.` });
-          return;
-        }
-        if (q.correct_option === 'c' && !q.option_c?.trim()) {
-          Swal.fire({ icon: 'warning', text: `Question ${i + 1}: option C is marked correct but empty.` });
-          return;
-        }
-        if (q.correct_option === 'd' && !q.option_d?.trim()) {
-          Swal.fire({ icon: 'warning', text: `Question ${i + 1}: option D is marked correct but empty.` });
-          return;
-        }
       }
     }
 
@@ -256,6 +369,65 @@ const TeacherAssignmentCreate = () => {
         </button>
       </div>
 
+      <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginBottom: templates.length > 0 ? '12px' : 0, flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ fontWeight: '700', color: '#1e293b', fontSize: '14px' }}>
+              <i className="bi bi-collection me-2" style={{ color: '#6366f1' }}></i>Assignment Templates
+            </div>
+            <div style={{ color: '#64748b', fontSize: '12px' }}>Save reusable templates, then apply and assign quickly.</div>
+          </div>
+          <span style={{ padding: '4px 10px', borderRadius: '999px', backgroundColor: '#eef2ff', color: '#4f46e5', fontSize: '12px', fontWeight: '600' }}>
+            {templates.length} templates
+          </span>
+        </div>
+
+        {templates.length === 0 ? (
+          <div style={{ color: '#94a3b8', fontSize: '13px' }}>No templates yet. Open "New Assignment", fill details, and click "Save as Template".</div>
+        ) : (
+          <div style={{ display: 'grid', gap: '8px' }}>
+            {templates.map((template) => {
+              const templateMeta = getTypeMeta(template.submission_type);
+              return (
+                <div key={template.id} style={{ border: '1px solid #e2e8f0', borderRadius: '10px', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  <div>
+                    <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {template.title}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: '700', backgroundColor: `${templateMeta.color}15`, color: templateMeta.color }}>
+                        <i className={`bi ${templateMeta.icon}`}></i>{templateMeta.label}
+                      </span>
+                    </div>
+                    <div style={{ color: '#64748b', fontSize: '12px' }}>
+                      Max {template.max_points} pts{template.submission_type === 'multiple_choice' ? ` • ${template.question_count || 0} questions` : ''}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-primary"
+                      onClick={() => {
+                        setSelectedTemplateId(String(template.id));
+                        setShowForm(true);
+                        applyTemplate(template);
+                      }}
+                    >
+                      <i className="bi bi-box-arrow-in-down me-1"></i>Use
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => handleDeleteTemplate(template.id)}
+                    >
+                      <i className="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       {/* ============== Create Form ============== */}
       {showForm && (
         <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '24px', marginBottom: '24px' }}>
@@ -263,6 +435,30 @@ const TeacherAssignmentCreate = () => {
             <i className="bi bi-plus-circle me-2" style={{ color: '#6366f1' }}></i>Create New Assignment
           </h5>
           <div className="row g-3">
+            <div className="col-md-8">
+              <label className="form-label fw-semibold" style={{ fontSize: '13px' }}>Load Template (optional)</label>
+              <select
+                className="form-select"
+                value={selectedTemplateId}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSelectedTemplateId(val);
+                  const template = templates.find((t) => String(t.id) === String(val));
+                  if (template) applyTemplate(template);
+                }}
+              >
+                <option value="">Select template...</option>
+                {templates.map((t) => (
+                  <option key={t.id} value={t.id}>{t.title}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-4 d-flex align-items-end">
+              <button type="button" className="btn btn-outline-primary w-100" onClick={handleSaveTemplate} disabled={savingTemplate}>
+                <i className="bi bi-bookmark-plus me-1"></i>{savingTemplate ? 'Saving...' : 'Save as Template'}
+              </button>
+            </div>
+
             {/* Title */}
             <div className="col-md-6">
               <label className="form-label fw-semibold" style={{ fontSize: '13px' }}>Title *</label>

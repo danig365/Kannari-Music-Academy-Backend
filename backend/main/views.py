@@ -7926,6 +7926,7 @@ def get_activity_logs(request):
 from . serializers import (
     SchoolUserSerializer, SchoolDashboardStatsSerializer,
     GroupClassSerializer, GroupClassTeacherSerializer, GroupClassStudentSerializer,
+    AssignmentTemplateSerializer,
     LessonAssignmentSerializer, StudentLessonAssignmentSerializer,
     LessonAssignmentSubmissionSerializer
 )
@@ -9452,6 +9453,124 @@ class GroupSessionParticipantLogList(generics.ListAPIView):
 
 
 # ==================== TEACHER-CREATED ASSIGNMENT VIEWS ====================
+
+def _validate_template_mc_questions(mc_questions):
+    if not isinstance(mc_questions, list) or len(mc_questions) == 0:
+        return None, 'At least one multiple-choice question is required.'
+
+    validated = []
+    for idx, q in enumerate(mc_questions):
+        question_text = (q.get('question_text') or '').strip()
+        option_a = (q.get('option_a') or '').strip()
+        option_b = (q.get('option_b') or '').strip()
+        option_c = (q.get('option_c') or '').strip()
+        option_d = (q.get('option_d') or '').strip()
+        correct_option = (q.get('correct_option') or 'a').lower()
+
+        try:
+            points = int(q.get('points') or 1)
+        except (TypeError, ValueError):
+            return None, f'Question {idx + 1}: points must be a valid number.'
+
+        if not question_text:
+            return None, f'Question {idx + 1}: question text is required.'
+        if not option_a or not option_b:
+            return None, f'Question {idx + 1}: options A and B are required.'
+        if correct_option not in ['a', 'b', 'c', 'd']:
+            return None, f'Question {idx + 1}: correct option must be A, B, C, or D.'
+        if correct_option == 'c' and not option_c:
+            return None, f'Question {idx + 1}: option C is selected as correct but is empty.'
+        if correct_option == 'd' and not option_d:
+            return None, f'Question {idx + 1}: option D is selected as correct but is empty.'
+
+        validated.append({
+            'question_text': question_text,
+            'option_a': option_a,
+            'option_b': option_b,
+            'option_c': option_c,
+            'option_d': option_d,
+            'correct_option': correct_option,
+            'points': max(points, 1),
+            'order': idx + 1,
+        })
+
+    return validated, None
+
+
+class TeacherAssignmentTemplateList(generics.ListCreateAPIView):
+    """Teachers list and create reusable assignment templates."""
+    serializer_class = AssignmentTemplateSerializer
+
+    def get_queryset(self):
+        teacher_id = self.kwargs['teacher_id']
+        return models.AssignmentTemplate.objects.filter(teacher_id=teacher_id)
+
+    def create(self, request, *args, **kwargs):
+        teacher_id = self.kwargs['teacher_id']
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        submission_type = serializer.validated_data.get('submission_type')
+        mc_questions = request.data.get('mc_questions', [])
+
+        validated_questions = []
+        if submission_type == 'multiple_choice':
+            validated_questions, error = _validate_template_mc_questions(mc_questions)
+            if error:
+                return Response({'message': error}, status=400)
+
+        with transaction.atomic():
+            template = serializer.save(teacher_id=teacher_id)
+            if submission_type == 'multiple_choice':
+                for q in validated_questions:
+                    models.AssignmentTemplateQuestion.objects.create(template=template, **q)
+
+        output = self.get_serializer(template)
+        headers = self.get_success_headers(output.data)
+        return Response(output.data, status=201, headers=headers)
+
+
+class TeacherAssignmentTemplateDetail(generics.RetrieveUpdateDestroyAPIView):
+    """Teachers can view, update, or delete their own templates."""
+    serializer_class = AssignmentTemplateSerializer
+
+    def get_queryset(self):
+        teacher_id = self.kwargs['teacher_id']
+        return models.AssignmentTemplate.objects.filter(teacher_id=teacher_id)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+
+        final_submission_type = serializer.validated_data.get('submission_type', instance.submission_type)
+        has_mc_payload = 'mc_questions' in request.data
+        mc_questions = request.data.get('mc_questions', []) if has_mc_payload else None
+
+        validated_questions = []
+        if final_submission_type == 'multiple_choice':
+            if has_mc_payload:
+                validated_questions, error = _validate_template_mc_questions(mc_questions)
+                if error:
+                    return Response({'message': error}, status=400)
+            elif not instance.mc_questions.exists():
+                return Response({'message': 'At least one multiple-choice question is required.'}, status=400)
+
+        with transaction.atomic():
+            template = serializer.save()
+
+            if final_submission_type != 'multiple_choice':
+                template.mc_questions.all().delete()
+            elif has_mc_payload:
+                template.mc_questions.all().delete()
+                for q in validated_questions:
+                    models.AssignmentTemplateQuestion.objects.create(template=template, **q)
+
+        output = self.get_serializer(template)
+        return Response(output.data)
+
 
 class TeacherAssignmentList(generics.ListCreateAPIView):
     """Teachers list and create their own assignments."""

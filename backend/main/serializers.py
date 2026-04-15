@@ -1218,6 +1218,30 @@ class GroupClassStudentSerializer(serializers.ModelSerializer):
             self.Meta.depth = 2
 
 
+class AssignmentTemplateQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AssignmentTemplateQuestion
+        fields = ['id', 'template', 'question_text', 'option_a', 'option_b',
+                  'option_c', 'option_d', 'correct_option', 'points', 'order', 'created_at']
+        read_only_fields = ['created_at']
+
+
+class AssignmentTemplateSerializer(serializers.ModelSerializer):
+    teacher_name = serializers.CharField(source='teacher.full_name', read_only=True)
+    question_count = serializers.SerializerMethodField()
+    mc_questions = AssignmentTemplateQuestionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = models.AssignmentTemplate
+        fields = ['id', 'teacher', 'teacher_name', 'title', 'description',
+                  'submission_type', 'max_points', 'audio_required',
+                  'question_count', 'mc_questions', 'created_at', 'updated_at']
+        read_only_fields = ['teacher', 'teacher_name', 'question_count', 'mc_questions', 'created_at', 'updated_at']
+
+    def get_question_count(self, obj):
+        return obj.mc_questions.count()
+
+
 class LessonAssignmentSerializer(serializers.ModelSerializer):
     lesson_title = serializers.CharField(source='lesson.title', read_only=True, allow_null=True)
     student_name = serializers.CharField(source='student.fullname', read_only=True, allow_null=True)

@@ -462,6 +462,8 @@ urlpatterns =[
 
         # ==================== TEACHER ASSIGNMENT MANAGEMENT URLS ====================
 
+        path('teacher/<int:teacher_id>/assignment-templates/', views.TeacherAssignmentTemplateList.as_view()),
+        path('teacher/<int:teacher_id>/assignment-template/<int:pk>/', views.TeacherAssignmentTemplateDetail.as_view()),
         path('teacher/<int:teacher_id>/assignments/', views.TeacherAssignmentList.as_view()),
         path('teacher/<int:teacher_id>/assignment/<int:pk>/', views.TeacherAssignmentDetail.as_view()),
         path('teacher/<int:teacher_id>/groups/', views.teacher_groups),

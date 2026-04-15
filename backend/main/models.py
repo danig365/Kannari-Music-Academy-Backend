@@ -2352,6 +2352,56 @@ class GroupClassStudent(models.Model):
         return f"{self.group_class.name} - {self.student.fullname}"
 
 
+class AssignmentTemplate(models.Model):
+    """Reusable teacher-owned assignment blueprint."""
+    SUBMISSION_TYPE_CHOICES = [
+        ('audio', 'Audio Submission'),
+        ('video', 'Video Submission'),
+        ('discussion', 'Discussion Thread'),
+        ('multiple_choice', 'Multiple Choice (Auto-Graded)'),
+        ('file_upload', 'File Upload'),
+    ]
+
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='assignment_templates')
+    title = models.CharField(max_length=300)
+    description = models.TextField(null=True, blank=True)
+    submission_type = models.CharField(max_length=20, choices=SUBMISSION_TYPE_CHOICES, default='audio')
+    max_points = models.PositiveIntegerField(default=100)
+    audio_required = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "59a. Assignment Templates"
+        ordering = ['-updated_at', '-id']
+
+    def __str__(self):
+        return f"{self.teacher.full_name} - {self.title}"
+
+
+class AssignmentTemplateQuestion(models.Model):
+    """Multiple-choice questions attached to an assignment template."""
+    template = models.ForeignKey(AssignmentTemplate, on_delete=models.CASCADE, related_name='mc_questions')
+    question_text = models.TextField()
+    option_a = models.CharField(max_length=500)
+    option_b = models.CharField(max_length=500)
+    option_c = models.CharField(max_length=500, blank=True, default='')
+    option_d = models.CharField(max_length=500, blank=True, default='')
+    correct_option = models.CharField(max_length=1, choices=[
+        ('a', 'A'), ('b', 'B'), ('c', 'C'), ('d', 'D')
+    ])
+    points = models.PositiveIntegerField(default=1)
+    order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "59b. Assignment Template Questions"
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return f"Template {self.template_id} Q{self.order}: {self.question_text[:80]}"
+
+
 class LessonAssignment(models.Model):
     """Assignments created by school or teacher for individual students or group classes.
     Supports multiple submission types: audio, video, discussion, multiple choice, file upload."""
