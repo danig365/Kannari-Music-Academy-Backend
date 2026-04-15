@@ -1,0 +1,238 @@
+/* ═══════════════════════════════════════════════════════════════
+   METRONOME STYLES
+   ═══════════════════════════════════════════════════════════════ */
+
+.met-wrapper {
+  max-width: 580px;
+  margin: 0 auto;
+  padding: 48px 16px 64px;
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+.met-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.met-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 8px;
+}
+.met-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin: 0 0 4px;
+}
+.met-subtitle {
+  font-size: 15px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+/* ── Card ───────────────────────────────────────────────────── */
+.met-card {
+  background: linear-gradient(145deg, #1e293b, #1a2236);
+  border: 1px solid rgba(99,102,241,.25);
+  border-radius: 20px;
+  padding: 36px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+/* ── Beat dots ──────────────────────────────────────────────── */
+.met-dots {
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.met-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #334155;
+  border: 2px solid #475569;
+  transition: transform .08s, background .08s, box-shadow .08s;
+}
+.met-dot--accent {
+  border-color: #818cf8;
+}
+.met-dot--active {
+  transform: scale(1.35);
+  background: #6366f1;
+  border-color: #818cf8;
+  box-shadow: 0 0 18px rgba(99,102,241,.6);
+}
+.met-dot--active.met-dot--accent {
+  background: #f59e0b;
+  border-color: #fbbf24;
+  box-shadow: 0 0 22px rgba(245,158,11,.55);
+}
+
+/* ── BPM area ───────────────────────────────────────────────── */
+.met-bpm-area {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.met-nudge {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid #475569;
+  background: #1e293b;
+  color: #e2e8f0;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s;
+}
+.met-nudge:hover { background: #334155; }
+.met-nudge--sm { width: 38px; height: 38px; font-size: 16px; }
+
+.met-bpm-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 90px;
+}
+.met-bpm-num {
+  font-size: 52px;
+  font-weight: 800;
+  color: #f1f5f9;
+  line-height: 1;
+}
+.met-bpm-label {
+  font-size: 13px;
+  color: #94a3b8;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* ── Tempo name ─────────────────────────────────────────────── */
+.met-tempo-name {
+  font-size: 16px;
+  color: #818cf8;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* ── Slider ─────────────────────────────────────────────────── */
+.met-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #334155, #6366f1);
+  outline: none;
+}
+.met-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #6366f1;
+  border: 3px solid #1e293b;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(99,102,241,.5);
+}
+.met-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #6366f1;
+  border: 3px solid #1e293b;
+  cursor: pointer;
+}
+
+.met-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 11px;
+  color: #64748b;
+  margin-top: -6px;
+}
+
+/* ── Time-signature buttons ─────────────────────────────────── */
+.met-timesig-row {
+  display: flex;
+  gap: 10px;
+}
+.met-ts-btn {
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: 1px solid #475569;
+  background: #1e293b;
+  color: #cbd5e1;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+}
+.met-ts-btn:hover { border-color: #818cf8; color: #e2e8f0; }
+.met-ts-btn--active {
+  background: #6366f1;
+  border-color: #818cf8;
+  color: #fff;
+}
+
+/* ── Play / Stop button ─────────────────────────────────────── */
+.met-play-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  border: none;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: #fff;
+  transition: transform .12s, box-shadow .12s;
+}
+.met-play-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 20px rgba(99,102,241,.4);
+}
+.met-play-btn--stop {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+}
+.met-play-btn--stop:hover {
+  box-shadow: 0 4px 20px rgba(239,68,68,.4);
+}
+
+/* ── Tips ────────────────────────────────────────────────────── */
+.met-tips {
+  margin-top: 32px;
+  background: rgba(30,41,59,.6);
+  border: 1px solid rgba(99,102,241,.15);
+  border-radius: 14px;
+  padding: 20px 24px;
+}
+.met-tips h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0 0 10px;
+}
+.met-tips ul {
+  margin: 0;
+  padding-left: 20px;
+}
+.met-tips li {
+  color: #94a3b8;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 576px) {
+  .met-card { padding: 24px 16px; }
+  .met-bpm-num { font-size: 42px; }
+  .met-dots { gap: 12px; }
+  .met-dot { width: 22px; height: 22px; }
+}

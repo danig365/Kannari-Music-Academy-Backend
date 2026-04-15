@@ -164,7 +164,7 @@ const NoteNinjaGame = () => {
       setPhase(PHASE.PLAYING);
       setQuestionStartTime(Date.now());
       const q = questions[0];
-      setTimeLeft(q?.time_limit_seconds || 8);
+      setTimeLeft(q?.time_limit_seconds || 10);
       return;
     }
     const t = setTimeout(() => setCountdownNum(c => c - 1), 700);
@@ -215,7 +215,7 @@ const NoteNinjaGame = () => {
     setSelectedAnswer(null);
     submittingRef.current = false;
     const q = questions[nextIdx];
-    setTimeLeft(q?.time_limit_seconds || 8);
+    setTimeLeft(q?.time_limit_seconds || 10);
     setQuestionStartTime(Date.now());
     setPhase(PHASE.PLAYING);
     return false;

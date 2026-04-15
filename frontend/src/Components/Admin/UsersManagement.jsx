@@ -1764,7 +1764,7 @@ const UsersManagement = () => {
                                             name="interseted_categories"
                                             value={studentFormData.interseted_categories}
                                             onChange={handleStudentChange}
-                                            placeholder="e.g., Python, Web Development"
+                                            placeholder="e.g., Piano, Guitar..."
                                             required
                                         />
                                     </div>
@@ -1868,7 +1868,7 @@ const UsersManagement = () => {
                                             name="skills"
                                             value={teacherFormData.skills}
                                             onChange={handleTeacherChange}
-                                            placeholder="e.g., Python, Java, Web Development"
+                                            placeholder="e.g., Piano, Guitar, Drums"
                                             required
                                         />
                                     </div>

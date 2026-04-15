@@ -212,7 +212,7 @@ const AdminLessonManagement = ({
             let url;
             if (userType === 'teacher' && effectiveTeacherId) {
                 // For teachers, fetch only their courses
-                url = `${baseUrl}/teacher-course/${effectiveTeacherId}`;
+                url = `${baseUrl}/teacher-course/${effectiveTeacherId}/`;
             } else {
                 // For admin, fetch all courses
                 url = `${baseUrl}/course/`;

@@ -59,6 +59,7 @@ import StudentGamesHub from './User/StudentGamesHub'
 import NoteNinjaGame from './User/NoteNinjaGame'
 import RhythmRushGame from './User/RhythmRushGame'
 import MusicChallengeGame from './User/MusicChallengeGame'
+import Metronome from './User/Metronome'
 
 // Teacher new components
 import TeacherMessages from './Teacher/TeacherMessages'
@@ -197,6 +198,7 @@ const MainContent = () => {
           <Route path='/student/games/note-ninja' element={<NoteNinjaGame />}/>
           <Route path='/student/games/rhythm-rush' element={<RhythmRushGame />}/>
           <Route path='/student/games/music-challenge' element={<MusicChallengeGame />}/>
+          <Route path='/student/metronome' element={<Metronome />}/>
           <Route path='/student/study-material/:course_id' element={<StudyStudentMaterial />}/>
 
           {/* ==================== TEACHER ROUTES (/teacher/...) ==================== */}

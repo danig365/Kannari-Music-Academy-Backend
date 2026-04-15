@@ -61,7 +61,7 @@ const MusicChallengeGame = () => {
   const [startError, setStartError] = useState('');
 
   /* timer */
-  const [timeLeft, setTimeLeft]     = useState(8);
+  const [timeLeft, setTimeLeft]     = useState(10);
   const timerRef                    = useRef(null);
   const questionStartRef            = useRef(null);
 
@@ -102,7 +102,7 @@ const MusicChallengeGame = () => {
 
   const startTimer = useCallback(() => {
     stopTimer();
-    const limit = question?.time_limit_seconds || 8;
+    const limit = question?.time_limit_seconds || 10;
     setTimeLeft(limit);
     const t0 = Date.now();
     timerRef.current = setInterval(() => {

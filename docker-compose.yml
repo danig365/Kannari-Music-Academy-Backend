@@ -9,8 +9,7 @@ services:
       POSTGRES_PASSWORD: kannari_secure_pass_2026
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    # Port 5432 NOT exposed externally - internal Docker network only
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U kannari_user -d kannari_db"]
       interval: 5s
@@ -28,8 +27,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://kannari_user:kannari_secure_pass_2026@db:5432/kannari_db
       - ALLOWED_HOSTS=localhost,127.0.0.1,178.156.242.253,backend,kannarimusicacademy.com,www.kannarimusicacademy.com
-      - CORS_ALLOWED_ORIGINS=http://178.156.242.253,https://178.156.242.253,http://localhost:3000,http://localhost,http://kannarimusicacademy.com,https://kannarimusicacademy.com,http://www.kannarimusicacademy.com,https://www.kannarimusicacademy.com
-      - DEBUG=True
+      - CORS_ALLOWED_ORIGINS=http://178.156.242.253,https://178.156.242.253,http://localhost:3000,http://localhost,http://kannarimusicacademy.com,https://kannarimusicacademy.com,http://www.kannarimusicacademy.com,https://www.kannarimusicacademy.com,http://localhost:8081,http://10.0.2.2:8081,http://localhost:19006
+      - DEBUG=False
       - MEDIA_ROOT=/app/media
       - FRONTEND_URL=https://kannarimusicacademy.com
     volumes:
@@ -43,8 +42,7 @@ services:
       timeout: 5s
       retries: 10
       start_period: 20s
-    ports:
-      - "8000:8000"
+    # Port 8000 NOT exposed externally - nginx proxies internally
 
   # React Frontend
   frontend:
@@ -60,8 +58,7 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
-    ports:
-      - "3000:80"
+    # Port 3000/80 NOT exposed externally - nginx proxies internally
 
   # Jitsi Meet - Web frontend
   jitsi-web:

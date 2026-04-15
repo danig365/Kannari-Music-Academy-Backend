@@ -42,7 +42,7 @@ urlpatterns =[
 
         path('course-chapters/<int:course_id>', views.CourseChapterList.as_view()),
 
-        path('teacher-course/<int:teacher_id>', views.TeacherCourseList.as_view()),
+        path('teacher-course/<int:teacher_id>/', views.TeacherCourseList.as_view()),
 
         path('teacher-course-detail/<int:pk>', views.TeacherCourseDetail.as_view()),
 

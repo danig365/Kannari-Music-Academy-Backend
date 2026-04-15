@@ -59,12 +59,11 @@ function playCountdownBeep(final = false) {
 // ─── Game phases ────────────────────────────────────────────────────────────
 const PHASE = {
   MENU: 'menu',
-  COUNTDOWN: 'countdown',
-  DEMO: 'demo',
-  LISTEN_WAIT: 'listen_wait',
+  COUNT_IN: 'count_in',
   TAPPING: 'tapping',
   SUBMITTING: 'submitting',
   FEEDBACK: 'feedback',
+  READY: 'ready',
   SUMMARY: 'summary',
 };
 
@@ -109,9 +108,10 @@ const RhythmRushGame = () => {
   const [ripples, setRipples] = useState([]);
 
   const [summary, setSummary] = useState(null);
-  const [countdownNum, setCountdownNum] = useState(3);
+  const [countInBeat, setCountInBeat] = useState(-1); // -1 = inactive, 0-3 = which beat is active
 
   const sessionStartRef = useRef(null);
+  const countInTimersRef = useRef([]);
   const submittingRef = useRef(false);
   const tapTimerRef = useRef(null);
   const animRef = useRef(null);
@@ -142,6 +142,7 @@ const RhythmRushGame = () => {
     return () => {
       clearTimeout(tapTimerRef.current);
       cancelAnimationFrame(animRef.current);
+      countInTimersRef.current.forEach(t => clearTimeout(t));
     };
   }, []);
 
@@ -161,21 +162,9 @@ const RhythmRushGame = () => {
     setTaps([]);
     setPlayheadMs(null);
     setLastResult(null);
+    setCountInBeat(-1);
     submittingRef.current = false;
   }, []);
-
-  // ─── 3-2-1 Countdown ────────────────────────────────────
-  useEffect(() => {
-    if (phase !== PHASE.COUNTDOWN) return;
-    if (countdownNum <= 0) {
-      startDemo();
-      return;
-    }
-    playCountdownBeep(countdownNum === 1);
-    const t = setTimeout(() => setCountdownNum(c => c - 1), 700);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, countdownNum]);
 
   // ─── Start game session ──────────────────────────────────
   const startGame = async () => {
@@ -192,57 +181,80 @@ const RhythmRushGame = () => {
       setSummary(null);
       sessionStartRef.current = Date.now();
       if (data.questions?.length > 0) setupQuestion(data.questions[0]);
-      setCountdownNum(3);
-      setPhase(PHASE.COUNTDOWN);
+      setPhase(PHASE.COUNT_IN);
     } catch (e) {
       setError(e?.response?.data?.message || 'Could not start session');
     }
   };
 
-  // ─── Demo: play pattern with metronome ───────────────────
-  const startDemo = useCallback(() => {
-    setPhase(PHASE.DEMO);
-    setPlayheadMs(0);
-    const startTime = Date.now();
-    expectedTs.forEach((ts, i) => {
-      setTimeout(() => playMetronomeClick(i === 0), ts);
-    });
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      setPlayheadMs(elapsed);
-      if (elapsed < patternDuration) {
-        animRef.current = requestAnimationFrame(animate);
-      } else {
-        setPlayheadMs(null);
-        setTimeout(() => {
-          setPhase(PHASE.LISTEN_WAIT);
-          setTimeout(() => startTapping(), 800);
-        }, 300);
-      }
-    };
-    animRef.current = requestAnimationFrame(animate);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expectedTs, patternDuration]);
-
-  // ─── Tapping phase ──────────────────────────────────────
-  const startTapping = useCallback(() => {
+  // ─── Count-in: 4-beat metronome intro then seamless tapping ─────────
+  const startCountIn = useCallback(() => {
+    setCountInBeat(-1);
     setTaps([]);
-    setPlayheadMs(0);
-    setPhase(PHASE.TAPPING);
-    const startTime = Date.now();
-    setTapBase(startTime);
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      setPlayheadMs(elapsed);
-      if (elapsed < patternDuration + 500) {
-        animRef.current = requestAnimationFrame(animate);
-      } else {
-        setPlayheadMs(null);
-      }
+    setPlayheadMs(null);
+
+    // Clear any previous count-in timers
+    countInTimersRef.current.forEach(t => clearTimeout(t));
+    countInTimersRef.current = [];
+
+    const beatMs = 60000 / (bpm || 60); // ms per beat
+
+    // Schedule 4 count-in beats (with a small initial delay so UI renders first)
+    const initialDelay = 100;
+    for (let i = 0; i < 4; i++) {
+      const t = setTimeout(() => {
+        setCountInBeat(i);
+        playMetronomeClick(i === 0); // accent on beat 1
+      }, initialDelay + i * beatMs);
+      countInTimersRef.current.push(t);
+    }
+
+    // After 4 beats, seamlessly transition to TAPPING (no gap)
+    const tapStartDelay = initialDelay + 4 * beatMs;
+    const t = setTimeout(() => {
+      setCountInBeat(-1);
+      setTaps([]);
+      setPlayheadMs(0);
+      setPhase(PHASE.TAPPING);
+      const startTime = Date.now();
+      setTapBase(startTime);
+
+      // Play reference metronome clicks at each expected beat during tapping
+      expectedTs.forEach((ts, idx) => {
+        const rt = setTimeout(() => {
+          playMetronomeClick(idx === 0);
+        }, ts);
+        countInTimersRef.current.push(rt);
+      });
+
+      const animate = () => {
+        const elapsed = Date.now() - startTime;
+        setPlayheadMs(elapsed);
+        if (elapsed < patternDuration + 500) {
+          animRef.current = requestAnimationFrame(animate);
+        } else {
+          setPlayheadMs(null);
+        }
+      };
+      animRef.current = requestAnimationFrame(animate);
+    }, tapStartDelay);
+    countInTimersRef.current.push(t);
+  }, [bpm, patternDuration, expectedTs]);
+
+  // Auto-start count-in logic when phase changes to COUNT_IN
+  const countInStartedRef = useRef(false);
+  useEffect(() => {
+    if (phase === PHASE.COUNT_IN && !countInStartedRef.current) {
+      countInStartedRef.current = true;
+      startCountIn();
+    } else if (phase !== PHASE.COUNT_IN) {
+      countInStartedRef.current = false;
+    }
+    return () => {
+      countInTimersRef.current.forEach(t => clearTimeout(t));
     };
-    animRef.current = requestAnimationFrame(animate);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [patternDuration]);
+  }, [phase, startCountIn]);
 
   // ─── Submit attempt ref (for closures) ───────────────────
   const doSubmitRef = useRef(null);
@@ -287,8 +299,7 @@ const RhythmRushGame = () => {
         } else {
           setCurrentQIndex(nextIdx);
           setupQuestion(questions[nextIdx]);
-          setCountdownNum(3);
-          setPhase(PHASE.COUNTDOWN);
+          setPhase(PHASE.READY);
         }
       }, 2500);
     } catch (e) {
@@ -306,8 +317,7 @@ const RhythmRushGame = () => {
         else {
           setCurrentQIndex(nextIdx);
           setupQuestion(questions[nextIdx]);
-          setCountdownNum(3);
-          setPhase(PHASE.COUNTDOWN);
+          setPhase(PHASE.READY);
         }
       }, isNetworkErr ? 3000 : 2000);
     }
@@ -323,7 +333,7 @@ const RhythmRushGame = () => {
         cancelAnimationFrame(animRef.current);
         setPlayheadMs(null);
         if (doSubmitRef.current) doSubmitRef.current();
-      }, patternDuration + 600);
+      }, patternDuration + 2000);
       return () => clearTimeout(tapTimerRef.current);
     }
   }, [phase, patternDuration]);
@@ -376,10 +386,10 @@ const RhythmRushGame = () => {
 
   // ─── Derived ─────────────────────────────────────────────
   const currentQuestion = questions[currentQIndex] || null;
-  const isActive = [PHASE.DEMO, PHASE.LISTEN_WAIT, PHASE.TAPPING, PHASE.SUBMITTING, PHASE.FEEDBACK].includes(phase);
+  const isActive = [PHASE.COUNT_IN, PHASE.TAPPING, PHASE.SUBMITTING, PHASE.FEEDBACK].includes(phase);
   const timelinePhase = phase === PHASE.FEEDBACK ? 'result'
     : phase === PHASE.TAPPING ? 'listening'
-    : phase === PHASE.DEMO ? 'playing' : 'idle';
+    : phase === PHASE.COUNT_IN ? 'idle' : 'idle';
 
   // ─── Network error state ──────────────────────────────────
   const [networkError, setNetworkError] = useState('');
@@ -511,13 +521,28 @@ const RhythmRushGame = () => {
           </div>
         )}
 
-        {/* ═══ COUNTDOWN ═══ */}
-        {phase === PHASE.COUNTDOWN && (
-          <div className="rr-countdown-overlay">
-            <div className="rr-countdown-num" key={countdownNum}>
-              {countdownNum > 0 ? countdownNum : 'GO!'}
+        {/* ═══ READY (between patterns) ═══ */}
+        {phase === PHASE.READY && (
+          <div className="rr-ready-overlay">
+            <div className="rr-ready-card">
+              <div className="rr-ready-icon">🎵</div>
+              <h3 className="rr-ready-title">Get Ready!</h3>
+              <p className="rr-ready-info">
+                Pattern {currentQIndex + 1} of {questions.length}
+              </p>
+              <div className="rr-ready-stats-mini">
+                <span>Score: <strong>{score}</strong></span>
+                <span>Streak: <strong>{streak > 0 ? '🔥' + streak : '—'}</strong></span>
+              </div>
+              <p className="rr-ready-hint">
+                {questions[currentQIndex]?.prompt || 'Next rhythm pattern'}
+              </p>
+              <button className="rr-play-btn rr-ready-btn" onClick={() => {
+                setPhase(PHASE.COUNT_IN);
+              }}>
+                ▶ Start Pattern
+              </button>
             </div>
-            <p className="rr-countdown-tip">Pattern {currentQIndex + 1} / {questions.length}</p>
           </div>
         )}
 
@@ -556,12 +581,28 @@ const RhythmRushGame = () => {
 
             <div className="rr-prompt">{currentQuestion.prompt}</div>
 
-            <div className={`rr-phase-indicator ${phase === PHASE.TAPPING ? 'rr-phase-tap' : phase === PHASE.DEMO ? 'rr-phase-demo' : ''}`}>
-              {phase === PHASE.DEMO && '👂 Listen to the pattern...'}
-              {phase === PHASE.LISTEN_WAIT && '🎯 Get ready to tap!'}
+            <div className={`rr-phase-indicator ${phase === PHASE.TAPPING ? 'rr-phase-tap' : phase === PHASE.COUNT_IN ? 'rr-phase-countin' : ''}`}>
+              {phase === PHASE.COUNT_IN && '🎵 Count-in… listen and get ready!'}
               {phase === PHASE.TAPPING && '🥁 TAP NOW!'}
               {phase === PHASE.SUBMITTING && '⏳ Analyzing...'}
             </div>
+
+            {/* Count-in beat dots */}
+            {phase === PHASE.COUNT_IN && (
+              <div className="rr-countin-area">
+                <div className="rr-countin-dots">
+                  {[0, 1, 2, 3].map(i => (
+                    <div key={i} className={`rr-countin-dot ${countInBeat >= i ? 'rr-countin-dot-active' : ''} ${countInBeat === i ? 'rr-countin-dot-current' : ''}`}>
+                      <span className="rr-countin-dot-num">{i + 1}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="rr-countin-label">
+                  {countInBeat >= 0 ? `Beat ${countInBeat + 1} of 4` : 'Starting…'}
+                </p>
+                <p className="rr-countin-bpm">{bpm} BPM</p>
+              </div>
+            )}
 
             <div className="rr-timeline-container">
               <RhythmTimeline
