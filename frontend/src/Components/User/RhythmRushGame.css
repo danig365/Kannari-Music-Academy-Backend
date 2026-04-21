@@ -367,6 +367,181 @@
   50% { box-shadow: 0 0 16px 4px rgba(251, 191, 36, 0.12); }
 }
 
+/* ─── Preview phase (watch & listen) ─────────────────────────── */
+.rr-phase-preview {
+  color: #a78bfa;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  animation: rr-preview-glow 1.5s ease-in-out infinite;
+}
+
+.rr-phase-yourturn {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  animation: rr-yourturn-pulse 0.6s ease-in-out infinite;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+@keyframes rr-yourturn-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.3); }
+  50% { transform: scale(1.04); box-shadow: 0 0 24px 6px rgba(251, 191, 36, 0.2); }
+}
+
+@keyframes rr-preview-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.15); }
+  50% { box-shadow: 0 0 20px 4px rgba(139, 92, 246, 0.15); }
+}
+
+.rr-preview-hint {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 12px 0 0;
+  padding: 10px 16px;
+  background: rgba(139, 92, 246, 0.06);
+  border-radius: 10px;
+  border: 1px solid rgba(139, 92, 246, 0.12);
+  animation: rr-ready-fade-in 0.4s ease-out;
+}
+
+/* ─── Pattern beat dots ─────────────────────────────────────── */
+.rr-beat-dots-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px 0 14px;
+  animation: rr-ready-fade-in 0.3s ease-out;
+}
+
+.rr-beat-dots {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.rr-beat-dots-header {
+  width: min(100%, 680px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rr-beat-dots-line {
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 8px 6px;
+  max-width: 100%;
+}
+
+.rr-beat-divider {
+  width: 3px;
+  height: 56px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.2), rgba(148, 163, 184, 0.8), rgba(148, 163, 184, 0.2));
+  box-shadow: 0 0 8px rgba(148, 163, 184, 0.35);
+  flex: 0 0 auto;
+}
+
+.rr-beat-dot {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(100, 116, 139, 0.15);
+  border: 3px solid rgba(100, 116, 139, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s ease-out;
+  position: relative;
+}
+
+.rr-beat-dot-model {
+  background: rgba(167, 139, 250, 0.08);
+}
+
+.rr-beat-dot-student {
+  background: rgba(56, 189, 248, 0.06);
+}
+
+.rr-beat-dot-num {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: rgba(148, 163, 184, 0.5);
+  transition: color 0.15s;
+}
+
+/* Preview: dot already played */
+.rr-beat-dot-preview {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(167, 139, 250, 0.5);
+}
+.rr-beat-dot-preview .rr-beat-dot-num {
+  color: #c4b5fd;
+}
+
+/* Preview: currently playing dot */
+.rr-beat-dot-pulse {
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  border-color: #a78bfa;
+  transform: scale(1.25);
+  box-shadow: 0 0 28px rgba(139, 92, 246, 0.6), 0 0 56px rgba(139, 92, 246, 0.2);
+  animation: rr-beatdot-pop 0.25s ease-out;
+}
+.rr-beat-dot-pulse .rr-beat-dot-num {
+  color: #fff;
+}
+
+@keyframes rr-beatdot-pop {
+  0% { transform: scale(0.85); box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.8); }
+  50% { transform: scale(1.35); }
+  100% { transform: scale(1.25); box-shadow: 0 0 28px rgba(139, 92, 246, 0.6); }
+}
+
+/* Tapping: awaiting next tap (target) */
+.rr-beat-dot-target {
+  border-color: rgba(56, 189, 248, 0.6);
+  animation: rr-target-breathe 0.8s ease-in-out infinite;
+}
+.rr-beat-dot-target .rr-beat-dot-num {
+  color: #7dd3fc;
+}
+
+@keyframes rr-target-breathe {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.3); }
+  50% { transform: scale(1.1); box-shadow: 0 0 18px 4px rgba(56, 189, 248, 0.25); }
+}
+
+/* Tapping: dot successfully tapped */
+.rr-beat-dot-tapped {
+  background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+  border-color: #38bdf8;
+  transform: scale(1.1);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+}
+.rr-beat-dot-tapped .rr-beat-dot-num {
+  color: #fff;
+}
+
+.rr-beat-dots-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin: 0;
+}
+
 .rr-countin-area {
   display: flex;
   flex-direction: column;

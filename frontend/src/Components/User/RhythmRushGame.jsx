@@ -34,11 +34,23 @@ function playClick(freq = 800, dur = 0.06, vol = 0.25) {
 }
 
 function playMetronomeClick(accent = false) {
-  playClick(accent ? 1200 : 800, accent ? 0.08 : 0.05, accent ? 0.35 : 0.25);
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = accent ? 880 : 660;
+    const vol = accent ? 0.15 : 0.10;
+    const dur = accent ? 0.05 : 0.035;
+    g.gain.setValueAtTime(vol, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime + dur);
+  } catch (_) {}
 }
 
 function playTapSound() {
-  playClick(600, 0.04, 0.3);
+  playClick(500, 0.035, 0.15);
 }
 
 function playResultSound(type) {
@@ -52,14 +64,10 @@ function playResultSound(type) {
   }
 }
 
-function playCountdownBeep(final = false) {
-  playClick(final ? 880 : 440, final ? 0.15 : 0.08, 0.2);
-}
-
 // ─── Game phases ────────────────────────────────────────────────────────────
 const PHASE = {
   MENU: 'menu',
-  COUNT_IN: 'count_in',
+  PREVIEW: 'preview',
   TAPPING: 'tapping',
   SUBMITTING: 'submitting',
   FEEDBACK: 'feedback',
@@ -108,7 +116,7 @@ const RhythmRushGame = () => {
   const [ripples, setRipples] = useState([]);
 
   const [summary, setSummary] = useState(null);
-  const [countInBeat, setCountInBeat] = useState(-1); // -1 = inactive, 0-3 = which beat is active
+  const [previewBeatIndex, setPreviewBeatIndex] = useState(-1); // which pattern beat is highlighted during preview
 
   const sessionStartRef = useRef(null);
   const countInTimersRef = useRef([]);
@@ -162,7 +170,7 @@ const RhythmRushGame = () => {
     setTaps([]);
     setPlayheadMs(null);
     setLastResult(null);
-    setCountInBeat(-1);
+    setPreviewBeatIndex(-1);
     submittingRef.current = false;
   }, []);
 
@@ -181,80 +189,117 @@ const RhythmRushGame = () => {
       setSummary(null);
       sessionStartRef.current = Date.now();
       if (data.questions?.length > 0) setupQuestion(data.questions[0]);
-      setPhase(PHASE.COUNT_IN);
+      setPhase(PHASE.PREVIEW);
     } catch (e) {
       setError(e?.response?.data?.message || 'Could not start session');
     }
   };
 
-  // ─── Count-in: 4-beat metronome intro then seamless tapping ─────────
-  const startCountIn = useCallback(() => {
-    setCountInBeat(-1);
+  // ─── Preview: play pattern visually + audibly, then seamlessly start tapping ───
+  const startPreview = useCallback(() => {
+    if (expectedTs.length === 0) return;
+
+    const modelBeatCount = expectedTs.length <= 2
+      ? 1
+      : Math.min(4, Math.max(1, Math.floor(expectedTs.length / 2)));
+    const modelTs = expectedTs.slice(0, modelBeatCount);
+    const beatMs = 60000 / (bpm || 60);
+    const studentStartAbs = expectedTs[modelBeatCount] || (modelTs[modelTs.length - 1] + beatMs);
+    const continuationTs = expectedTs
+      .slice(modelBeatCount)
+      .map(ts => Math.max(0, ts - studentStartAbs));
+
     setTaps([]);
     setPlayheadMs(null);
+    setPreviewBeatIndex(-1);
 
-    // Clear any previous count-in timers
     countInTimersRef.current.forEach(t => clearTimeout(t));
     countInTimersRef.current = [];
+    cancelAnimationFrame(animRef.current);
 
-    const beatMs = 60000 / (bpm || 60); // ms per beat
+    const initialDelay = 200;
 
-    // Schedule 4 count-in beats (with a small initial delay so UI renders first)
-    const initialDelay = 100;
-    for (let i = 0; i < 4; i++) {
-      const t = setTimeout(() => {
-        setCountInBeat(i);
-        playMetronomeClick(i === 0); // accent on beat 1
-      }, initialDelay + i * beatMs);
-      countInTimersRef.current.push(t);
-    }
+    // Play model beats on the left section first.
+    modelTs.forEach((ts, idx) => {
+      const rt = setTimeout(() => {
+        setPreviewBeatIndex(idx);
+        playMetronomeClick(idx === 0);
+      }, initialDelay + ts);
+      countInTimersRef.current.push(rt);
+    });
 
-    // After 4 beats, seamlessly transition to TAPPING (no gap)
-    const tapStartDelay = initialDelay + 4 * beatMs;
+    const modelDuration = modelTs.length > 0 ? modelTs[modelTs.length - 1] + beatMs : beatMs;
+
+    // Animate preview playhead across model section.
     const t = setTimeout(() => {
-      setCountInBeat(-1);
-      setTaps([]);
-      setPlayheadMs(0);
-      setPhase(PHASE.TAPPING);
       const startTime = Date.now();
-      setTapBase(startTime);
-
-      // Play reference metronome clicks at each expected beat during tapping
-      expectedTs.forEach((ts, idx) => {
-        const rt = setTimeout(() => {
-          playMetronomeClick(idx === 0);
-        }, ts);
-        countInTimersRef.current.push(rt);
-      });
-
+      setPlayheadMs(0);
       const animate = () => {
         const elapsed = Date.now() - startTime;
         setPlayheadMs(elapsed);
-        if (elapsed < patternDuration + 500) {
+        if (elapsed < modelDuration) {
           animRef.current = requestAnimationFrame(animate);
         } else {
           setPlayheadMs(null);
         }
       };
       animRef.current = requestAnimationFrame(animate);
-    }, tapStartDelay);
+    }, initialDelay);
     countInTimersRef.current.push(t);
-  }, [bpm, patternDuration, expectedTs]);
 
-  // Auto-start count-in logic when phase changes to COUNT_IN
-  const countInStartedRef = useRef(false);
+    // Seamless transition on the same line: student continues the next beats.
+    const transitionDelay = initialDelay + studentStartAbs;
+    const transitionT = setTimeout(() => {
+      setPreviewBeatIndex(-1);
+      setTaps([]);
+      setPlayheadMs(0);
+      setPhase(PHASE.TAPPING);
+      const startTime = Date.now();
+      setTapBase(startTime);
+
+      // Play metronome for continuation beats only.
+      continuationTs.forEach((ts, idx) => {
+        const rt = setTimeout(() => {
+          playMetronomeClick(idx === 0);
+        }, ts);
+        countInTimersRef.current.push(rt);
+      });
+
+      const continuationDuration = continuationTs.length > 0
+        ? continuationTs[continuationTs.length - 1] + beatMs
+        : beatMs;
+
+      // Animate tapping playhead
+      const animate = () => {
+        const elapsed = Date.now() - startTime;
+        setPlayheadMs(elapsed);
+        if (elapsed < continuationDuration + 500) {
+          animRef.current = requestAnimationFrame(animate);
+        } else {
+          setPlayheadMs(null);
+        }
+      };
+      animRef.current = requestAnimationFrame(animate);
+    }, transitionDelay);
+    countInTimersRef.current.push(transitionT);
+  }, [bpm, expectedTs]);
+
+  // Auto-start preview when phase changes to PREVIEW
+  const previewStartedRef = useRef(false);
   useEffect(() => {
-    if (phase === PHASE.COUNT_IN && !countInStartedRef.current) {
-      countInStartedRef.current = true;
-      startCountIn();
-    } else if (phase !== PHASE.COUNT_IN) {
-      countInStartedRef.current = false;
+    if (phase === PHASE.PREVIEW && !previewStartedRef.current) {
+      previewStartedRef.current = true;
+      startPreview();
+    } else if (phase !== PHASE.PREVIEW) {
+      previewStartedRef.current = false;
     }
     return () => {
-      countInTimersRef.current.forEach(t => clearTimeout(t));
+      if (phase === PHASE.PREVIEW) {
+        countInTimersRef.current.forEach(t => clearTimeout(t));
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, startCountIn]);
+  }, [phase, startPreview]);
 
   // ─── Submit attempt ref (for closures) ───────────────────
   const doSubmitRef = useRef(null);
@@ -272,7 +317,7 @@ const RhythmRushGame = () => {
     try {
       const res = await submitGameAttempt(session.id, {
         question_id: q.id,
-        expected_timestamps: expectedTs,
+        expected_timestamps: continuationExpectedTs,
         taps: taps,
         tolerance_ms: toleranceMs,
       });
@@ -322,7 +367,7 @@ const RhythmRushGame = () => {
       }, isNetworkErr ? 3000 : 2000);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session, questions, currentQIndex, expectedTs, taps, toleranceMs, setupQuestion]);
+  }, [session, questions, currentQIndex, continuationExpectedTs, taps, toleranceMs, setupQuestion]);
 
   useEffect(() => { doSubmitRef.current = doSubmitAttempt; }, [doSubmitAttempt]);
 
@@ -333,10 +378,10 @@ const RhythmRushGame = () => {
         cancelAnimationFrame(animRef.current);
         setPlayheadMs(null);
         if (doSubmitRef.current) doSubmitRef.current();
-      }, patternDuration + 2000);
+      }, studentPatternDuration + 2000);
       return () => clearTimeout(tapTimerRef.current);
     }
-  }, [phase, patternDuration]);
+  }, [phase, studentPatternDuration]);
 
   // ─── Handle tap ──────────────────────────────────────────
   const handleTap = useCallback(() => {
@@ -386,10 +431,21 @@ const RhythmRushGame = () => {
 
   // ─── Derived ─────────────────────────────────────────────
   const currentQuestion = questions[currentQIndex] || null;
-  const isActive = [PHASE.COUNT_IN, PHASE.TAPPING, PHASE.SUBMITTING, PHASE.FEEDBACK].includes(phase);
+  const modelBeatCount = expectedTs.length <= 2
+    ? 1
+    : Math.min(4, Math.max(1, Math.floor(expectedTs.length / 2)));
+  const continuationExpectedTs = expectedTs.length > modelBeatCount
+    ? expectedTs.slice(modelBeatCount).map(ts => ts - expectedTs[modelBeatCount])
+    : [];
+  const studentBeatCount = continuationExpectedTs.length;
+  const studentPatternDuration = studentBeatCount > 0
+    ? continuationExpectedTs[studentBeatCount - 1] + 800
+    : 1600;
+  const isActive = [PHASE.PREVIEW, PHASE.TAPPING, PHASE.SUBMITTING, PHASE.FEEDBACK].includes(phase);
   const timelinePhase = phase === PHASE.FEEDBACK ? 'result'
     : phase === PHASE.TAPPING ? 'listening'
-    : phase === PHASE.COUNT_IN ? 'idle' : 'idle';
+    : phase === PHASE.PREVIEW ? 'preview'
+    : 'idle';
 
   // ─── Network error state ──────────────────────────────────
   const [networkError, setNetworkError] = useState('');
@@ -538,7 +594,7 @@ const RhythmRushGame = () => {
                 {questions[currentQIndex]?.prompt || 'Next rhythm pattern'}
               </p>
               <button className="rr-play-btn rr-ready-btn" onClick={() => {
-                setPhase(PHASE.COUNT_IN);
+                setPhase(PHASE.PREVIEW);
               }}>
                 ▶ Start Pattern
               </button>
@@ -581,26 +637,51 @@ const RhythmRushGame = () => {
 
             <div className="rr-prompt">{currentQuestion.prompt}</div>
 
-            <div className={`rr-phase-indicator ${phase === PHASE.TAPPING ? 'rr-phase-tap' : phase === PHASE.COUNT_IN ? 'rr-phase-countin' : ''}`}>
-              {phase === PHASE.COUNT_IN && '🎵 Count-in… listen and get ready!'}
+            <div className={`rr-phase-indicator ${phase === PHASE.TAPPING ? 'rr-phase-tap' : phase === PHASE.PREVIEW ? 'rr-phase-preview' : ''}`}>
+              {phase === PHASE.PREVIEW && '👀 Model starts, then student continues on the same line'}
               {phase === PHASE.TAPPING && '🥁 TAP NOW!'}
               {phase === PHASE.SUBMITTING && '⏳ Analyzing...'}
             </div>
 
-            {/* Count-in beat dots */}
-            {phase === PHASE.COUNT_IN && (
-              <div className="rr-countin-area">
-                <div className="rr-countin-dots">
-                  {[0, 1, 2, 3].map(i => (
-                    <div key={i} className={`rr-countin-dot ${countInBeat >= i ? 'rr-countin-dot-active' : ''} ${countInBeat === i ? 'rr-countin-dot-current' : ''}`}>
-                      <span className="rr-countin-dot-num">{i + 1}</span>
-                    </div>
-                  ))}
+            {/* One continuous line: model first, student continues */}
+            {(phase === PHASE.PREVIEW || phase === PHASE.TAPPING) && (
+              <div className="rr-beat-dots-area">
+                <div className="rr-beat-dots-header">
+                  <span>Model</span>
+                  <span>Student Continues</span>
                 </div>
-                <p className="rr-countin-label">
-                  {countInBeat >= 0 ? `Beat ${countInBeat + 1} of 4` : 'Starting…'}
+                <div className="rr-beat-dots rr-beat-dots-line">
+                  {expectedTs.map((_, i) => {
+                    let cls = 'rr-beat-dot';
+                    const inModel = i < modelBeatCount;
+                    const studentIdx = i - modelBeatCount;
+
+                    if (inModel) {
+                      cls += ' rr-beat-dot-model';
+                      if (phase === PHASE.PREVIEW && previewBeatIndex >= i) cls += ' rr-beat-dot-preview';
+                      if (phase === PHASE.PREVIEW && previewBeatIndex === i) cls += ' rr-beat-dot-pulse';
+                      if (phase === PHASE.TAPPING) cls += ' rr-beat-dot-preview';
+                    } else {
+                      cls += ' rr-beat-dot-student';
+                      if (phase === PHASE.TAPPING && taps.length > studentIdx) cls += ' rr-beat-dot-tapped';
+                      if (phase === PHASE.TAPPING && taps.length === studentIdx) cls += ' rr-beat-dot-target';
+                    }
+
+                    return (
+                      <React.Fragment key={i}>
+                        {i === modelBeatCount && <div className="rr-beat-divider" />}
+                        <div className={cls}>
+                          <span className="rr-beat-dot-num">{i + 1}</span>
+                        </div>
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
+                <p className="rr-beat-dots-label">
+                  {phase === PHASE.PREVIEW
+                    ? (previewBeatIndex >= 0 ? `Model beat ${previewBeatIndex + 1} of ${modelBeatCount}` : 'Listen to model section...')
+                    : `Continue taps: ${taps.length} / ${studentBeatCount}`}
                 </p>
-                <p className="rr-countin-bpm">{bpm} BPM</p>
               </div>
             )}
 
@@ -618,6 +699,12 @@ const RhythmRushGame = () => {
               />
             </div>
 
+            {phase === PHASE.PREVIEW && (
+              <p className="rr-preview-hint">
+                🎧 Left side plays first, then continue on the right side in time.
+              </p>
+            )}
+
             {phase === PHASE.TAPPING && (
               <div className="rr-tap-zone" onClick={handleTap}
                    onTouchStart={(e) => { e.preventDefault(); handleTap(); }}>
@@ -629,12 +716,12 @@ const RhythmRushGame = () => {
                 </div>
                 <p className="rr-tap-hint">Tap here, press Space, or press Enter</p>
                 <div className="rr-tap-count">
-                  Taps: {taps.length} / {expectedTs.length}
+                  Taps: {taps.length} / {studentBeatCount}
                 </div>
               </div>
             )}
 
-            {phase === PHASE.TAPPING && taps.length >= expectedTs.length && (
+            {phase === PHASE.TAPPING && taps.length >= studentBeatCount && (
               <button className="rr-submit-early-btn" onClick={() => {
                 clearTimeout(tapTimerRef.current);
                 cancelAnimationFrame(animRef.current);

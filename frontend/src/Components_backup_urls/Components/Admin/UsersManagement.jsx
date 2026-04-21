@@ -1028,7 +1028,6 @@ const UsersManagement = () => {
             </div>
         );
     }
-
         return (
         <>
             <div className="d-flex justify-content-between align-items-center mb-4 users-header-wrapper">

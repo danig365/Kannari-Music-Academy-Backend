@@ -82,6 +82,12 @@ const RhythmTimeline = ({
           <feComposite in2="SourceGraphic" operator="in" />
           <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
+        <filter id="rr-glow-preview" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="4" />
+          <feFlood floodColor="#a78bfa" floodOpacity="0.6" />
+          <feComposite in2="SourceGraphic" operator="in" />
+          <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
       </defs>
 
       {/* Background */}
@@ -100,24 +106,27 @@ const RhythmTimeline = ({
           ? (tapResults[i] === 'perfect' ? '#22c55e'
             : tapResults[i] === 'good' ? '#f59e0b' : '#ef4444')
           : '#94a3b8';
+        const previewHit = phase === 'preview' && playheadMs !== null && playheadMs >= ts;
+        const noteColor = previewHit ? '#a78bfa' : resultColor;
         const glowId = phase === 'result'
           ? (tapResults[i] === 'perfect' ? 'url(#rr-glow-green)'
             : tapResults[i] === 'good' ? 'url(#rr-glow-yellow)' : 'url(#rr-glow-red)')
+          : previewHit ? 'url(#rr-glow-preview)'
           : '';
 
         return (
           <g key={`beat-${i}`}>
             {/* Vertical tick */}
             <line x1={x} y1={trackY - 18} x2={x} y2={trackY + 18}
-                  stroke={resultColor} strokeWidth="1" opacity="0.4" />
+                  stroke={noteColor} strokeWidth="1" opacity="0.4" />
             {/* Note head */}
             <circle cx={x} cy={trackY} r={10}
-                    fill={phase === 'result' ? resultColor : '#e2e8f0'}
-                    stroke={resultColor} strokeWidth="2"
+                    fill={phase === 'result' || previewHit ? noteColor : '#e2e8f0'}
+                    stroke={noteColor} strokeWidth={previewHit ? 3 : 2}
                     filter={glowId} />
             {/* Note type label */}
             <text x={x} y={trackY - 22} textAnchor="middle"
-                  fontSize="16" fill={resultColor} fontFamily="serif">
+                  fontSize="16" fill={noteColor} fontFamily="serif">
               {info.label}
             </text>
             {/* Beat number */}
