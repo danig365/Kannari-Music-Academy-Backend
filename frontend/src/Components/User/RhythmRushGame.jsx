@@ -301,6 +301,19 @@ const RhythmRushGame = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, startPreview]);
 
+  // ─── Derived ─────────────────────────────────────────────
+  const currentQuestion = questions[currentQIndex] || null;
+  const modelBeatCount = expectedTs.length <= 2
+    ? 1
+    : Math.min(4, Math.max(1, Math.floor(expectedTs.length / 2)));
+  const continuationExpectedTs = expectedTs.length > modelBeatCount
+    ? expectedTs.slice(modelBeatCount).map(ts => ts - expectedTs[modelBeatCount])
+    : [];
+  const studentBeatCount = continuationExpectedTs.length;
+  const studentPatternDuration = studentBeatCount > 0
+    ? continuationExpectedTs[studentBeatCount - 1] + 800
+    : 1600;
+
   // ─── Submit attempt ref (for closures) ───────────────────
   const doSubmitRef = useRef(null);
 
@@ -429,18 +442,6 @@ const RhythmRushGame = () => {
     }
   }, [session]);
 
-  // ─── Derived ─────────────────────────────────────────────
-  const currentQuestion = questions[currentQIndex] || null;
-  const modelBeatCount = expectedTs.length <= 2
-    ? 1
-    : Math.min(4, Math.max(1, Math.floor(expectedTs.length / 2)));
-  const continuationExpectedTs = expectedTs.length > modelBeatCount
-    ? expectedTs.slice(modelBeatCount).map(ts => ts - expectedTs[modelBeatCount])
-    : [];
-  const studentBeatCount = continuationExpectedTs.length;
-  const studentPatternDuration = studentBeatCount > 0
-    ? continuationExpectedTs[studentBeatCount - 1] + 800
-    : 1600;
   const isActive = [PHASE.PREVIEW, PHASE.TAPPING, PHASE.SUBMITTING, PHASE.FEEDBACK].includes(phase);
   const timelinePhase = phase === PHASE.FEEDBACK ? 'result'
     : phase === PHASE.TAPPING ? 'listening'
