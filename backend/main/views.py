@@ -10558,48 +10558,104 @@ def _calculate_note_or_quiz_attempt(question, submitted_answer, response_time_ms
     }
 
 
-def _calculate_rhythm_attempt(expected_timestamps, submitted_taps, tolerance_ms):
-    expected = expected_timestamps or []
-    submitted = submitted_taps or []
-    tolerance = max(80, min(int(tolerance_ms or 120), 200))
+def _calculate_rhythm_attempt(expected_timestamps, submitted_taps, tolerance_ms, level=1, base_points=12, previous_streak=0):
+    expected = [int(x) for x in (expected_timestamps or [])]
+    submitted = [int(x) for x in (submitted_taps or [])]
+    requested_tolerance = max(120, min(int(tolerance_ms or 150), 320))
 
-    if not expected or not submitted:
+    # Beginner-friendly tolerance so early levels feel fair.
+    beginner_min = 0
+    if int(level or 1) <= 2:
+        beginner_min = 260
+    elif int(level or 1) == 3:
+        beginner_min = 240
+    elif int(level or 1) == 4:
+        beginner_min = 210
+    tolerance = max(requested_tolerance, beginner_min)
+
+    if not expected:
         return {
             'is_correct': False,
             'feedback': 'try_again',
             'points': 0,
             'accuracy_score': 0.0,
             'avg_delta': 9999,
+            'tolerance_ms': tolerance,
+            'perfect_hits': 0,
+            'good_hits': 0,
+            'near_hits': 0,
+            'misses': 0,
         }
 
-    pair_count = min(len(expected), len(submitted))
-    deltas = [abs(int(submitted[i]) - int(expected[i])) for i in range(pair_count)]
-    avg_delta = sum(deltas) / pair_count if pair_count else 9999
-    within = [d for d in deltas if d <= tolerance]
-    hit_ratio = (len(within) / len(expected)) if expected else 0
+    if not submitted:
+        return {
+            'is_correct': False,
+            'feedback': 'try_again',
+            'points': 0,
+            'accuracy_score': 0.0,
+            'avg_delta': 9999,
+            'tolerance_ms': tolerance,
+            'perfect_hits': 0,
+            'good_hits': 0,
+            'near_hits': 0,
+            'misses': len(expected),
+        }
 
-    if hit_ratio >= 0.9 and avg_delta <= max(90, tolerance * 0.8):
+    # Match each expected beat to the nearest unused tap.
+    unmatched_taps = list(range(len(submitted)))
+    deltas = []
+    for exp in expected:
+        if not unmatched_taps:
+            break
+        best_idx = min(unmatched_taps, key=lambda i: abs(submitted[i] - exp))
+        deltas.append(abs(submitted[best_idx] - exp))
+        unmatched_taps.remove(best_idx)
+
+    # Remaining expected beats count as misses.
+    while len(deltas) < len(expected):
+        deltas.append(tolerance * 3)
+
+    perfect_limit = int(tolerance * 0.45)
+    near_limit = int(tolerance * 1.4)
+
+    perfect_hits = sum(1 for d in deltas if d <= perfect_limit)
+    good_hits = sum(1 for d in deltas if perfect_limit < d <= tolerance)
+    near_hits = sum(1 for d in deltas if tolerance < d <= near_limit)
+    misses = len(expected) - (perfect_hits + good_hits + near_hits)
+
+    weighted_total = (perfect_hits * 1.0) + (good_hits * 0.75) + (near_hits * 0.4)
+    accuracy_score = round(weighted_total / len(expected), 2)
+
+    if accuracy_score >= 0.9 and misses == 0:
         feedback = 'perfect'
-        points = 20
-        accuracy_score = 1.0
-        is_correct = True
-    elif hit_ratio >= 0.65:
+    elif accuracy_score >= 0.6:
         feedback = 'good'
-        points = 10
-        accuracy_score = round(hit_ratio, 2)
-        is_correct = True
     else:
         feedback = 'try_again'
-        points = 0
-        accuracy_score = round(hit_ratio, 2)
-        is_correct = False
+
+    is_correct = accuracy_score >= 0.6
+
+    base_points = max(8, int(base_points or 12))
+    completion_bonus = max(2, int(round(base_points * 0.2)))
+    timing_points = int(round(base_points * accuracy_score))
+    streak_bonus = min(int(previous_streak or 0), 5) if is_correct else 0
+    extra_tap_penalty = min(max(0, len(submitted) - len(expected)), 3)
+    points = max(0, completion_bonus + timing_points + streak_bonus - extra_tap_penalty)
+
+    scored_deltas = [d for d in deltas if d <= near_limit]
+    avg_delta = int(sum(scored_deltas) / len(scored_deltas)) if scored_deltas else 9999
 
     return {
         'is_correct': is_correct,
         'feedback': feedback,
         'points': points,
         'accuracy_score': accuracy_score,
-        'avg_delta': int(avg_delta),
+        'avg_delta': avg_delta,
+        'tolerance_ms': tolerance,
+        'perfect_hits': perfect_hits,
+        'good_hits': good_hits,
+        'near_hits': near_hits,
+        'misses': misses,
     }
 
 
@@ -10913,10 +10969,17 @@ def student_game_submit_attempt(request, session_id):
         expected_timestamps = data.get('expected_timestamps') or data.get('pattern') or []
         submitted_taps = data.get('taps') or []
         tolerance_ms = data.get('tolerance_ms', 120)
-        result = _calculate_rhythm_attempt(expected_timestamps, submitted_taps, tolerance_ms)
+        result = _calculate_rhythm_attempt(
+            expected_timestamps,
+            submitted_taps,
+            tolerance_ms,
+            level=session.level,
+            base_points=(question.points if question else 12),
+            previous_streak=session.streak,
+        )
         expected_payload = {
             'expected_timestamps': expected_timestamps,
-            'tolerance_ms': int(tolerance_ms or 120),
+            'tolerance_ms': int(result.get('tolerance_ms', tolerance_ms or 120)),
         }
         submitted_payload = {'taps': submitted_taps}
         response_time_ms = result.get('avg_delta', 0)

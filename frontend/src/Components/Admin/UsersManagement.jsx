@@ -101,6 +101,7 @@ const UsersManagement = () => {
         qualification: '',
         skills: ''
     });
+    const [teacherErrors, setTeacherErrors] = useState({});
 
     useEffect(() => {
         document.title = 'Users Management | Admin Dashboard';
@@ -327,17 +328,51 @@ const UsersManagement = () => {
             qualification: '',
             skills: ''
         });
+        setTeacherErrors({});
     };
 
     const handleTeacherChange = (e) => {
-        setTeacherFormData({
-            ...teacherFormData,
-            [e.target.name]: e.target.value
-        });
+        const { name, value } = e.target;
+        setTeacherFormData({ ...teacherFormData, [name]: value });
+        if (teacherErrors[name]) {
+            setTeacherErrors({ ...teacherErrors, [name]: '' });
+        }
+    };
+
+    const validateTeacherForm = () => {
+        const errors = {};
+        if (!teacherFormData.full_name.trim()) {
+            errors.full_name = 'Full name is required.';
+        }
+        if (!teacherFormData.email.trim()) {
+            errors.email = 'Email is required.';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(teacherFormData.email.trim())) {
+            errors.email = 'Please enter a valid email address.';
+        }
+        if (!teacherFormData.qualification.trim()) {
+            errors.qualification = 'Qualification is required.';
+        }
+        if (!teacherFormData.skills.trim()) {
+            errors.skills = 'Skills are required.';
+        } else if (teacherFormData.skills.trim().length > 50) {
+            errors.skills = 'Skills must be 50 characters or fewer.';
+        }
+        if (!editingTeacher && !teacherFormData.password) {
+            errors.password = 'Password is required.';
+        } else if (teacherFormData.password && teacherFormData.password.length < 6) {
+            errors.password = 'Password must be at least 6 characters.';
+        }
+        return errors;
     };
 
     const handleTeacherSubmit = async (e) => {
         e.preventDefault();
+        const validationErrors = validateTeacherForm();
+        if (Object.keys(validationErrors).length > 0) {
+            setTeacherErrors(validationErrors);
+            return;
+        }
+        setTeacherErrors({});
         try {
             const formData = new FormData();
             formData.append('full_name', teacherFormData.full_name);
@@ -351,22 +386,48 @@ const UsersManagement = () => {
 
             if (editingTeacher) {
                 await axios.put(`${baseUrl}/teacher/${editingTeacher.id}/`, formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
+                    headers: { 'Content-Type': 'multipart/form-data' }
                 });
             } else {
                 await axios.post(`${baseUrl}/teacher/`, formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
+                    headers: { 'Content-Type': 'multipart/form-data' }
                 });
             }
             fetchTeachers();
             closeTeacherModal();
         } catch (error) {
             console.error('Error saving teacher:', error);
-            alert('Error saving teacher: ' + (error.response?.data?.detail || error.response?.data?.full_name?.[0] || error.message));
+            const responseData = error.response?.data;
+            if (responseData && typeof responseData === 'object') {
+                // Map server field errors to state
+                const serverErrors = {};
+                const fieldMap = {
+                    full_name: 'full_name',
+                    email: 'email',
+                    mobile_no: 'mobile_no',
+                    qualification: 'qualification',
+                    skills: 'skills',
+                    password: 'password',
+                };
+                let hasFieldError = false;
+                Object.entries(fieldMap).forEach(([field]) => {
+                    if (responseData[field]) {
+                        serverErrors[field] = Array.isArray(responseData[field])
+                            ? responseData[field].join(' ')
+                            : responseData[field];
+                        hasFieldError = true;
+                    }
+                });
+                if (hasFieldError) {
+                    setTeacherErrors(serverErrors);
+                } else {
+                    setTeacherErrors({
+                        _general: responseData.detail || responseData.message || 'An error occurred. Please try again.'
+                    });
+                }
+            } else {
+                setTeacherErrors({ _general: error.message || 'An unexpected error occurred.' });
+            }
         }
     };
 
@@ -1814,75 +1875,93 @@ const UsersManagement = () => {
                                     onClick={closeTeacherModal}
                                 ></button>
                             </div>
-                            <form onSubmit={handleTeacherSubmit}>
+                            <form onSubmit={handleTeacherSubmit} noValidate>
                                 <div className="modal-body">
+                                    {teacherErrors._general && (
+                                        <div className="alert alert-danger py-2">{teacherErrors._general}</div>
+                                    )}
                                     <div className="mb-3">
                                         <label className="form-label">Full Name *</label>
                                         <input
                                             type="text"
-                                            className="form-control"
+                                            className={`form-control ${teacherErrors.full_name ? 'is-invalid' : ''}`}
                                             name="full_name"
                                             value={teacherFormData.full_name}
                                             onChange={handleTeacherChange}
-                                            required
                                         />
+                                        {teacherErrors.full_name && (
+                                            <div className="invalid-feedback">{teacherErrors.full_name}</div>
+                                        )}
                                     </div>
                                     <div className="mb-3">
                                         <label className="form-label">Email *</label>
                                         <input
                                             type="email"
-                                            className="form-control"
+                                            className={`form-control ${teacherErrors.email ? 'is-invalid' : ''}`}
                                             name="email"
                                             value={teacherFormData.email}
                                             onChange={handleTeacherChange}
-                                            required
                                         />
+                                        {teacherErrors.email && (
+                                            <div className="invalid-feedback">{teacherErrors.email}</div>
+                                        )}
                                     </div>
                                     <div className="mb-3">
                                         <label className="form-label">Mobile Number</label>
                                         <input
                                             type="tel"
-                                            className="form-control"
+                                            className={`form-control ${teacherErrors.mobile_no ? 'is-invalid' : ''}`}
                                             name="mobile_no"
                                             value={teacherFormData.mobile_no}
                                             onChange={handleTeacherChange}
                                         />
+                                        {teacherErrors.mobile_no && (
+                                            <div className="invalid-feedback">{teacherErrors.mobile_no}</div>
+                                        )}
                                     </div>
                                     <div className="mb-3">
                                         <label className="form-label">Qualification *</label>
                                         <input
                                             type="text"
-                                            className="form-control"
+                                            className={`form-control ${teacherErrors.qualification ? 'is-invalid' : ''}`}
                                             name="qualification"
                                             value={teacherFormData.qualification}
                                             onChange={handleTeacherChange}
-                                            placeholder="e.g., B.Tech, M.Tech"
-                                            required
+                                            placeholder="e.g., Bachelor Degree Jazz Saxophone"
                                         />
+                                        {teacherErrors.qualification && (
+                                            <div className="invalid-feedback">{teacherErrors.qualification}</div>
+                                        )}
                                     </div>
                                     <div className="mb-3">
                                         <label className="form-label">Skills *</label>
                                         <input
                                             type="text"
-                                            className="form-control"
+                                            className={`form-control ${teacherErrors.skills ? 'is-invalid' : ''}`}
                                             name="skills"
                                             value={teacherFormData.skills}
                                             onChange={handleTeacherChange}
                                             placeholder="e.g., Piano, Guitar, Drums"
-                                            required
+                                            maxLength={50}
                                         />
+                                        <div className="form-text text-muted text-end">{teacherFormData.skills.length}/50</div>
+                                        {teacherErrors.skills && (
+                                            <div className="invalid-feedback d-block">{teacherErrors.skills}</div>
+                                        )}
                                     </div>
                                     <div className="mb-3">
                                         <label className="form-label">Password {!editingTeacher && '*'}</label>
                                         <input
                                             type="password"
-                                            className="form-control"
+                                            className={`form-control ${teacherErrors.password ? 'is-invalid' : ''}`}
                                             name="password"
                                             value={teacherFormData.password}
                                             onChange={handleTeacherChange}
                                             placeholder={editingTeacher ? "Leave blank to keep current password" : "Enter password"}
-                                            required={!editingTeacher}
                                         />
+                                        {teacherErrors.password && (
+                                            <div className="invalid-feedback">{teacherErrors.password}</div>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="modal-footer">

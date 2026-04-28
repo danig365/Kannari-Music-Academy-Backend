@@ -619,7 +619,7 @@
 
 /* ─── Game Area ──────────────────────────────────────────────── */
 .rr-game-area {
-  max-width: 640px;
+  max-width: 980px;
   margin: 0 auto;
   padding: 20px;
 }
@@ -667,6 +667,8 @@
 .rr-hud {
   display: flex;
   justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 16px;
   padding: 10px 0;
 }
@@ -675,6 +677,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-width: 72px;
 }
 
 .rr-hud-label {
@@ -743,6 +746,182 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.rr-timeline-container-split {
+  margin: 10px 0 8px;
+  box-shadow: none;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.rr-split-lanes {
+  display: grid;
+  grid-template-columns: 1fr 20px 1fr;
+  gap: 12px;
+  align-items: stretch;
+  margin: 14px 0 8px;
+}
+
+.rr-lane-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.rr-lane-model {
+  border-color: rgba(167, 139, 250, 0.22);
+}
+
+.rr-lane-student {
+  border-color: rgba(56, 189, 248, 0.22);
+}
+
+.rr-lane-active {
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35), 0 0 20px rgba(56, 189, 248, 0.12);
+}
+
+.rr-lane-divider {
+  align-self: stretch;
+  width: 2px;
+  justify-self: center;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.15), rgba(148, 163, 184, 0.7), rgba(148, 163, 184, 0.15));
+}
+
+.rr-lane-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.rr-lane-head h5 {
+  margin: 0;
+  font-size: 0.92rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #cbd5e1;
+}
+
+.rr-lane-state {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+}
+
+.rr-lane-model .rr-lane-state {
+  background: rgba(167, 139, 250, 0.16);
+  color: #c4b5fd;
+}
+
+.rr-lane-active .rr-lane-state {
+  background: rgba(56, 189, 248, 0.18);
+  color: #7dd3fc;
+}
+
+.rr-beat-dots-lane {
+  gap: 12px;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+
+.rr-lane-actions {
+  margin-top: 8px;
+}
+
+.rr-replay-demo-btn {
+  width: 100%;
+  border: 1px solid rgba(167, 139, 250, 0.35);
+  background: rgba(167, 139, 250, 0.12);
+  color: #c4b5fd;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rr-replay-demo-btn:hover:not(:disabled) {
+  background: rgba(167, 139, 250, 0.2);
+}
+
+.rr-replay-demo-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.rr-lane-meta {
+  margin: 4px 0 0;
+  color: #94a3b8;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .rr-split-lanes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .rr-lane-model {
+    order: 1;
+  }
+  .rr-lane-student {
+    order: 2;
+  }
+  .rr-lane-divider {
+    display: none;
+  }
+  .rr-lane-card {
+    padding: 10px;
+  }
+  .rr-beat-dots-lane {
+    gap: 10px;
+    justify-content: flex-start;
+  }
+  .rr-beat-dot {
+    width: 46px;
+    height: 46px;
+  }
+}
+
+@media (max-width: 420px) {
+  .rr-game-area {
+    padding: 10px;
+  }
+  .rr-hud {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .rr-hud-item {
+    min-width: 22%;
+  }
+  .rr-lane-head h5 {
+    font-size: 0.82rem;
+  }
+  .rr-lane-state {
+    font-size: 0.64rem;
+    padding: 2px 6px;
+  }
+  .rr-prompt {
+    font-size: 0.98rem;
+  }
+  .rr-phase-indicator {
+    font-size: 0.88rem;
+    padding: 7px;
+  }
+  .rr-lane-meta {
+    font-size: 0.76rem;
+  }
 }
 
 /* ─── Tap Zone ───────────────────────────────────────────────── */
@@ -1025,6 +1204,39 @@
   .rr-game-area {
     padding: 12px;
   }
+  .rr-progress-row {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .rr-progress-bar {
+    min-width: 160px;
+    order: 3;
+    width: 100%;
+  }
+  .rr-q-counter,
+  .rr-level-badge {
+    font-size: 0.78rem;
+  }
+  .rr-lane-card {
+    padding: 10px;
+  }
+  .rr-lane-head h5 {
+    font-size: 0.82rem;
+  }
+  .rr-lane-state {
+    font-size: 0.66rem;
+    padding: 2px 6px;
+  }
+  .rr-beat-dots-lane {
+    gap: 8px;
+  }
+  .rr-beat-dot {
+    width: 44px;
+    height: 44px;
+  }
+  .rr-beat-dot-num {
+    font-size: 1rem;
+  }
   .rr-hero-card {
     padding: 24px 16px;
   }
@@ -1044,6 +1256,19 @@
   .rr-summary-stats {
     grid-template-columns: 1fr 1fr;
     gap: 8px;
+  }
+}
+
+@media (max-width: 420px) {
+  .rr-phase-indicator {
+    font-size: 0.9rem;
+  }
+  .rr-lane-head h5 {
+    font-size: 0.82rem;
+  }
+  .rr-lane-state {
+    font-size: 0.66rem;
+    padding: 2px 7px;
   }
 }
 
