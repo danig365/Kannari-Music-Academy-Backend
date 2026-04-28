@@ -62,9 +62,21 @@ const TeacherGamesPerformance = () => {
   }, [fetchData]);
 
   /* ─── derived ─── */
-  const rows = useMemo(() => data?.flat_rows || [], [data]);
-  const grouped = useMemo(() => data?.results || [], [data]);
-  const games = useMemo(() => data?.available_games || [], [data]);
+  const rows = useMemo(
+    () => (data?.flat_rows || []).filter((row) => row.game_type !== 'rhythm_rush'),
+    [data]
+  );
+  const grouped = useMemo(
+    () => (data?.results || []).map((student) => ({
+      ...student,
+      games: (student.games || []).filter((game) => game.game_type !== 'rhythm_rush'),
+    })).filter((student) => student.games.length > 0),
+    [data]
+  );
+  const games = useMemo(
+    () => (data?.available_games || []).filter((game) => game.game_type !== 'rhythm_rush'),
+    [data]
+  );
 
   const summaryStats = useMemo(() => {
     if (!rows.length) return null;

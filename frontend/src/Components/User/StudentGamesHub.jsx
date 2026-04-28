@@ -7,7 +7,6 @@ import './StudentGamesHub.css';
 /* ── Game meta ──────────────────────────────────────────────── */
 const GAME_META = {
   note_ninja:      { icon: '🎯', color: '#3b82f6', gradient: 'linear-gradient(135deg,#1e40af,#3b82f6)', route: '/student/games/note-ninja' },
-  rhythm_rush:     { icon: '🥁', color: '#8b5cf6', gradient: 'linear-gradient(135deg,#6d28d9,#8b5cf6)', route: '/student/games/rhythm-rush' },
   music_challenge: { icon: '⚡', color: '#f59e0b', gradient: 'linear-gradient(135deg,#d97706,#f59e0b)', route: '/student/games/music-challenge' },
 };
 
@@ -60,9 +59,9 @@ const StudentGamesHub = () => {
 
   /* ── Derived data ───────────────────────────────────────── */
   const coins  = overview?.sonara_coins_total || 0;
-  const games  = overview?.games || [];
+  const games  = (overview?.games || []).filter(g => g.game?.game_type !== 'rhythm_rush');
   const badges = overview?.badges || [];
-  const recent = overview?.recent_sessions || [];
+  const recent = (overview?.recent_sessions || []).filter(s => s.game_type !== 'rhythm_rush');
 
   /* ── Time-ago helper ────────────────────────────────────── */
   const timeAgo = (iso) => {
