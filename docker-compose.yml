@@ -1,69 +1,118 @@
+# =============================================================================
+# Kannari Music Academy — Production Docker Compose
+# =============================================================================
+# Persistent data:
+#   postgres_data  — PostgreSQL database files  (NEVER delete this volume)
+#   media_data     — User-uploaded files (images, audio, video)
+#
+# Useful commands:
+#   docker compose build --no-cache          # full image rebuild
+#   docker compose up -d                     # start / update services
+#   docker compose logs -f --tail=100 <svc>  # tail logs
+#   docker compose exec backend python manage.py createsuperuser
+# =============================================================================
+
 services:
-  # PostgreSQL Database
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
   db:
     image: postgres:15-alpine
-    restart: always
+    restart: always                          # DB must always restart
     environment:
-      POSTGRES_DB: kannari_db
-      POSTGRES_USER: kannari_user
+      POSTGRES_DB:       kannari_db
+      POSTGRES_USER:     kannari_user
       POSTGRES_PASSWORD: kannari_secure_pass_2026
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    # Port 5432 NOT exposed externally - internal Docker network only
+    networks:
+      - backend_net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U kannari_user -d kannari_db"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
 
-  # Django Backend
+  # ── Django / Gunicorn ───────────────────────────────────────────────────────
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    restart: always
+    restart: unless-stopped
     env_file:
-      - ./backend/.env
-    environment:
-      - DATABASE_URL=postgresql://kannari_user:kannari_secure_pass_2026@db:5432/kannari_db
-      - ALLOWED_HOSTS=localhost,127.0.0.1,178.156.242.253,backend,kannarimusicacademy.com,www.kannarimusicacademy.com
-      - CORS_ALLOWED_ORIGINS=http://178.156.242.253,https://178.156.242.253,http://localhost:3000,http://localhost,http://kannarimusicacademy.com,https://kannarimusicacademy.com,http://www.kannarimusicacademy.com,https://www.kannarimusicacademy.com,http://localhost:8081,http://10.0.2.2:8081,http://localhost:19006
-      - DEBUG=False
-      - MEDIA_ROOT=/app/media
-      - FRONTEND_URL=https://kannarimusicacademy.com
+      - ./backend/.env                       # all secrets live here only
     volumes:
       - media_data:/app/media
+    networks:
+      - backend_net                          # reach the DB
+      - app_net                              # reached by nginx
     depends_on:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import socket; s=socket.socket(); s.settimeout(2); s.connect(('127.0.0.1', 8000)); s.close()\" >/dev/null 2>&1 || exit 1"]
-      interval: 10s
+      test: ["CMD-SHELL", "python -c \"import socket; s=socket.socket(); s.settimeout(2); s.connect(('127.0.0.1',8000)); s.close()\""]
+      interval: 15s
       timeout: 5s
       retries: 10
-      start_period: 20s
-    # Port 8000 NOT exposed externally - nginx proxies internally
+      start_period: 30s
+    logging:
+      driver: json-file
+      options: { max-size: "20m", max-file: "5" }
 
-  # React Frontend
+  # ── React / Nginx (SPA) ─────────────────────────────────────────────────────
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    restart: always
+      args:
+        REACT_APP_STRIPE_PUBLISHABLE_KEY: ${REACT_APP_STRIPE_PUBLISHABLE_KEY}
+    restart: unless-stopped
+    networks:
+      - app_net
     depends_on:
       - backend
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1 || exit 1"]
-      interval: 10s
+      interval: 15s
       timeout: 5s
-      retries: 10
+      retries: 5
       start_period: 10s
-    # Port 3000/80 NOT exposed externally - nginx proxies internally
+    logging:
+      driver: json-file
+      options: { max-size: "5m", max-file: "3" }
 
-  # Jitsi Meet - Web frontend
+  # ── Nginx Reverse Proxy ─────────────────────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - media_data:/app/media:ro             # serve uploads without hitting backend
+    networks:
+      - app_net
+      - jitsi_net
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+      jitsi-web:
+        condition: service_started
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+  # ── Jitsi — Web ─────────────────────────────────────────────────────────────
   jitsi-web:
     image: jitsi/web:stable
-    restart: always
+    restart: unless-stopped
     env_file:
       - ./jitsi/.env
     environment:
@@ -73,15 +122,20 @@ services:
       - "80"
     volumes:
       - jitsi_web_config:/config
+    networks:
+      - jitsi_net
     depends_on:
       - jitsi-prosody
       - jitsi-jicofo
       - jitsi-jvb
+    logging:
+      driver: json-file
+      options: { max-size: "5m", max-file: "3" }
 
-  # Jitsi Meet - XMPP server
+  # ── Jitsi — XMPP / Prosody ──────────────────────────────────────────────────
   jitsi-prosody:
     image: jitsi/prosody:stable
-    restart: always
+    restart: unless-stopped
     env_file:
       - ./jitsi/.env
     expose:
@@ -90,24 +144,34 @@ services:
       - "5347"
     volumes:
       - jitsi_prosody_config:/config
+    networks:
+      - jitsi_net
+    logging:
+      driver: json-file
+      options: { max-size: "5m", max-file: "3" }
 
-  # Jitsi Meet - Conference focus
+  # ── Jitsi — Jicofo (conference focus) ───────────────────────────────────────
   jitsi-jicofo:
     image: jitsi/jicofo:stable
-    restart: always
+    restart: unless-stopped
     env_file:
       - ./jitsi/.env
     environment:
       - XMPP_SERVER=jitsi-prosody
     volumes:
       - jitsi_jicofo_config:/config
+    networks:
+      - jitsi_net
     depends_on:
       - jitsi-prosody
+    logging:
+      driver: json-file
+      options: { max-size: "5m", max-file: "3" }
 
-  # Jitsi Meet - Video bridge
+  # ── Jitsi — JVB (video bridge) ──────────────────────────────────────────────
   jitsi-jvb:
     image: jitsi/jvb:stable
-    restart: always
+    restart: unless-stopped
     env_file:
       - ./jitsi/.env
     environment:
@@ -118,32 +182,36 @@ services:
       - "127.0.0.1:4443:4443"
     volumes:
       - jitsi_jvb_config:/config
+    networks:
+      - jitsi_net
     depends_on:
       - jitsi-prosody
+    logging:
+      driver: json-file
+      options: { max-size: "5m", max-file: "3" }
 
-  # Nginx Reverse Proxy
-  nginx:
-    image: nginx:alpine
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-      - media_data:/app/media
-    depends_on:
-      backend:
-        condition: service_healthy
-      frontend:
-        condition: service_healthy
-      jitsi-web:
-        condition: service_started
-
+# =============================================================================
+# Volumes — persistent data (never rename these)
+# =============================================================================
 volumes:
-  postgres_data:
-  media_data:
+  postgres_data:        # PostgreSQL data files
+  media_data:           # User-uploaded media (images, audio, video)
   jitsi_web_config:
   jitsi_prosody_config:
   jitsi_jicofo_config:
   jitsi_jvb_config:
+
+# =============================================================================
+# Networks — service isolation
+#   app_net      nginx ↔ frontend ↔ backend
+#   backend_net  backend ↔ db  (DB unreachable from nginx/frontend)
+#   jitsi_net    nginx ↔ all jitsi services
+# =============================================================================
+networks:
+  app_net:
+    driver: bridge
+  backend_net:
+    driver: bridge
+  jitsi_net:
+    driver: bridge
+

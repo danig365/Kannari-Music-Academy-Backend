@@ -11,11 +11,11 @@ import { API_BASE_URL, SITE_URL } from '../../config';
 import { getStudentSubscription, getSubscriptionUsage, getAssignedTeacher, getPlanTeachers, formatAccessLevel, getAccessLevelColor, clearSubscriptionCache } from '../../services/subscriptionService';
 
 const baseUrl = API_BASE_URL;
-const stripePublicKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || 'pk_test_51QriK4FvQfkVZfKcMNu8LHUqNl4qZP2jFpYXGqCu5pQY9FmxNgVRUQ9q4rMxKPQqsGVuGrL4pGDSuTLNTNSs0006002mxKxbv';
+const stripePublicKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || 'pk_live_51SUGuu5660mVKr4oXfErDtBTL6gARjogpSlaC7hPrDdXlKTu7oFU9NYhVFjAynfAScVH6LzHwlgxVGjeFE4v9iXi00VVc57kSv';
 const stripePromise = loadStripe(stripePublicKey);
 
 // Payment Form Component
-const PaymentForm = ({ plan, studentId, onSuccess, onCancel }) => {
+const PaymentForm = ({ plan, studentId, hasCardOnFile, onSuccess, onCancel }) => {
     const stripe = useStripe();
     const elements = useElements();
     const [loading, setLoading] = useState(false);
@@ -25,162 +25,57 @@ const PaymentForm = ({ plan, studentId, onSuccess, onCancel }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!stripe || !elements) return;
+        if (!stripe || (!hasCardOnFile && !elements)) return;
 
         setLoading(true);
         setError(null);
 
         try {
-            // Validate input
-            if (!name.trim()) {
-                setError('Please enter your full name');
-                setLoading(false);
-                return;
+            if (!hasCardOnFile) {
+                if (!name.trim()) { setError('Please enter your full name'); setLoading(false); return; }
+                if (!email.trim()) { setError('Please enter your email address'); setLoading(false); return; }
             }
-            if (!email.trim()) {
-                setError('Please enter your email address');
-                setLoading(false);
-                return;
-            }
-            
-            // Validate studentId
-            if (!studentId) {
-                setError('Student ID not found. Please log in again.');
-                setLoading(false);
-                return;
-            }
-            
-            // Validate plan
-            if (!plan || !plan.id || !plan.final_price) {
-                setError('Invalid plan information. Please try again.');
-                setLoading(false);
-                return;
-            }
+            if (!studentId) { setError('Student ID not found. Please log in again.'); setLoading(false); return; }
+            if (!plan || !plan.id || !plan.final_price) { setError('Invalid plan information. Please try again.'); setLoading(false); return; }
 
             const paymentData = {
                 plan_id: parseInt(plan.id),
                 student_id: parseInt(studentId),
-                amount: Math.round(parseFloat(plan.final_price) * 100),
-                email: email.trim(),
-                name: name.trim()
+                email: hasCardOnFile ? '' : email.trim(),
+                name: hasCardOnFile ? '' : name.trim(),
             };
-            
-            console.log('='*80);
-            console.log('📤 SENDING PAYMENT INTENT REQUEST');
-            console.log('Plan object:', plan);
-            console.log('StudentID type:', typeof studentId, 'value:', studentId);
-            console.log('Plan ID type:', typeof plan.id, 'value:', plan.id);
-            console.log('Plan final_price type:', typeof plan.final_price, 'value:', plan.final_price);
-            console.log('Final payload being sent:', paymentData);
-            console.log('Payload JSON:', JSON.stringify(paymentData, null, 2));
-            console.log('='*80);
 
-            // Create payment intent on backend
+            // Create Stripe Subscription on backend
             const response = await axios.post(`${baseUrl}/subscription/create-payment-intent/`, paymentData);
 
-            console.log('Payment intent response:', response.data);
-
-            if (!response.data.clientSecret) {
-                const errorMsg = 'Failed to initialize payment. Please try again.';
-                console.error('❌ ' + errorMsg);
-                console.error('Response was:', response.data);
-                setError(errorMsg);
-                setLoading(false);
+            // With trial_end the initial invoice is $0 — no client_secret needed
+            if (!response.data.clientSecret || response.data.isTrialing) {
+                onSuccess();
                 return;
             }
 
             const { clientSecret } = response.data;
 
-            // Confirm payment with Stripe using confirmCardPayment (for CardElement)
-            const cardElement = elements.getElement(CardElement);
-            console.log('Card element:', cardElement);
-            
-            const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-                payment_method: {
-                    card: cardElement,
-                    billing_details: {
-                        name: name,
-                        email: email
-                    }
-                }
-            });
-
-            if (error) {
-                setError(error.message || 'Payment failed');
-                console.error('Stripe error:', error);
-            } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-                // Payment successful - create subscription in database
-                try {
-                    await createSubscription(plan.id, studentId);
-                    onSuccess();
-                } catch (subscriptionError) {
-                    console.error('Subscription creation error:', subscriptionError);
-                    setError('Payment succeeded but failed to create subscription. Please contact support.');
-                }
-            } else if (paymentIntent && paymentIntent.status === 'processing') {
-                setError('Payment is being processed. Please wait...');
+            if (hasCardOnFile) {
+                // Use the customer's saved default payment method — no card element needed
+                const { error: stripeErr, paymentIntent } = await stripe.confirmCardPayment(clientSecret);
+                if (stripeErr) { setError(stripeErr.message || 'Payment failed'); }
+                else if (paymentIntent?.status === 'succeeded' || paymentIntent?.status === 'processing') { onSuccess(); }
+                else { setError('Payment was not completed. Please try again.'); }
             } else {
-                setError('Payment was not completed. Please try again.');
+                const cardElement = elements.getElement(CardElement);
+                const { error: stripeErr, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+                    payment_method: { card: cardElement, billing_details: { name, email } }
+                });
+                if (stripeErr) { setError(stripeErr.message || 'Payment failed'); }
+                else if (paymentIntent?.status === 'succeeded') { onSuccess(); }
+                else if (paymentIntent?.status === 'processing') { setError('Payment is being processed. Please wait...'); }
+                else { setError('Payment was not completed. Please try again.'); }
             }
         } catch (err) {
-            console.error('='*80);
-            console.error('❌ PAYMENT ERROR OCCURRED');
-            console.error('Error name:', err.name);
-            console.error('Error message:', err.message);
-            console.error('Full error:', err);
-            
-            if (err.response) {
-                console.error('Response status:', err.response.status);
-                console.error('Response data:', err.response.data);
-                console.error('Response headers:', err.response.headers);
-            } else if (err.request) {
-                console.error('Request was made but no response:', err.request);
-            } else {
-                console.error('Error setting up request:', err.message);
-            }
-            console.error('='*80);
-            
-            const errorMessage = err.response?.data?.error || err.message || 'Payment failed. Please try again.';
-            setError(errorMessage);
+            setError(err.response?.data?.error || err.message || 'Payment failed. Please try again.');
         } finally {
             setLoading(false);
-        }
-    };
-
-    const createSubscription = async (planId, studentId) => {
-        try {
-            const today = new Date();
-            const endDate = new Date(today);
-            
-            // Calculate end date based on plan duration
-            if (plan.duration === 'monthly') {
-                endDate.setMonth(endDate.getMonth() + 1);
-            } else if (plan.duration === 'quarterly') {
-                endDate.setMonth(endDate.getMonth() + 3);
-            } else if (plan.duration === 'semi_annual') {
-                endDate.setMonth(endDate.getMonth() + 6);
-            } else if (plan.duration === 'annual') {
-                endDate.setFullYear(endDate.getFullYear() + 1);
-            }
-
-            await axios.post(`${baseUrl}/subscriptions/`, {
-                student: studentId,
-                plan: planId,
-                start_date: today.toISOString().split('T')[0],
-                end_date: endDate.toISOString().split('T')[0],
-                price_paid: plan.final_price,
-                is_paid: true,
-                status: 'active',
-                auto_renew: true,
-                lessons_used_this_month: 0,
-                courses_accessed: 0,
-                lessons_accessed: 0,
-                current_week_lessons: 0,
-                last_reset_date: today.toISOString().split('T')[0]
-            });
-        } catch (err) {
-            console.error('Error creating subscription record:', err);
-            throw err;
         }
     };
 
@@ -192,62 +87,89 @@ const PaymentForm = ({ plan, studentId, onSuccess, onCancel }) => {
                     {error}
                 </div>
             )}
-            
-            <div className="form-group">
-                <label htmlFor="fullName">
-                    <i className="bi bi-person me-2"></i>Full Name
-                </label>
-                <input
-                    id="fullName"
-                    type="text"
-                    className="form-control"
-                    placeholder="John Doe"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                />
+
+            {/* No-charge notice */}
+            <div style={{
+                padding: '12px 16px', background: '#f0fdf4', border: '1px solid #86efac',
+                borderRadius: '10px', display: 'flex', gap: '10px', alignItems: 'flex-start',
+                marginBottom: '12px',
+            }}>
+                <i className="bi bi-shield-check" style={{ color: '#16a34a', fontSize: '16px', marginTop: '1px' }}></i>
+                <div>
+                    <strong style={{ color: '#15803d', fontSize: '13px' }}>No charge today.</strong>
+                    <span style={{ color: '#166534', fontSize: '13px' }}> Billing starts on the 1st of next month. The rest of this month is free.</span>
+                </div>
             </div>
-            
-            <div className="form-group">
-                <label htmlFor="email">
-                    <i className="bi bi-envelope me-2"></i>Email Address
-                </label>
-                <input
-                    id="email"
-                    type="email"
-                    className="form-control"
-                    placeholder="john@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
-            </div>
-            
-            <div className="form-group">
-                <label htmlFor="cardElement">
-                    <i className="bi bi-credit-card me-2"></i>Card Information
-                </label>
-                <CardElement 
-                    id="cardElement"
-                    className="form-control card-element" 
-                    options={{
-                        hidePostalCode: true,
-                        style: {
-                            base: {
-                                fontSize: '1rem',
-                                color: '#495057',
-                                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                                '::placeholder': {
-                                    color: '#adb5bd'
+
+            {hasCardOnFile ? (
+                /* Card-on-file indicator */
+                <div style={{
+                    padding: '14px 16px', background: '#f8fafc', border: '1px solid #e2e8f0',
+                    borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '12px',
+                    marginBottom: '4px',
+                }}>
+                    <i className="bi bi-credit-card-2-front-fill" style={{ fontSize: '22px', color: '#64748b' }}></i>
+                    <div>
+                        <div style={{ fontSize: '13px', fontWeight: '600', color: '#374151' }}>Card on file</div>
+                        <div style={{ fontSize: '12px', color: '#6b7280' }}>Your saved card will be used for future billing.</div>
+                    </div>
+                    <i className="bi bi-check-circle-fill ms-auto" style={{ color: '#10b981', fontSize: '18px' }}></i>
+                </div>
+            ) : (
+                <>
+                    <div className="form-group">
+                        <label htmlFor="fullName">
+                            <i className="bi bi-person me-2"></i>Full Name
+                        </label>
+                        <input
+                            id="fullName"
+                            type="text"
+                            className="form-control"
+                            placeholder="John Doe"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            required
+                        />
+                    </div>
+                    
+                    <div className="form-group">
+                        <label htmlFor="email">
+                            <i className="bi bi-envelope me-2"></i>Email Address
+                        </label>
+                        <input
+                            id="email"
+                            type="email"
+                            className="form-control"
+                            placeholder="john@example.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+                    
+                    <div className="form-group">
+                        <label htmlFor="cardElement">
+                            <i className="bi bi-credit-card me-2"></i>Card Information
+                        </label>
+                        <CardElement 
+                            id="cardElement"
+                            className="form-control card-element" 
+                            options={{
+                                hidePostalCode: true,
+                                style: {
+                                    base: {
+                                        fontSize: '1rem',
+                                        color: '#495057',
+                                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                                        '::placeholder': { color: '#adb5bd' }
+                                    },
+                                    invalid: { color: '#dc3545' }
                                 }
-                            },
-                            invalid: {
-                                color: '#dc3545'
-                            }
-                        }
-                    }}
-                />
-            </div>
+                            }}
+                        />
+                    </div>
+                </>
+            )}
 
             <div className="d-flex gap-2 mt-4">
                 <button
@@ -263,7 +185,7 @@ const PaymentForm = ({ plan, studentId, onSuccess, onCancel }) => {
                     ) : (
                         <>
                             <i className="bi bi-lock me-2"></i>
-                            Pay ${parseFloat(plan.final_price).toFixed(2)}
+                            Confirm Subscription — ${parseFloat(plan.final_price).toFixed(2)}/mo
                         </>
                     )}
                 </button>
@@ -287,6 +209,7 @@ const StudentSubscriptions = () => {
     const [loading, setLoading] = useState(true);
     const [selectedPlan, setSelectedPlan] = useState(null);
     const [studentId, setStudentId] = useState(null);
+    const [studentInfo, setStudentInfo] = useState(null);  // full student record (for stripe_customer_id)
     const [activeTab, setActiveTab] = useState('plans');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -349,13 +272,15 @@ const StudentSubscriptions = () => {
     const fetchData = async (id) => {
         try {
             setLoading(true);
-            const [plansRes, subsRes] = await Promise.all([
+            const [plansRes, subsRes, studentRes] = await Promise.all([
                 axios.get(`${baseUrl}/subscription-plans/`),
-                axios.get(`${baseUrl}/subscriptions/?student_id=${id}`)
+                axios.get(`${baseUrl}/subscriptions/?student_id=${id}`),
+                axios.get(`${baseUrl}/student/${id}/`),
             ]);
 
             setPlans(plansRes.data.results || plansRes.data);
             setUserSubscriptions(subsRes.data.results || subsRes.data || []);
+            setStudentInfo(studentRes.data || null);
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {
@@ -373,8 +298,8 @@ const StudentSubscriptions = () => {
         Swal.fire({
             icon: 'success',
             title: '🎉 Subscription Successful!',
-            html: '<div style="text-align:center"><p style="font-size:16px;margin-bottom:10px">Thank you for subscribing!</p><div style="font-size:32px;margin:15px 0">✓</div><p style="color:#6b7280;font-size:14px">Your subscription is now active.</p></div>',
-            timer: 3000,
+            html: '<div style="text-align:center"><p style="font-size:16px;margin-bottom:10px">Thank you for subscribing!</p><div style="font-size:32px;margin:15px 0">✓</div><p style="color:#6b7280;font-size:14px">Your subscription is now active. You will be charged automatically each billing period.</p></div>',
+            timer: 4000,
             showConfirmButton: true,
             confirmButtonText: 'Got it!',
             allowOutsideClick: false,
@@ -696,7 +621,7 @@ const StudentSubscriptions = () => {
                                                     'danger'
                                                 }`} style={{ fontSize: '12px', padding: '6px 12px' }}>
                                                     {sub.status === 'active' && <i className="bi bi-check-circle me-1" aria-hidden="true"></i>}
-                                                    {sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}
+                                                    {sub.cancel_at_period_end ? 'Cancels at period end' : sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}
                                                 </span>
                                             </div>
                                         </div>
@@ -853,10 +778,10 @@ const StudentSubscriptions = () => {
                                                     <span>{new Date(sub.start_date).toLocaleDateString()}</span>
                                                 </li>
                                                 <li>
-                                                    <strong><i className="bi bi-calendar-x me-2"></i>End Date</strong>
-                                                    <span>{new Date(sub.end_date).toLocaleDateString()}</span>
+                                                    <strong><i className="bi bi-calendar-x me-2"></i>Billing</strong>
+                                                    <span>{sub.end_date ? new Date(sub.end_date).toLocaleDateString() : 'Ongoing monthly'}</span>
                                                 </li>
-                                                {sub.status === 'active' && sub.days_remaining && (
+                                                {sub.status === 'active' && sub.days_remaining != null && (
                                                     <li className={isExpiringSoon ? 'text-warning' : 'text-success'}>
                                                         <strong><i className="bi bi-hourglass-split me-2"></i>Days Left</strong>
                                                         <span className="fw-700">{sub.days_remaining} days</span>
@@ -886,6 +811,22 @@ const StudentSubscriptions = () => {
                                                                 {feature}
                                                             </span>
                                                         ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Cancellation notice — no self-cancel */}
+                                            {sub.status === 'active' && (
+                                                <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
+                                                    <div style={{
+                                                        padding: '12px 14px', background: '#fafafa',
+                                                        border: '1px solid #e5e7eb', borderRadius: '8px',
+                                                        display: 'flex', alignItems: 'center', gap: '10px',
+                                                    }}>
+                                                        <i className="bi bi-info-circle" style={{ color: '#6b7280', fontSize: '16px', flexShrink: 0 }}></i>
+                                                        <p style={{ margin: 0, fontSize: '12px', color: '#6b7280', lineHeight: '1.5' }}>
+                                                            To cancel your subscription, please <strong>contact support</strong>. Your access continues until the end of the current billing period.
+                                                        </p>
                                                     </div>
                                                 </div>
                                             )}
@@ -955,6 +896,7 @@ const StudentSubscriptions = () => {
                                     <PaymentForm
                                         plan={selectedPlan}
                                         studentId={studentId}
+                                        hasCardOnFile={!!(studentInfo?.stripe_customer_id)}
                                         onSuccess={handleSubscriptionSuccess}
                                         onCancel={() => setSelectedPlan(null)}
                                     />

@@ -86,6 +86,8 @@ import CourseAnalytics from './Admin/CourseAnalytics'
 import SubscriptionsManagement from './Admin/SubscriptionsManagement'
 import AuditLogsDashboard from './Admin/AuditLogsDashboard'
 import AdminGamesAnalytics from './Admin/AdminGamesAnalytics'
+import AdminMessages from './Admin/AdminMessages'
+import AdminChatOversight from './Admin/AdminChatOversight'
 
 // School Components
 import SchoolLogin from './School/SchoolLogin'
@@ -99,6 +101,7 @@ import SchoolLessonAssignments from './School/SchoolLessonAssignments'
 import SchoolProgress from './School/SchoolProgress'
 import SchoolSettings from './School/SchoolSettings'
 import SchoolChatLock from './School/SchoolChatLock'
+import SchoolMessages from './School/SchoolMessages'
 
 // Helper for legacy redirects with path params
 function RedirectWithParams({ to }) {
@@ -248,6 +251,8 @@ const MainContent = () => {
             <Route path='subscriptions' element={<SubscriptionsManagement />}/>
             <Route path='audit-logs' element={<AuditLogsDashboard />}/>
             <Route path='games-analytics' element={<AdminGamesAnalytics />}/>
+            <Route path='messages' element={<AdminMessages />}/>
+            <Route path='chat-oversight' element={<AdminChatOversight />}/>
           </Route>
 
           {/* ==================== SCHOOL ROUTES (/school/...) ==================== */}
@@ -262,6 +267,7 @@ const MainContent = () => {
             <Route path='progress' element={<SchoolProgress />}/>
             <Route path='settings' element={<SchoolSettings />}/>
             <Route path='chat-locks' element={<SchoolChatLock />}/>
+            <Route path='messages' element={<SchoolMessages />}/>
           </Route>
 
           {/* ==================== LEGACY REDIRECTS ==================== */}

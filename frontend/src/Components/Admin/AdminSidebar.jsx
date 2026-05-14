@@ -261,6 +261,60 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                         <i className="bi bi-shield-check me-3" style={{ fontSize: '18px' }}></i>
                         <span style={{ fontSize: '14px' }}>Audit Logs</span>
                     </Link>
+
+                    <Link 
+                        to="/admin-panel/chat-oversight" 
+                        onClick={(e) => handleNavClick(e, '/admin-panel/chat-oversight')}
+                        className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
+                        style={{ 
+                            color: isActive('/admin-panel/chat-oversight') ? '#fff' : '#8b92a7',
+                            backgroundColor: isActive('/admin-panel/chat-oversight') ? 'rgba(245, 158, 11, 0.15)' : 'transparent',
+                            borderLeft: isActive('/admin-panel/chat-oversight') ? '3px solid #f59e0b' : '3px solid transparent',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!isActive('/admin-panel/chat-oversight')) {
+                                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                                e.currentTarget.style.color = '#fff';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!isActive('/admin-panel/chat-oversight')) {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                                e.currentTarget.style.color = '#8b92a7';
+                            }
+                        }}
+                    >
+                        <i className="bi bi-eye me-3" style={{ fontSize: '18px' }}></i>
+                        <span style={{ fontSize: '14px' }}>Chat Oversight</span>
+                    </Link>
+
+                    <Link 
+                        to="/admin-panel/messages" 
+                        onClick={(e) => handleNavClick(e, '/admin-panel/messages')}
+                        className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
+                        style={{ 
+                            color: isActive('/admin-panel/messages') ? '#fff' : '#8b92a7',
+                            backgroundColor: isActive('/admin-panel/messages') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+                            borderLeft: isActive('/admin-panel/messages') ? '3px solid #4285f4' : '3px solid transparent',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!isActive('/admin-panel/messages')) {
+                                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                                e.currentTarget.style.color = '#fff';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!isActive('/admin-panel/messages')) {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                                e.currentTarget.style.color = '#8b92a7';
+                            }
+                        }}
+                    >
+                        <i className="bi bi-chat-dots me-3" style={{ fontSize: '18px' }}></i>
+                        <span style={{ fontSize: '14px' }}>Messages</span>
+                    </Link>
                 </nav>
             </div>
 

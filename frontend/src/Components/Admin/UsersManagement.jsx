@@ -87,7 +87,9 @@ const UsersManagement = () => {
         email: '',
         username: '',
         password: '',
-        interseted_categories: ''
+        interseted_categories: '',
+        phone_number: '',
+        address: ''
     });
 
     // Teachers Modal State
@@ -246,7 +248,9 @@ const UsersManagement = () => {
             email: '',
             username: '',
             password: '',
-            interseted_categories: ''
+            interseted_categories: '',
+            phone_number: '',
+            address: ''
         });
         setShowStudentModal(true);
     };
@@ -259,7 +263,9 @@ const UsersManagement = () => {
             email: '',
             username: '',
             password: '',
-            interseted_categories: ''
+            interseted_categories: '',
+            phone_number: '',
+            address: ''
         });
     };
 
@@ -278,6 +284,8 @@ const UsersManagement = () => {
             formData.append('email', studentFormData.email);
             formData.append('username', studentFormData.username);
             formData.append('interseted_categories', studentFormData.interseted_categories);
+            formData.append('phone_number', studentFormData.phone_number || '');
+            formData.append('address', studentFormData.address || '');
             if (studentFormData.password) {
                 formData.append('password', studentFormData.password);
             }
@@ -457,6 +465,8 @@ const UsersManagement = () => {
             fullname: student.fullname,
             email: student.email,
             username: student.username,
+            phone_number: student.phone_number || '',
+            address: student.address || '',
             password: '',
             interseted_categories: student.interseted_categories || ''
         });
@@ -687,6 +697,52 @@ const UsersManagement = () => {
                 icon: 'error',
                 title: 'Failed to approve agreements',
                 text: error.response?.data?.message || 'Please try again.',
+            });
+        }
+    };
+
+    const handleMinorOverrideAction = async (teacherId, decision) => {
+        const isApprove = decision === 'approved';
+        const result = await Swal.fire({
+            title: `${isApprove ? 'Approve' : 'Revoke'} minors access`,
+            input: 'textarea',
+            inputLabel: isApprove ? 'Reason or note (optional)' : 'Reason for revocation (optional)',
+            inputPlaceholder: isApprove ? 'Add a short note for the override' : 'Explain why this override is being removed',
+            showCancelButton: true,
+            confirmButtonText: isApprove ? 'Approve' : 'Revoke',
+            confirmButtonColor: isApprove ? '#16a34a' : '#dc2626',
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const payload = {
+                requester_admin_id: adminId,
+                decision: decision,
+            };
+            if (result.value) payload.reason = result.value;
+
+            const res = await axios.post(
+                `${baseUrl}/admin/teacher/${teacherId}/verification/override-minors/`,
+                payload,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                }
+            );
+
+            Swal.fire({ icon: 'success', title: res.data?.message || 'Override updated' });
+            fetchTeachers();
+            if (showVerificationModal && verificationTeacher?.id === teacherId) {
+                const refresh = await axios.get(`${baseUrl}/admin/teacher/${teacherId}/verification/?requester_admin_id=${adminId}`);
+                setVerificationDetail(refresh.data?.verification || null);
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Override failed',
+                text: error.response?.data?.message || 'Could not update minors access.',
             });
         }
     };
@@ -1368,7 +1424,6 @@ const UsersManagement = () => {
                                                     <th>Verification</th>
                                                     <th>Mobile</th>
                                                     <th>Courses</th>
-                                                    <th>Students</th>
                                                     <th>Actions</th>
                                                 </tr>
                                             </thead>
@@ -1402,11 +1457,7 @@ const UsersManagement = () => {
                                                                     {teacher.total_teacher_course || 0}
                                                                 </span>
                                                             </TableCell>
-                                                            <TableCell label="Students">
-                                                                <span className="badge bg-success">
-                                                                    {teacher.total_teacher_students || 0}
-                                                                </span>
-                                                            </TableCell>
+                                                            
                                                             <TableCell label="Actions">
                                                                 <button
                                                                     className={`btn btn-sm me-2 ${teacher.is_approved ? 'btn-secondary' : 'btn-success'}`}
@@ -1414,6 +1465,14 @@ const UsersManagement = () => {
                                                                     title={teacher.is_approved ? 'Revoke approval' : 'Approve teacher'}
                                                                 >
                                                                     <i className={`bi ${teacher.is_approved ? 'bi-x-circle' : 'bi-check-circle'}`}></i>
+                                                                </button>
+                                                                <button
+                                                                    className={`btn btn-sm me-2 ${teacher.can_teach_minors ? 'btn-success' : 'btn-warning text-dark'}`}
+                                                                    onClick={() => handleMinorOverrideAction(teacher.id, teacher.can_teach_minors ? 'revoked' : 'approved')}
+                                                                    title={teacher.can_teach_minors ? 'Revoke minors override' : 'Quick approve for teaching minors'}
+                                                                >
+                                                                    <i className={`bi me-1 ${teacher.can_teach_minors ? 'bi-shield-check' : 'bi-shield-plus'}`}></i>
+                                                                    {teacher.can_teach_minors ? 'Minors On' : 'Quick Minors'}
                                                                 </button>
                                                                 <button
                                                                     className="btn btn-sm btn-primary me-2"
@@ -1748,9 +1807,37 @@ const UsersManagement = () => {
                                                                 </span>
                                                             </TableCell>
                                                             <TableCell label="Actions">
-                                                                <button className="btn btn-sm btn-primary" onClick={() => updateSafetyReportStatus(report.id)}>
-                                                                    <i className="bi bi-pencil-square me-1"></i> Update
-                                                                </button>
+                                                                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                                                    <button className="btn btn-sm btn-primary" onClick={() => updateSafetyReportStatus(report.id)}>
+                                                                        <i className="bi bi-pencil-square me-1"></i> Update
+                                                                    </button>
+                                                                    {(report.reported_by_teacher_id || report.reported_by_student_id) && (
+                                                                        <button
+                                                                            className="btn btn-sm btn-outline-info"
+                                                                            onClick={() => {
+                                                                                const userType = report.reported_by_teacher_id ? 'teacher' : 'student';
+                                                                                const userId = report.reported_by_teacher_id || report.reported_by_student_id;
+                                                                                window.location.href = `/admin-panel/messages?user_type=${userType}&user_id=${userId}`;
+                                                                            }}
+                                                                            title="Open chat with the reporter"
+                                                                        >
+                                                                            <i className="bi bi-chat-dots me-1"></i> Chat Reporter
+                                                                        </button>
+                                                                    )}
+                                                                    {(report.reported_teacher_id || report.reported_student_id) && (
+                                                                        <button
+                                                                            className="btn btn-sm btn-outline-warning"
+                                                                            onClick={() => {
+                                                                                const userType = report.reported_teacher_id ? 'teacher' : 'student';
+                                                                                const userId = report.reported_teacher_id || report.reported_student_id;
+                                                                                window.location.href = `/admin-panel/messages?user_type=${userType}&user_id=${userId}`;
+                                                                            }}
+                                                                            title="Open chat with the reported user"
+                                                                        >
+                                                                            <i className="bi bi-chat-dots me-1"></i> Chat Target
+                                                                        </button>
+                                                                    )}
+                                                                </div>
                                                             </TableCell>
                                                         </tr>
                                                     )) : (
@@ -1827,6 +1914,28 @@ const UsersManagement = () => {
                                             onChange={handleStudentChange}
                                             placeholder="e.g., Piano, Guitar..."
                                             required
+                                        />
+                                    </div>
+                                    <div className="mb-3">
+                                        <label className="form-label">Phone Number</label>
+                                        <input
+                                            type="tel"
+                                            className="form-control"
+                                            name="phone_number"
+                                            value={studentFormData.phone_number}
+                                            onChange={handleStudentChange}
+                                            placeholder="+1 (555) 000-0000"
+                                        />
+                                    </div>
+                                    <div className="mb-3">
+                                        <label className="form-label">Address</label>
+                                        <textarea
+                                            className="form-control"
+                                            name="address"
+                                            value={studentFormData.address}
+                                            onChange={handleStudentChange}
+                                            placeholder="Street, City, State, ZIP"
+                                            rows={3}
                                         />
                                     </div>
                                     <div className="mb-3">
@@ -2426,6 +2535,66 @@ const UsersManagement = () => {
                                                         </span>
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="vr-section mb-3">
+                                            <div className="vr-section-header d-flex justify-content-between align-items-center">
+                                                <div className="d-flex align-items-center gap-2">
+                                                    <i className="bi bi-shield-lock" style={{fontSize: '16px', color: '#f59e0b'}}></i>
+                                                    <strong style={{fontSize: '14px'}}>Minor Access Override</strong>
+                                                </div>
+                                                <span className={`badge ${verificationDetail.admin_override_for_minors ? 'bg-success' : 'bg-secondary'}`}>
+                                                    {verificationDetail.admin_override_for_minors ? 'Enabled' : 'Disabled'}
+                                                </span>
+                                            </div>
+                                            <div className="vr-section-body">
+                                                {verificationDetail.admin_override_for_minors ? (
+                                                    <>
+                                                        <div className="row g-2 mb-2">
+                                                            <div className="col-12 col-sm-6">
+                                                                <div className="vr-meta-item">
+                                                                    <small className="text-muted d-block" style={{fontSize: '11px'}}>Approved By</small>
+                                                                    <span style={{fontSize: '13px', fontWeight: 500}}>
+                                                                        {verificationDetail.override_approved_by?.full_name || 'Admin override'}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="col-12 col-sm-6">
+                                                                <div className="vr-meta-item">
+                                                                    <small className="text-muted d-block" style={{fontSize: '11px'}}>Approved At</small>
+                                                                    <span style={{fontSize: '13px', fontWeight: 500}}>
+                                                                        {verificationDetail.override_approved_at ? new Date(verificationDetail.override_approved_at).toLocaleString() : 'N/A'}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        {verificationDetail.override_reason && (
+                                                            <div className="alert alert-light py-2 px-3 mb-2" style={{fontSize: '12px'}}>
+                                                                <i className="bi bi-chat-left-text me-1"></i>
+                                                                <strong>Note:</strong> {verificationDetail.override_reason}
+                                                            </div>
+                                                        )}
+                                                        <button
+                                                            className="btn btn-sm btn-outline-danger"
+                                                            onClick={() => handleMinorOverrideAction(verificationDetail.teacher_id, 'revoked')}
+                                                        >
+                                                            <i className="bi bi-shield-x me-1"></i> Revoke Minor Access Override
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <p className="mb-2 small text-muted">
+                                                            Admin can instantly approve this teacher to teach minors without waiting for document submissions.
+                                                        </p>
+                                                        <button
+                                                            className="btn btn-sm btn-success"
+                                                            onClick={() => handleMinorOverrideAction(verificationDetail.teacher_id, 'approved')}
+                                                        >
+                                                            <i className="bi bi-shield-check me-1"></i> Quick Approve for Minors
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
 

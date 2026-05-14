@@ -385,19 +385,35 @@ const SubscriptionsManagement = () => {
     };
 
     const handleCancelSubscription = async (subscriptionId) => {
-        if (window.confirm('Are you sure you want to cancel this subscription?')) {
-            try {
-                const response = await axios.post(`${baseUrl}/subscription/${subscriptionId}/cancel/`);
-                if (response.data.bool) {
-                    setSubscriptions(subscriptions.map(sub =>
-                        sub.id === subscriptionId ? { ...sub, status: 'cancelled', cancelled_at: response.data.subscription.cancelled_at } : sub
-                    ));
-                    alert('Subscription cancelled successfully!');
-                }
-            } catch (error) {
-                console.error('Error cancelling subscription:', error);
-                alert('Error cancelling subscription.');
+        const sub = subscriptions.find(s => s.id === subscriptionId);
+        const studentName = sub?.student_details?.fullname || 'this student';
+        const confirmed = window.confirm(
+            `Schedule cancellation for ${studentName}?\n\n` +
+            `The student will keep full access until the end of their current billing period, ` +
+            `then access will be revoked automatically. This cannot be undone.`
+        );
+        if (!confirmed) return;
+        try {
+            const adminId = localStorage.getItem('adminId');
+            const response = await axios.post(
+                `${baseUrl}/subscription/${subscriptionId}/cancel/`,
+                { requester_admin_id: adminId }
+            );
+            if (response.data.bool) {
+                setSubscriptions(subscriptions.map(s =>
+                    s.id === subscriptionId
+                        ? { ...s, cancel_at_period_end: true }
+                        : s
+                ));
+                alert(
+                    'Cancellation scheduled.\n\n' +
+                    `${studentName} retains access until the end of their current billing period.`
+                );
             }
+        } catch (error) {
+            console.error('Error cancelling subscription:', error);
+            const msg = error.response?.data?.message || 'Failed to schedule cancellation.';
+            alert(msg);
         }
     };
 
@@ -422,6 +438,10 @@ const SubscriptionsManagement = () => {
     };
 
     const viewSubscriptionDetails = (subscription) => {
+        const isOngoing = !subscription.end_date;
+        const cancelNote = subscription.cancel_at_period_end
+            ? '⚠️ Cancellation scheduled — access continues until period ends'
+            : '';
         const details = `
 Subscription Details
 --------------------
@@ -429,10 +449,10 @@ Student: ${subscription.student_details?.fullname || 'N/A'}
 Email: ${subscription.student_details?.email || 'N/A'}
 Plan: ${subscription.plan_details?.name || 'N/A'}
 Access Level: ${formatAccessLevel(subscription.plan_details?.access_level || 0)}
-Status: ${subscription.status}
-Start Date: ${subscription.start_date}
-End Date: ${subscription.end_date}
-Days Remaining: ${subscription.days_remaining || 0}
+Status: ${subscription.status}${cancelNote ? '\n' + cancelNote : ''}
+Start Date: ${subscription.start_date || 'N/A'}
+Billing: ${isOngoing ? 'Ongoing monthly (no fixed end date)' : subscription.end_date}
+Days Remaining: ${isOngoing ? 'Ongoing' : (subscription.days_remaining != null ? subscription.days_remaining + ' days' : 'N/A')}
 Price Paid: $${subscription.price_paid}
 Assigned Teacher: ${subscription.assigned_teacher_details?.fullname || 'None'}
 
@@ -611,13 +631,12 @@ Weekly Lessons: ${subscription.current_week_lessons || 0} / ${subscription.plan_
                                             />
                                         </div>
                                         <div className="col-md-6 mb-3">
-                                            <label className="form-label">End Date</label>
+                                            <label className="form-label">End Date <span className="text-muted" style={{fontWeight:400,fontSize:'12px'}}>(leave blank for ongoing)</span></label>
                                             <input
                                                 type="date"
                                                 className="form-control"
                                                 value={formData.end_date}
                                                 onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                                                required
                                             />
                                         </div>
                                     </div>
@@ -756,17 +775,30 @@ Weekly Lessons: ${subscription.current_week_lessons || 0} / ${subscription.plan_
                                                 )}
                                             </td>
                                             <td>
-                                                <span className={`badge bg-${
-                                                    subscription.status === 'active' ? 'success' :
-                                                    subscription.status === 'pending' ? 'warning' :
-                                                    subscription.status === 'cancelled' ? 'danger' : 'secondary'
-                                                }`}>
-                                                    {subscription.status}
-                                                </span>
+                                                <div className="d-flex flex-column gap-1">
+                                                    <span className={`badge bg-${
+                                                        subscription.status === 'active' ? 'success' :
+                                                        subscription.status === 'pending' ? 'warning' :
+                                                        subscription.status === 'cancelled' ? 'danger' : 'secondary'
+                                                    }`}>
+                                                        {subscription.status}
+                                                    </span>
+                                                    {subscription.cancel_at_period_end && subscription.status === 'active' && (
+                                                        <span className="badge bg-warning text-dark" style={{ fontSize: '10px' }}>
+                                                            <i className="bi bi-clock me-1"></i>Cancels at period end
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </td>
                                             <td>
-                                                {subscription.is_active_status ? (
-                                                    <span className="text-success fw-bold">{subscription.days_remaining} days</span>
+                                                {subscription.cancel_at_period_end && subscription.status === 'active' ? (
+                                                    <span className="text-warning fw-bold">
+                                                        <i className="bi bi-hourglass-split me-1"></i>Until period end
+                                                    </span>
+                                                ) : subscription.is_active_status ? (
+                                                    <span className="text-success fw-bold">
+                                                        {subscription.days_remaining != null ? `${subscription.days_remaining} days` : 'Ongoing'}
+                                                    </span>
                                                 ) : (
                                                     <span className="text-danger">Expired</span>
                                                 )}
@@ -806,13 +838,15 @@ Weekly Lessons: ${subscription.current_week_lessons || 0} / ${subscription.plan_
                                                             >
                                                                 <i className="bi bi-person-plus"></i>
                                                             </button>
-                                                            <button
-                                                                className="btn btn-sm btn-danger"
-                                                                onClick={() => handleCancelSubscription(subscription.id)}
-                                                                title="Cancel"
-                                                            >
-                                                                <i className="bi bi-x-circle"></i>
-                                                            </button>
+                                                            {!subscription.cancel_at_period_end && (
+                                                                <button
+                                                                    className="btn btn-sm btn-danger"
+                                                                    onClick={() => handleCancelSubscription(subscription.id)}
+                                                                    title="Schedule Cancellation"
+                                                                >
+                                                                    <i className="bi bi-x-circle"></i>
+                                                                </button>
+                                                            )}
                                                         </>
                                                     )}
                                                     <button

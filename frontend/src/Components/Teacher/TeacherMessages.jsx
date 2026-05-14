@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { API_BASE_URL } from '../../config';
-import { getConversation, getDirectConversation, sendMessage, markMessagesRead, markDirectMessagesRead, getChatLockStatus } from '../../services/messagingService';
+import { getConversation, getDirectConversation, sendMessage, markMessagesRead, markDirectMessagesRead, getChatLockStatus, getUserAdminConversation, markUserAdminMessagesRead, deleteMessage } from '../../services/messagingService';
 
 const TeacherMessages = () => {
   const teacherId = localStorage.getItem('teacherId');
@@ -15,10 +15,13 @@ const TeacherMessages = () => {
   const [teacherStudentId, setTeacherStudentId] = useState(null);
   const [isDirectChat, setIsDirectChat] = useState(false);
   const [chatPartnerName, setChatPartnerName] = useState('');
+  const [isAdminChat, setIsAdminChat] = useState(false);
+  const [adminId, setAdminId] = useState(null);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [hoveredMsgId, setHoveredMsgId] = useState(null);
   const messagesEndRef = useRef(null);
   const pollRef = useRef(null);
   const conversationIdRef = useRef(null);
@@ -46,6 +49,49 @@ const TeacherMessages = () => {
     setLoading(false);
   };
 
+  const ADMIN_SUPPORT_ENTRY = { id: '__admin__', student_name: 'Admin Support', isAdminEntry: true };
+
+  const openAdminChat = async () => {
+    setActiveStudent(ADMIN_SUPPORT_ENTRY);
+    setMessages([]);
+    setChatStatus({ allowed: true, reason: '' });
+    setChatLock(null);
+    setParentLinkId(null);
+    setTeacherStudentId(null);
+    setIsDirectChat(false);
+    setIsAdminChat(true);
+    setChatPartnerName('Admin');
+    conversationIdRef.current = null;
+    if (pollRef.current) clearInterval(pollRef.current);
+    try {
+      const res = await getUserAdminConversation('teacher', teacherId);
+      const data = res.data;
+      setAdminId(data.admin_id);
+      setMessages(data.messages || []);
+      conversationIdRef.current = data.admin_id;
+      if (data.admin_id) {
+        markUserAdminMessagesRead('teacher', teacherId, data.admin_id).catch(() => {});
+      }
+      pollRef.current = setInterval(async () => {
+        try {
+          const r = await getUserAdminConversation('teacher', teacherId);
+          setMessages(prev => {
+            const newMsgs = r.data.messages || [];
+            if (newMsgs.length !== prev.length || (newMsgs.length > 0 && newMsgs[newMsgs.length-1]?.id !== prev[prev.length-1]?.id)) {
+              setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+              if (r.data.admin_id) markUserAdminMessagesRead('teacher', teacherId, r.data.admin_id).catch(() => {});
+              return newMsgs;
+            }
+            return prev;
+          });
+        } catch { /* silent */ }
+      }, 5000);
+    } catch (err) {
+      console.error('Error opening admin chat:', err);
+    }
+    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+  };
+
   const openStudentChat = async (student) => {
     setActiveStudent(student);
     setMessages([]);
@@ -54,6 +100,8 @@ const TeacherMessages = () => {
     setParentLinkId(null);
     setTeacherStudentId(null);
     setIsDirectChat(false);
+    setIsAdminChat(false);
+    setAdminId(null);
     setChatPartnerName('');
     conversationIdRef.current = null;
 
@@ -142,7 +190,7 @@ const TeacherMessages = () => {
   };
 
   const handleSend = async () => {
-    const canSend = isDirectChat ? !!teacherStudentId : !!parentLinkId;
+    const canSend = isAdminChat ? !!adminId : (isDirectChat ? !!teacherStudentId : !!parentLinkId);
     if (!newMessage.trim() || !canSend) return;
     setSending(true);
     try {
@@ -152,7 +200,10 @@ const TeacherMessages = () => {
         content: newMessage.trim(),
       };
 
-      if (isDirectChat) {
+      if (isAdminChat) {
+        payload.recipient_type = 'admin';
+        payload.recipient_id = adminId;
+      } else if (isDirectChat) {
         // Direct teacher → student message
         payload.recipient_type = 'student';
         payload.recipient_id = activeStudent.student?.id || activeStudent.student;
@@ -167,7 +218,10 @@ const TeacherMessages = () => {
       setNewMessage('');
 
       // Refresh conversation
-      if (isDirectChat) {
+      if (isAdminChat) {
+        const res = await getUserAdminConversation('teacher', teacherId);
+        setMessages(res.data.messages || []);
+      } else if (isDirectChat) {
         const res = await getDirectConversation(teacherStudentId);
         setMessages(res.data.messages || []);
       } else {
@@ -185,6 +239,16 @@ const TeacherMessages = () => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
+  const handleDelete = async (msgId) => {
+    if (!window.confirm('Delete this message?')) return;
+    try {
+      await deleteMessage(msgId, 'teacher', teacherId);
+      setMessages(prev => prev.filter(m => m.id !== msgId));
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to delete message');
+    }
+  };
+
   const timeAgo = (dateStr) => {
     const now = new Date(); const then = new Date(dateStr);
     const diff = Math.floor((now - then) / 1000);
@@ -194,7 +258,7 @@ const TeacherMessages = () => {
     return then.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
-  const conversationReady = isDirectChat ? !!teacherStudentId : !!parentLinkId;
+  const conversationReady = isAdminChat ? !!adminId : (isDirectChat ? !!teacherStudentId : !!parentLinkId);
 
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 60px)', overflow: 'hidden' }}>
@@ -205,6 +269,26 @@ const TeacherMessages = () => {
             <i className="bi bi-chat-dots me-2"></i>Text Messages
           </h4>
           <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '12px' }}>Chat with parents & adult students</p>
+        </div>
+
+        {/* Admin Support pinned entry */}
+        <div
+          onClick={openAdminChat}
+          style={{
+            padding: '12px 16px', borderBottom: '2px solid #e2e8f0', cursor: 'pointer',
+            backgroundColor: activeStudent?.id === '__admin__' ? '#eff6ff' : '#f0fdf4',
+            transition: 'background 0.2s',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '36px', height: '36px', backgroundColor: '#4285f4', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '16px', flexShrink: 0 }}>
+              <i className="bi bi-shield-check"></i>
+            </div>
+            <div>
+              <div style={{ fontWeight: '700', color: '#1e293b', fontSize: '13px' }}>Admin Support</div>
+              <div style={{ fontSize: '11px', color: '#4285f4' }}>Contact the platform admin</div>
+            </div>
+          </div>
         </div>
 
         {loading ? (
@@ -252,12 +336,17 @@ const TeacherMessages = () => {
               )}
               <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>
                 {activeStudent.student_name}
-                {isDirectChat && (
+                {isAdminChat && (
+                  <span style={{ fontSize: '11px', color: '#4285f4', marginLeft: '8px', fontWeight: '500' }}>
+                    <i className="bi bi-shield-check me-1"></i>Admin Support
+                  </span>
+                )}
+                {!isAdminChat && isDirectChat && (
                   <span style={{ fontSize: '11px', color: '#6366f1', marginLeft: '8px', fontWeight: '500' }}>
                     <i className="bi bi-person-fill me-1"></i>Direct (18+)
                   </span>
                 )}
-                {!isDirectChat && chatPartnerName && (
+                {!isAdminChat && !isDirectChat && chatPartnerName && (
                   <span style={{ fontSize: '11px', color: '#64748b', marginLeft: '8px', fontWeight: '500' }}>
                     via {chatPartnerName}
                   </span>
@@ -285,9 +374,21 @@ const TeacherMessages = () => {
                 </div>
               ) : (
                 messages.map(msg => {
-                  const isMine = msg.sender_type === 'teacher' && String(msg.sender_teacher) === String(teacherId);
+                  const isMine = isAdminChat
+                    ? (msg.sender_type === 'teacher' && String(msg.sender_teacher) === String(teacherId))
+                    : (msg.sender_type === 'teacher' && String(msg.sender_teacher) === String(teacherId));
                   return (
-                    <div key={msg.id} style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
+                    <div key={msg.id}
+                      onMouseEnter={() => setHoveredMsgId(msg.id)}
+                      onMouseLeave={() => setHoveredMsgId(null)}
+                      style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: '6px' }}
+                    >
+                      {isMine && hoveredMsgId === msg.id && (
+                        <button onClick={() => handleDelete(msg.id)} title="Delete message"
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '13px', padding: '2px', flexShrink: 0, opacity: 0.8 }}>
+                          <i className="bi bi-trash3"></i>
+                        </button>
+                      )}
                       <div style={{
                         maxWidth: '70%', padding: '10px 14px',
                         borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px',

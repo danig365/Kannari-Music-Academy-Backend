@@ -344,6 +344,9 @@ class Student(models.Model):
     interseted_categories=models.TextField()
     profile_img=models.ImageField(upload_to='student_profile_imgs/',null=True)
     date_of_birth=models.DateField(null=True, blank=True)
+    phone_number=models.CharField(max_length=30, null=True, blank=True)
+    address=models.TextField(null=True, blank=True)
+    stripe_customer_id=models.CharField(max_length=255, null=True, blank=True, help_text="Stripe customer ID stored at registration for card-on-file billing")
     parent_account_required=models.BooleanField(default=False)
     parent_linked_at=models.DateTimeField(null=True, blank=True)
 
@@ -697,6 +700,24 @@ class TeacherVerification(models.Model):
     reviewed_at = models.DateTimeField(null=True, blank=True)
     reviewed_by = models.ForeignKey(Admin, null=True, blank=True, on_delete=models.SET_NULL,
                                     related_name='reviewed_teacher_verifications')
+    admin_override_for_minors = models.BooleanField(default=False)
+    override_approved_by = models.ForeignKey(
+        Admin,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='approved_teacher_minor_overrides',
+    )
+    override_approved_at = models.DateTimeField(null=True, blank=True)
+    override_reason = models.TextField(null=True, blank=True)
+    override_revoked_at = models.DateTimeField(null=True, blank=True)
+    override_revoked_by = models.ForeignKey(
+        Admin,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='revoked_teacher_minor_overrides',
+    )
     rejection_reason = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -709,6 +730,17 @@ class TeacherVerification(models.Model):
         return f"{self.teacher.full_name} - {self.overall_status}"
 
     def recalculate_status(self):
+        if self.admin_override_for_minors:
+            self.overall_status = 'approved'
+            teacher_status = 'verified'
+            can_teach_minors = True
+            self.save(update_fields=['overall_status', 'updated_at'])
+            Teacher.objects.filter(id=self.teacher_id).update(
+                verification_status=teacher_status,
+                can_teach_minors=can_teach_minors,
+            )
+            return
+
         # Check background check expiration first
         self._check_background_expiration()
 
@@ -1661,6 +1693,7 @@ class SubscriptionPlan(models.Model):
     priority_support = models.BooleanField(default=False, help_text="Has priority customer support")
     
     features = models.TextField(null=True, blank=True, help_text="Comma-separated features")
+    stripe_price_id = models.CharField(max_length=255, null=True, blank=True, help_text="Stripe Price ID (price_xxx) for recurring billing")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     is_featured = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1754,7 +1787,12 @@ class Subscription(models.Model):
     audio_messages_used_this_month = models.IntegerField(default=0, help_text="Audio messages sent this month")
     last_monthly_reset = models.DateField(null=True, blank=True, help_text="Last date monthly counters were reset")
     auto_renew = models.BooleanField(default=True)
-    
+
+    # Stripe recurring billing
+    stripe_customer_id = models.CharField(max_length=255, null=True, blank=True, help_text="Stripe customer ID")
+    stripe_subscription_id = models.CharField(max_length=255, null=True, blank=True, help_text="Stripe subscription ID for recurring billing")
+    cancel_at_period_end = models.BooleanField(default=False, help_text="Cancels at end of current billing period")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -1769,25 +1807,32 @@ class Subscription(models.Model):
         return f"{student_name} - {plan_name} ({self.status})"
 
     def is_active_and_paid(self):
-        """Check if subscription is currently active AND paid"""
+        """Check if subscription is currently active AND paid.
+        end_date=None means ongoing (no expiry) — access controlled by Stripe webhooks.
+        """
         from django.utils import timezone
         today = timezone.now().date()
-        if not self.start_date or not self.end_date:
+        if not self.start_date:
             return False
-        return (self.status == 'active' and 
-                self.is_paid and
-                self.start_date <= today <= self.end_date)
+        date_ok = (self.end_date is None) or (self.start_date <= today <= self.end_date)
+        return (
+            self.status == 'active' and
+            self.is_paid and
+            date_ok
+        )
     
     def is_active(self):
         """Check if subscription is currently active (legacy compatibility)"""
         return self.is_active_and_paid()
 
     def days_remaining(self):
-        """Calculate remaining days"""
+        """Calculate remaining days. Returns None for ongoing subscriptions."""
         from django.utils import timezone
-        if self.is_active_and_paid():
-            return (self.end_date - timezone.now().date()).days
-        return 0
+        if not self.is_active_and_paid():
+            return 0
+        if self.end_date is None:
+            return None  # ongoing — no fixed end
+        return (self.end_date - timezone.now().date()).days
     
     def reset_daily_limits(self):
         """Reset daily lesson count if needed"""
@@ -2689,15 +2734,18 @@ class SafetyReport(models.Model):
 # ==================== MESSAGING SYSTEM ====================
 
 class Message(models.Model):
-    """Text messaging between Parent <-> Teacher, Teacher <-> Student (18+), and Admin.
+    """Text messaging between Parent <-> Teacher, Teacher <-> Student (18+), Admin <-> any user type,
+    and School <-> Admin.
     Messages are permanently stored and cannot be deleted — only hidden per-user.
     Minors (students under 18) CANNOT send or receive direct messages — parent chats only.
-    Adult students (18+) chat directly with their teacher via teacher_student link."""
+    Adult students (18+) chat directly with their teacher via teacher_student link.
+    Admin can chat directly with any user type (student, teacher, school)."""
     SENDER_TYPE_CHOICES = [
         ('parent', 'Parent'),
         ('teacher', 'Teacher'),
         ('admin', 'Admin'),
         ('student', 'Student'),
+        ('school', 'School'),
     ]
 
     # Sender
@@ -2710,6 +2758,8 @@ class Message(models.Model):
                                       related_name='sent_messages')
     sender_student = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True,
                                         related_name='sent_messages')
+    sender_school = models.ForeignKey(School, on_delete=models.SET_NULL, null=True, blank=True,
+                                       related_name='sent_messages')
 
     # Recipient
     recipient_type = models.CharField(max_length=20, choices=SENDER_TYPE_CHOICES)
@@ -2721,6 +2771,8 @@ class Message(models.Model):
                                          related_name='received_messages')
     recipient_student = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True,
                                            related_name='received_messages')
+    recipient_school = models.ForeignKey(School, on_delete=models.SET_NULL, null=True, blank=True,
+                                          related_name='received_messages')
 
     # Link to the parent-student relationship (context for parent<->teacher chat — minors)
     parent_link = models.ForeignKey(StudentParentLink, on_delete=models.SET_NULL, null=True, blank=True,
@@ -2731,6 +2783,14 @@ class Message(models.Model):
     teacher_student = models.ForeignKey(TeacherStudent, on_delete=models.SET_NULL, null=True, blank=True,
                                          related_name='messages',
                                          help_text="The teacher-student assignment this conversation is about (18+ only)")
+
+    # Stable conversation key for admin <-> user threads (format: "admin:{admin_id}:{user_type}:{user_id}")
+    # Populated automatically on save for any message involving an admin.
+    admin_conversation_key = models.CharField(
+        max_length=100, blank=True, default='',
+        db_index=True,
+        help_text="Stable thread key for admin<->user conversations, e.g. 'admin:1:teacher:3'"
+    )
 
     content = models.TextField()
     is_read = models.BooleanField(default=False)
@@ -2750,11 +2810,36 @@ class Message(models.Model):
             models.Index(fields=['recipient_type', 'created_at']),
             models.Index(fields=['parent_link', 'created_at']),
             models.Index(fields=['teacher_student', 'created_at']),
+            models.Index(fields=['admin_conversation_key', 'created_at']),
         ]
 
+    def save(self, *args, **kwargs):
+        """Auto-populate admin_conversation_key for any message involving admin."""
+        if not self.admin_conversation_key:
+            if self.sender_type == 'admin' and self.sender_admin_id:
+                other_type = self.recipient_type
+                other_id = (
+                    self.recipient_teacher_id or self.recipient_student_id
+                    or self.recipient_school_id or self.recipient_parent_id
+                    or self.recipient_admin_id
+                )
+                if other_id:
+                    self.admin_conversation_key = f"admin:{self.sender_admin_id}:{other_type}:{other_id}"
+            elif self.recipient_type == 'admin' and self.recipient_admin_id:
+                other_type = self.sender_type
+                other_id = (
+                    self.sender_teacher_id or self.sender_student_id
+                    or self.sender_school_id or self.sender_parent_id
+                )
+                if other_id:
+                    self.admin_conversation_key = f"admin:{self.recipient_admin_id}:{other_type}:{other_id}"
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        sender = self.sender_parent or self.sender_teacher or self.sender_admin or self.sender_student or 'Unknown'
-        recipient = self.recipient_parent or self.recipient_teacher or self.recipient_admin or self.recipient_student or 'Unknown'
+        sender = (self.sender_parent or self.sender_teacher or self.sender_admin
+                  or self.sender_student or self.sender_school or 'Unknown')
+        recipient = (self.recipient_parent or self.recipient_teacher or self.recipient_admin
+                     or self.recipient_student or self.recipient_school or 'Unknown')
         return f"{sender} → {recipient} ({self.created_at:%Y-%m-%d %H:%M})"
 
     @property
@@ -2767,6 +2852,8 @@ class Message(models.Model):
             return self.sender_admin.full_name
         elif self.sender_type == 'student' and self.sender_student:
             return self.sender_student.fullname
+        elif self.sender_type == 'school' and self.sender_school:
+            return self.sender_school.name
         return 'Unknown'
 
     @property
@@ -2779,6 +2866,8 @@ class Message(models.Model):
             return self.recipient_admin.full_name
         elif self.recipient_type == 'student' and self.recipient_student:
             return self.recipient_student.fullname
+        elif self.recipient_type == 'school' and self.recipient_school:
+            return self.recipient_school.name
         return 'Unknown'
 
 

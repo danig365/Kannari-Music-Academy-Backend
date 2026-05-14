@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { API_BASE_URL } from '../../config';
-import { getDirectConversation, sendMessage, markDirectMessagesRead, getStudentTeacherConversations } from '../../services/messagingService';
+import { getDirectConversation, sendMessage, markDirectMessagesRead, getStudentTeacherConversations, getUserAdminConversation, markUserAdminMessagesRead, deleteMessage } from '../../services/messagingService';
 import Sidebar from './Sidebar';
 import './EnhancedDashboard.css';
 
@@ -18,6 +18,9 @@ const TextMessages = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [accessError, setAccessError] = useState(null);
+  const [isAdminChat, setIsAdminChat] = useState(false);
+  const [adminId, setAdminId] = useState(null);
+  const [hoveredMsgId, setHoveredMsgId] = useState(null);
   const messagesEndRef = useRef(null);
   const pollRef = useRef(null);
 
@@ -64,7 +67,42 @@ const TextMessages = () => {
     setLoading(false);
   };
 
+  const ADMIN_SUPPORT_CONV = { teacher_student_id: '__admin__', teacher_name: 'Admin Support', isAdminEntry: true };
+
+  const openAdminChat = async () => {
+    setActiveConv(ADMIN_SUPPORT_CONV);
+    setMessages([]);
+    setChatStatus({ allowed: true, reason: '' });
+    setIsAdminChat(true);
+    setAdminId(null);
+    if (pollRef.current) clearInterval(pollRef.current);
+    try {
+      const res = await getUserAdminConversation('student', studentId);
+      const data = res.data;
+      setAdminId(data.admin_id);
+      setMessages(data.messages || []);
+      if (data.admin_id) markUserAdminMessagesRead('student', studentId, data.admin_id).catch(() => {});
+      pollRef.current = setInterval(async () => {
+        try {
+          const r = await getUserAdminConversation('student', studentId);
+          setMessages(prev => {
+            const newMsgs = r.data.messages || [];
+            if (newMsgs.length !== prev.length || (newMsgs.length > 0 && newMsgs[newMsgs.length-1]?.id !== prev[prev.length-1]?.id)) {
+              setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+              if (r.data.admin_id) markUserAdminMessagesRead('student', studentId, r.data.admin_id).catch(() => {});
+              return newMsgs;
+            }
+            return prev;
+          });
+        } catch { /* silent */ }
+      }, 5000);
+    } catch (err) { console.error('Error opening admin chat:', err); }
+    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+  };
+
   const openConversation = async (conv) => {
+    setIsAdminChat(false);
+    setAdminId(null);
     setActiveConv(conv);
     setMessages([]);
     setChatStatus({ allowed: true, reason: '' });
@@ -108,19 +146,33 @@ const TextMessages = () => {
 
   const handleSend = async () => {
     if (!newMessage.trim() || !activeConv) return;
+    if (isAdminChat && !adminId) return;
     setSending(true);
     try {
-      await sendMessage({
-        sender_type: 'student',
-        sender_id: studentId,
-        recipient_type: 'teacher',
-        recipient_id: activeConv.teacher_id,
-        content: newMessage.trim(),
-        teacher_student_id: activeConv.teacher_student_id,
-      });
-      setNewMessage('');
-      const res = await getDirectConversation(activeConv.teacher_student_id);
-      setMessages(res.data.messages || []);
+      if (isAdminChat) {
+        await sendMessage({
+          sender_type: 'student',
+          sender_id: studentId,
+          recipient_type: 'admin',
+          recipient_id: adminId,
+          content: newMessage.trim(),
+        });
+        setNewMessage('');
+        const res = await getUserAdminConversation('student', studentId);
+        setMessages(res.data.messages || []);
+      } else {
+        await sendMessage({
+          sender_type: 'student',
+          sender_id: studentId,
+          recipient_type: 'teacher',
+          recipient_id: activeConv.teacher_id,
+          content: newMessage.trim(),
+          teacher_student_id: activeConv.teacher_student_id,
+        });
+        setNewMessage('');
+        const res = await getDirectConversation(activeConv.teacher_student_id);
+        setMessages(res.data.messages || []);
+      }
       setTimeout(() => scrollToBottom(), 100);
     } catch (err) {
       const errMsg = err.response?.data?.error || 'Failed to send message';
@@ -133,6 +185,16 @@ const TextMessages = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  const handleDelete = async (msgId) => {
+    if (!window.confirm('Delete this message?')) return;
+    try {
+      await deleteMessage(msgId, 'student', studentId);
+      setMessages(prev => prev.filter(m => m.id !== msgId));
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to delete message');
     }
   };
 
@@ -176,6 +238,26 @@ const TextMessages = () => {
                   <i className="bi bi-chat-dots me-2"></i>Text Messages
                 </h3>
                 <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '13px' }}>Chat with your teachers</p>
+              </div>
+
+              {/* Admin Support pinned entry */}
+              <div
+                onClick={openAdminChat}
+                style={{
+                  padding: '16px', borderBottom: '2px solid #e2e8f0', cursor: 'pointer',
+                  backgroundColor: activeConv?.teacher_student_id === '__admin__' ? '#eff6ff' : '#f0fdf4',
+                  transition: 'background 0.2s',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '42px', height: '42px', backgroundColor: '#4285f4', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '18px', flexShrink: 0 }}>
+                    <i className="bi bi-shield-check"></i>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: '700', color: '#1e293b', fontSize: '14px' }}>Admin Support</div>
+                    <div style={{ fontSize: '12px', color: '#4285f4' }}>Contact the platform admin</div>
+                  </div>
+                </div>
               </div>
 
               {loading ? (
@@ -238,7 +320,11 @@ const TextMessages = () => {
                         <i className="bi bi-arrow-left"></i>
                       </button>
                     )}
-                    {activeConv.teacher_profile_img ? (
+                    {isAdminChat ? (
+                      <div style={{ width: '36px', height: '36px', backgroundColor: '#4285f4', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '16px' }}>
+                        <i className="bi bi-shield-check"></i>
+                      </div>
+                    ) : activeConv.teacher_profile_img ? (
                       <img src={activeConv.teacher_profile_img} alt="" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
                     ) : (
                       <div style={{ width: '36px', height: '36px', backgroundColor: '#6366f1', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '600', fontSize: '12px' }}>
@@ -247,8 +333,8 @@ const TextMessages = () => {
                     )}
                     <div>
                       <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>{activeConv.teacher_name}</div>
-                      <div style={{ fontSize: '11px', color: chatStatus.allowed ? '#10b981' : '#ef4444' }}>
-                        {chatStatus.allowed ? 'Chat available' : chatStatus.reason}
+                      <div style={{ fontSize: '11px', color: isAdminChat ? '#4285f4' : (chatStatus.allowed ? '#10b981' : '#ef4444') }}>
+                        {isAdminChat ? 'Platform admin support' : (chatStatus.allowed ? 'Chat available' : chatStatus.reason)}
                       </div>
                     </div>
                   </div>
@@ -261,9 +347,21 @@ const TextMessages = () => {
                       </div>
                     ) : (
                       messages.map(msg => {
-                        const isMine = msg.sender_type === 'student' && String(msg.sender_student) === String(studentId);
+                        const isMine = isAdminChat
+                          ? (msg.sender_type === 'student' && String(msg.sender_student) === String(studentId))
+                          : (msg.sender_type === 'student' && String(msg.sender_student) === String(studentId));
                         return (
-                          <div key={msg.id} style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
+                          <div key={msg.id}
+                            onMouseEnter={() => setHoveredMsgId(msg.id)}
+                            onMouseLeave={() => setHoveredMsgId(null)}
+                            style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: '6px' }}
+                          >
+                            {isMine && hoveredMsgId === msg.id && (
+                              <button onClick={() => handleDelete(msg.id)} title="Delete message"
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '13px', padding: '2px', flexShrink: 0, opacity: 0.8 }}>
+                                <i className="bi bi-trash3"></i>
+                              </button>
+                            )}
                             <div style={{
                               maxWidth: '70%',
                               padding: '10px 14px',
@@ -293,7 +391,7 @@ const TextMessages = () => {
                   </div>
 
                   {/* Input area */}
-                  {!chatStatus.allowed ? (
+                  {!isAdminChat && !chatStatus.allowed ? (
                     <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', backgroundColor: '#fef2f2', textAlign: 'center' }}>
                       <i className="bi bi-lock me-2" style={{ color: '#ef4444' }}></i>
                       <span style={{ color: '#dc2626', fontSize: '14px' }}>{chatStatus.reason}</span>

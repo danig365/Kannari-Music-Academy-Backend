@@ -481,6 +481,68 @@ def _send_teacher_approval_status_email(teacher, is_approved):
         return False
 
 
+def _send_teacher_minor_override_email(teacher, admin, decision, reason=None):
+    try:
+        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
+        login_url = f"{frontend_url}/teacher/login"
+        reason_line = f"\nReason: {reason}\n" if reason else "\n"
+
+        if decision == 'approved':
+            subject = 'You have been approved to teach minor students'
+            message = (
+                f"Hi {teacher.full_name},\n\n"
+                f"An administrator ({admin.full_name}) has approved you to teach minor students on Kannari Music Academy.\n"
+                f"You can now receive and conduct sessions with minor students.\n"
+                f"{reason_line}\n"
+                f"Login here: {login_url}\n\n"
+                f"Thank you."
+            )
+        else:
+            subject = 'Your minor-teaching override was removed'
+            message = (
+                f"Hi {teacher.full_name},\n\n"
+                f"An administrator ({admin.full_name}) has removed your minor-teaching override on Kannari Music Academy.\n"
+                f"You will no longer be cleared to teach minor students unless your verification is re-approved.\n"
+                f"{reason_line}\n"
+                f"Login here: {login_url}\n\n"
+                f"Thank you."
+            )
+
+        from_email = os.getenv('EMAIL_HOST_USER') or getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@kannari.local')
+        send_mail(subject, message, from_email, [teacher.email], fail_silently=True)
+        return True
+    except Exception as e:
+        print(f"[TeacherMinorOverrideEmail] Failed to send override email to {teacher.email}: {e}")
+        return False
+
+
+def _send_admin_minor_override_email(admin, teacher, decision, reason=None):
+    try:
+        subject = 'Minor-teaching override processed'
+        if decision == 'approved':
+            action_text = 'approved to teach minor students'
+        else:
+            action_text = 'revoked from teaching minor students'
+
+        reason_line = f"\nReason: {reason}\n" if reason else "\n"
+        message = (
+            f"Hi {admin.full_name},\n\n"
+            f"You have successfully {action_text} for {teacher.full_name} on Kannari Music Academy.\n"
+            f"Teacher: {teacher.full_name} ({teacher.email})\n"
+            f"Decision: {decision}\n"
+            f"{reason_line}\n"
+            f"This action has been recorded in the audit log.\n\n"
+            f"Thank you."
+        )
+
+        from_email = os.getenv('EMAIL_HOST_USER') or getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@kannari.local')
+        send_mail(subject, message, from_email, [admin.email], fail_silently=True)
+        return True
+    except Exception as e:
+        print(f"[AdminMinorOverrideEmail] Failed to send override email to {admin.email}: {e}")
+        return False
+
+
 def _finalize_password_reset(token, expected_user_type, new_password):
     if not new_password:
         return False, 'New password is required.'
@@ -551,11 +613,19 @@ class TeacherList(generics.ListCreateAPIView):
         response = super().create(request, *args, **kwargs)
         if response.status_code in [200, 201] and response.data.get('id'):
             teacher = models.Teacher.objects.filter(id=response.data['id']).first()
+            verification_email_sent = False
             if teacher:
-                _send_verification_email(request, 'teacher', teacher)
+                verification_email_sent = _send_verification_email(request, 'teacher', teacher)
+            response.data['verification_email_sent'] = verification_email_sent
             response.data['verification_required'] = True
             response.data['approval_required'] = True
-            response.data['message'] = 'Registration successful. Please verify your email. Your account also requires admin approval before login.'
+            if verification_email_sent:
+                response.data['message'] = 'Registration successful. Please verify your email. Your account also requires admin approval before login.'
+            else:
+                response.data['message'] = (
+                    'Registration successful, but we could not send the verification email right now. '
+                    'Please contact support to resend verification.'
+                )
         return response
 
 class TeacherDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -673,8 +743,10 @@ class StudentList(generics.ListCreateAPIView):
         response = super().create(request, *args, **kwargs)
         if response.status_code in [200, 201] and response.data.get('id'):
             student = models.Student.objects.filter(id=response.data['id']).first()
+            verification_email_sent = False
             if student:
-                _send_verification_email(request, 'student', student)
+                verification_email_sent = _send_verification_email(request, 'student', student)
+                response.data['verification_email_sent'] = verification_email_sent
 
                 # Phase 5: If DOB makes user <18, require parent_email and auto-create parent flow
                 if student.is_minor():
@@ -731,7 +803,13 @@ class StudentList(generics.ListCreateAPIView):
 
             response.data['verification_required'] = True
             if not student or not student.is_minor():
-                response.data['message'] = 'Registration successful. Please verify your email to log in.'
+                if verification_email_sent:
+                    response.data['message'] = 'Registration successful. Please verify your email to log in.'
+                else:
+                    response.data['message'] = (
+                        'Registration successful, but we could not send the verification email right now. '
+                        'Please contact support to resend verification.'
+                    )
         return response
 
 class StudentDashboard(generics.RetrieveAPIView):
@@ -798,6 +876,52 @@ def verify_student_email(request):
     if error:
         return HttpResponse(error, status=400)
     return redirect(redirect_url)
+
+
+@csrf_exempt
+def resend_teacher_verification_email(request):
+    if request.method != 'POST':
+        return JsonResponse({'bool': False, 'message': 'POST method required.'}, status=405)
+
+    data = _extract_request_data(request)
+    email = (data.get('email') or '').strip()
+    if not email:
+        return JsonResponse({'bool': False, 'message': 'Email is required.'}, status=400)
+
+    teacher = models.Teacher.objects.filter(email__iexact=email).first()
+    if not teacher:
+        return JsonResponse({'bool': True, 'message': 'If this email exists, a verification link has been sent.'})
+
+    if teacher.is_verified:
+        return JsonResponse({'bool': True, 'message': 'This email is already verified.'})
+
+    sent = _send_verification_email(request, 'teacher', teacher)
+    if sent:
+        return JsonResponse({'bool': True, 'message': 'Verification email sent. Please check your inbox.'})
+    return JsonResponse({'bool': False, 'message': 'Could not send verification email right now. Please try again shortly.'}, status=503)
+
+
+@csrf_exempt
+def resend_student_verification_email(request):
+    if request.method != 'POST':
+        return JsonResponse({'bool': False, 'message': 'POST method required.'}, status=405)
+
+    data = _extract_request_data(request)
+    email = (data.get('email') or '').strip()
+    if not email:
+        return JsonResponse({'bool': False, 'message': 'Email is required.'}, status=400)
+
+    student = models.Student.objects.filter(email__iexact=email).first()
+    if not student:
+        return JsonResponse({'bool': True, 'message': 'If this email exists, a verification link has been sent.'})
+
+    if student.is_verified:
+        return JsonResponse({'bool': True, 'message': 'This email is already verified.'})
+
+    sent = _send_verification_email(request, 'student', student)
+    if sent:
+        return JsonResponse({'bool': True, 'message': 'Verification email sent. Please check your inbox.'})
+    return JsonResponse({'bool': False, 'message': 'Could not send verification email right now. Please try again shortly.'}, status=503)
 
 
 @csrf_exempt
@@ -1495,6 +1619,20 @@ def _serialize_teacher_verification(verification):
         'teacher_verification_status': verification.teacher.verification_status,
         'teacher_is_approved': verification.teacher.is_approved,
         'can_teach_minors': verification.teacher.can_teach_minors,
+        'admin_override_for_minors': verification.admin_override_for_minors,
+        'override_approved_by': {
+            'id': verification.override_approved_by_id,
+            'full_name': verification.override_approved_by.full_name if verification.override_approved_by else None,
+            'email': verification.override_approved_by.email if verification.override_approved_by else None,
+        },
+        'override_approved_at': verification.override_approved_at.isoformat() if verification.override_approved_at else None,
+        'override_reason': verification.override_reason,
+        'override_revoked_at': verification.override_revoked_at.isoformat() if verification.override_revoked_at else None,
+        'override_revoked_by': {
+            'id': verification.override_revoked_by_id,
+            'full_name': verification.override_revoked_by.full_name if verification.override_revoked_by else None,
+            'email': verification.override_revoked_by.email if verification.override_revoked_by else None,
+        },
         'submitted_at': verification.submitted_at,
         'reviewed_at': verification.reviewed_at,
         'rejection_reason': verification.rejection_reason,
@@ -1716,6 +1854,90 @@ def admin_teacher_verification_detail(request, teacher_id):
     log_activity(request, 'view', f'Admin {admin.full_name} viewed teacher verification details',
                  model_name='TeacherVerification', object_id=verification.id, admin=admin)
     return JsonResponse({'bool': True, 'verification': _serialize_teacher_verification(verification)})
+
+
+@csrf_exempt
+def admin_override_teacher_minor_approval(request, teacher_id):
+    if request.method != 'POST':
+        return JsonResponse({'bool': False, 'message': 'POST method required.'}, status=405)
+
+    payload = _extract_request_data(request)
+    admin, error = _validate_admin_requester(request, payload)
+    if error:
+        return error
+
+    teacher = models.Teacher.objects.filter(id=teacher_id).first()
+    if not teacher:
+        return JsonResponse({'bool': False, 'message': 'Teacher not found'}, status=404)
+
+    decision = (payload.get('decision') or '').strip().lower()
+    if decision not in ['approved', 'revoked']:
+        return JsonResponse({'bool': False, 'message': 'decision must be approved or revoked'}, status=400)
+
+    verification = _get_or_create_teacher_verification(teacher)
+    note = (payload.get('reason') or payload.get('notes') or '').strip() or None
+    now = timezone.now()
+
+    if decision == 'approved':
+        verification.admin_override_for_minors = True
+        verification.override_approved_by = admin
+        verification.override_approved_at = now
+        verification.override_reason = note
+        verification.override_revoked_at = None
+        verification.override_revoked_by = None
+        verification.save(update_fields=[
+            'admin_override_for_minors',
+            'override_approved_by',
+            'override_approved_at',
+            'override_reason',
+            'override_revoked_at',
+            'override_revoked_by',
+            'updated_at',
+        ])
+        verification.recalculate_status()
+        message = 'Admin override granted for teaching minors'
+        log_activity(
+            request,
+            'update',
+            f'Admin {admin.full_name} granted minor-teaching override for teacher {teacher.full_name}',
+            model_name='TeacherVerification',
+            object_id=verification.id,
+            admin=admin,
+            teacher=teacher,
+        )
+    else:
+        verification.admin_override_for_minors = False
+        verification.override_revoked_at = now
+        verification.override_revoked_by = admin
+        verification.save(update_fields=[
+            'admin_override_for_minors',
+            'override_revoked_at',
+            'override_revoked_by',
+            'updated_at',
+        ])
+        verification.recalculate_status()
+        message = 'Admin override revoked for teaching minors'
+        log_activity(
+            request,
+            'update',
+            f'Admin {admin.full_name} revoked minor-teaching override for teacher {teacher.full_name}',
+            model_name='TeacherVerification',
+            object_id=verification.id,
+            admin=admin,
+            teacher=teacher,
+        )
+
+    teacher_override_email_sent = _send_teacher_minor_override_email(teacher, admin, decision, note)
+    admin_override_email_sent = _send_admin_minor_override_email(admin, teacher, decision, note)
+
+    teacher.refresh_from_db()
+    return JsonResponse({
+        'bool': True,
+        'message': message,
+        'teacher_email_sent': teacher_override_email_sent,
+        'admin_email_sent': admin_override_email_sent,
+        'verification': _serialize_teacher_verification(verification),
+    })
 
 
 @csrf_exempt
@@ -4376,9 +4598,13 @@ def admin_safety_reports(request):
             'session_id': report.session_id,
             'audio_message_id': report.audio_message_id,
             'reported_by_teacher': report.reported_by_teacher.full_name if report.reported_by_teacher else None,
+            'reported_by_teacher_id': report.reported_by_teacher_id,
             'reported_by_student': report.reported_by_student.fullname if report.reported_by_student else None,
+            'reported_by_student_id': report.reported_by_student_id,
             'reported_teacher': report.reported_teacher.full_name if report.reported_teacher else None,
+            'reported_teacher_id': report.reported_teacher_id,
             'reported_student': report.reported_student.fullname if report.reported_student else None,
+            'reported_student_id': report.reported_student_id,
             'admin_notes': report.admin_notes,
             'reviewed_by': report.reviewed_by.full_name if report.reviewed_by else None,
             'created_at': report.created_at,
@@ -6416,26 +6642,84 @@ def activate_subscription(request, subscription_id):
 
 @csrf_exempt
 def cancel_subscription(request, subscription_id):
-    """Cancel an active subscription"""
+    """
+    Cancel a subscription. Admin-only — students cannot self-cancel.
+    Sets cancel_at_period_end=True in Stripe so the student keeps access
+    until the end of the current paid period; local status stays 'active'
+    until the Stripe webhook confirms the subscription has ended.
+    Requires: requester_admin_id in request body (POST) or query param.
+    """
+    import stripe
+    import os
+    import json
+    stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+
+    # ── Admin-only guard ──────────────────────────────────────────────────────
+    try:
+        body = json.loads(request.body) if request.body else {}
+    except (json.JSONDecodeError, ValueError):
+        body = {}
+
+    requester_admin_id = (
+        body.get('requester_admin_id') or
+        request.GET.get('requester_admin_id')
+    )
+    if not requester_admin_id:
+        return JsonResponse(
+            {'bool': False, 'message': 'Cancellation requires admin authorisation. '
+             'Please contact support to cancel your subscription.'},
+            status=403
+        )
+    admin = models.Admin.objects.filter(id=requester_admin_id).first()
+    if not admin:
+        return JsonResponse(
+            {'bool': False, 'message': 'Unauthorised: admin not found.'},
+            status=403
+        )
+
     try:
         subscription = models.Subscription.objects.get(id=subscription_id)
-        subscription.cancel()
-        
-        # Audit: log cancellation as access event
-        log_access(
-            request=request, access_type='course_unenroll', was_allowed=True,
-            student=subscription.student, subscription=subscription
+
+        # ── Schedule cancellation at period end in Stripe ─────────────────────
+        if subscription.stripe_subscription_id:
+            try:
+                stripe.Subscription.modify(
+                    subscription.stripe_subscription_id,
+                    cancel_at_period_end=True,
+                )
+            except stripe.error.InvalidRequestError:
+                pass  # Already cancelled in Stripe — proceed locally
+
+        # Mark locally as pending cancellation (access continues until period ends)
+        subscription.cancel_at_period_end = True
+        subscription.save(update_fields=['cancel_at_period_end', 'updated_at'])
+
+        # Audit history
+        models.SubscriptionHistory.objects.create(
+            subscription=subscription,
+            action='cancelled',
+            old_status=subscription.status,
+            new_status=subscription.status,  # still 'active' until period ends
+            notes=f'Cancellation scheduled by admin #{admin.id} ({admin.username}). '
+                  f'Access continues until end of current billing period.',
+            changed_by=str(admin.id),
         )
-        log_activity(request, 'update', f'Subscription #{subscription.id} cancelled for {subscription.student.fullname}',
-                     model_name='Subscription', object_id=subscription.id)
-        
+
+        log_activity(
+            request, 'update',
+            f'Subscription #{subscription.id} cancellation scheduled for '
+            f'{subscription.student.fullname} by admin {admin.username}',
+            model_name='Subscription', object_id=subscription.id
+        )
+
         return JsonResponse({
             'bool': True,
-            'message': 'Subscription cancelled successfully',
+            'message': 'Cancellation scheduled. The student keeps access until the end of '
+                       'the current billing period, then access will be revoked automatically.',
             'subscription': {
                 'id': subscription.id,
                 'status': subscription.status,
-                'cancelled_at': subscription.cancelled_at.isoformat()
+                'cancel_at_period_end': subscription.cancel_at_period_end,
             }
         })
     except models.Subscription.DoesNotExist:
@@ -6466,172 +6750,420 @@ class SubscriptionHistoryList(generics.ListAPIView):
 
 
 @csrf_exempt
-def create_payment_intent(request):
-    """Create a Stripe payment intent for subscription"""
+def create_setup_intent(request):
+    """
+    Phase 2 — Card-on-signup.
+    Creates a Stripe SetupIntent so the frontend can securely collect and
+    tokenise a card WITHOUT charging it. The resulting PaymentMethod is
+    saved against the Stripe Customer and stored on the Student record for
+    use when the student later subscribes.
+
+    POST body: { student_id, email, name }
+    Returns:   { clientSecret, customerId }
+    """
     import json
     import stripe
     import os
-    
-    print("\n" + "="*80)
-    print(f"🔍 PAYMENT INTENT REQUEST RECEIVED")
-    print(f"Method: {request.method}")
-    print(f"Content-Type: {request.headers.get('Content-Type')}")
-    print(f"Request body length: {len(request.body)} bytes")
-    print("="*80)
-    
-    # Set Stripe API key from environment
-    stripe_secret_key = os.environ.get('STRIPE_SECRET_KEY')
-    if not stripe_secret_key:
-        print("❌ STRIPE_SECRET_KEY not configured")
+    stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+    if not stripe.api_key:
+        return JsonResponse({'error': 'Stripe API key not configured.'}, status=500)
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Use POST.'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+
+    student_id = data.get('student_id')
+    email = (data.get('email') or '').strip()
+    name = (data.get('name') or '').strip()
+
+    if not all([student_id, email, name]):
+        return JsonResponse({'error': 'Missing required fields: student_id, email, name'}, status=400)
+
+    try:
+        student = models.Student.objects.get(id=student_id)
+    except models.Student.DoesNotExist:
+        return JsonResponse({'error': 'Student not found.'}, status=404)
+
+    try:
+        # ── Retrieve or create Stripe Customer ────────────────────────────────
+        if student.stripe_customer_id:
+            stripe_customer_id = student.stripe_customer_id
+            stripe.Customer.modify(stripe_customer_id, email=email, name=name)
+        else:
+            # Also check any existing subscription for a legacy customer id
+            existing_sub = models.Subscription.objects.filter(
+                student=student,
+                stripe_customer_id__isnull=False
+            ).exclude(stripe_customer_id='').first()
+
+            if existing_sub:
+                stripe_customer_id = existing_sub.stripe_customer_id
+                stripe.Customer.modify(stripe_customer_id, email=email, name=name)
+            else:
+                customer = stripe.Customer.create(
+                    email=email,
+                    name=name,
+                    metadata={'student_id': str(student_id)},
+                )
+                stripe_customer_id = customer.id
+
+            # Persist on the student so future calls reuse it
+            student.stripe_customer_id = stripe_customer_id
+            student.save(update_fields=['stripe_customer_id'])
+
+        # ── Create SetupIntent (no charge) ────────────────────────────────────
+        setup_intent = stripe.SetupIntent.create(
+            customer=stripe_customer_id,
+            usage='off_session',   # card will be charged server-side later
+            metadata={'student_id': str(student_id)},
+        )
+
         return JsonResponse({
-            'error': 'Stripe API key not configured. Please set STRIPE_SECRET_KEY environment variable.'
-        }, status=500)
-    
-    print(f"✅ STRIPE_SECRET_KEY found")
-    print(f"   Key length: {len(stripe_secret_key)} chars")
-    print(f"   First 20 chars: {stripe_secret_key[:20]}")
-    print(f"   Last 20 chars: {stripe_secret_key[-20:]}")
-    print(f"   Full key: {stripe_secret_key}")
-    stripe.api_key = stripe_secret_key
-    
-    if request.method == 'POST':
+            'clientSecret': setup_intent.client_secret,
+            'customerId': stripe_customer_id,
+            'status': 'success',
+        })
+
+    except stripe.error.StripeError as e:
+        return JsonResponse({'error': f'Stripe error: {str(e)}'}, status=400)
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)
+
+
+@csrf_exempt
+def save_payment_method(request):
+    """
+    Phase 2 — Card-on-signup (step 2).
+    After the frontend confirms the SetupIntent, the resulting payment_method_id
+    is sent here to be attached to the Stripe Customer and set as the default
+    payment method so future subscription charges use it automatically.
+
+    POST body: { student_id, payment_method_id }
+    Returns:   { saved: true, customerId }
+    """
+    import json
+    import stripe
+    import os
+    stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+    if not stripe.api_key:
+        return JsonResponse({'error': 'Stripe API key not configured.'}, status=500)
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Use POST.'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+
+    student_id = data.get('student_id')
+    payment_method_id = data.get('payment_method_id')
+
+    if not all([student_id, payment_method_id]):
+        return JsonResponse({'error': 'Missing required fields: student_id, payment_method_id'}, status=400)
+
+    try:
+        student = models.Student.objects.get(id=student_id)
+    except models.Student.DoesNotExist:
+        return JsonResponse({'error': 'Student not found.'}, status=404)
+
+    if not student.stripe_customer_id:
+        return JsonResponse(
+            {'error': 'No Stripe customer on file for this student. Call setup-intent first.'},
+            status=400
+        )
+
+    try:
+        stripe_customer_id = student.stripe_customer_id
+
+        # Attach the PaymentMethod to the Customer
+        stripe.PaymentMethod.attach(payment_method_id, customer=stripe_customer_id)
+
+        # Set it as the default for future off-session charges
+        stripe.Customer.modify(
+            stripe_customer_id,
+            invoice_settings={'default_payment_method': payment_method_id},
+        )
+
+        return JsonResponse({
+            'saved': True,
+            'customerId': stripe_customer_id,
+        })
+
+    except stripe.error.StripeError as e:
+        return JsonResponse({'error': f'Stripe error: {str(e)}'}, status=400)
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)
+
+
+@csrf_exempt
+def create_payment_intent(request):
+    """
+    Create a Stripe SetupIntent + Subscription for recurring billing.
+    Flow:
+      1. Create/retrieve a Stripe Customer for this student.
+      2. If the plan has a stripe_price_id, create a Stripe Subscription
+         (which automatically charges and recurs).
+      3. Return the subscription's latest invoice payment_intent clientSecret
+         so the frontend can confirm the card.
+    """
+    import json
+    import stripe
+    import os
+    from datetime import date, timedelta
+
+    stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+    if not stripe.api_key:
+        return JsonResponse({'error': 'Stripe API key not configured.'}, status=500)
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Use POST.'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        plan_id = data.get('plan_id')
+        student_id = data.get('student_id')
+        email = data.get('email', '').strip()
+        name = data.get('name', '').strip()
+
+        if not all([plan_id, student_id, email, name]):
+            return JsonResponse({'error': 'Missing required fields: plan_id, student_id, email, name'}, status=400)
+
         try:
-            print("\n📥 Attempting to parse JSON from request body...")
-            print(f"Raw body: {request.body[:200]}...")  # Print first 200 chars
-            
-            data = json.loads(request.body)
-            print(f"\n✅ JSON parsed successfully!")
-            print(f"📊 Full data: {data}")
-            
-            amount = data.get('amount')
-            plan_id = data.get('plan_id')
-            student_id = data.get('student_id')
-            email = data.get('email')
-            name = data.get('name')
-            
-            # Print each field
-            print(f"\n📋 Received fields:")
-            print(f"   amount: {amount} (type: {type(amount).__name__})")
-            print(f"   plan_id: {plan_id} (type: {type(plan_id).__name__})")
-            print(f"   student_id: {student_id} (type: {type(student_id).__name__})")
-            print(f"   email: {email}")
-            print(f"   name: {name}")
-            
-            # Validate required fields
-            if not all([amount, plan_id, student_id, email, name]):
-                missing_fields = []
-                if not amount: missing_fields.append('amount')
-                if not plan_id: missing_fields.append('plan_id')
-                if not student_id: missing_fields.append('student_id')
-                if not email: missing_fields.append('email')
-                if not name: missing_fields.append('name')
-                
-                error_msg = f'Missing required fields: {", ".join(missing_fields)}'
-                print(f"\n❌ {error_msg}")
-                print(f"Received: {data}")
-                return JsonResponse({
-                    'error': error_msg,
-                    'received_fields': {
-                        'amount': amount,
-                        'plan_id': plan_id,
-                        'student_id': student_id,
-                        'email': email,
-                        'name': name
-                    }
-                }, status=400)
-            
-            if amount <= 0:
-                print(f"\n❌ Invalid amount: {amount}")
-                return JsonResponse({'error': 'Invalid amount'}, status=400)
-            
-            print(f"\n✅ All validations passed!")
-            
-            # Verify the plan exists
-            try:
-                plan = models.SubscriptionPlan.objects.get(id=plan_id)
-                print(f"✅ Plan found: {plan.name} (id: {plan_id})")
-            except models.SubscriptionPlan.DoesNotExist:
-                print(f"❌ Plan not found with id: {plan_id}")
-                return JsonResponse({'error': 'Plan not found'}, status=404)
-            
-            # Verify the student exists
-            try:
-                student = models.Student.objects.get(id=student_id)
-                print(f"✅ Student found: {student.fullname} (id: {student_id})")
-            except models.Student.DoesNotExist:
-                print(f"❌ Student not found with id: {student_id}")
-                return JsonResponse({'error': 'Student not found'}, status=404)
-            
-            print(f"\n🔐 Creating Stripe Payment Intent...")
-            print(f"   Amount: {int(amount)} cents (${amount/100})")
-            print(f"   Currency: USD")
-            print(f"   Description: Subscription to {plan.name} plan")
-            
-            # Create Stripe payment intent
-            intent = stripe.PaymentIntent.create(
-                amount=int(amount),
-                currency='usd',
-                description=f'Subscription to {plan.name} plan',
-                metadata={
-                    'plan_id': str(plan_id),
-                    'plan_name': plan.name,
+            plan = models.SubscriptionPlan.objects.get(id=plan_id)
+        except models.SubscriptionPlan.DoesNotExist:
+            return JsonResponse({'error': 'Plan not found'}, status=404)
+
+        try:
+            student = models.Student.objects.get(id=student_id)
+        except models.Student.DoesNotExist:
+            return JsonResponse({'error': 'Student not found'}, status=404)
+
+        # ── 1. Retrieve or create Stripe Customer ──────────────────────────────
+        # Prefer the customer id stored directly on the student (set at signup)
+        if student.stripe_customer_id:
+            stripe_customer_id = student.stripe_customer_id
+            stripe.Customer.modify(stripe_customer_id, email=email, name=name)
+        else:
+            # Fall back to scanning existing subscriptions (legacy path)
+            existing_sub = models.Subscription.objects.filter(
+                student=student, stripe_customer_id__isnull=False
+            ).exclude(stripe_customer_id='').first()
+
+            if existing_sub and existing_sub.stripe_customer_id:
+                stripe_customer_id = existing_sub.stripe_customer_id
+                stripe.Customer.modify(stripe_customer_id, email=email, name=name)
+            else:
+                customer = stripe.Customer.create(email=email, name=name, metadata={
                     'student_id': str(student_id),
-                    'student_email': email,
-                    'student_name': name
-                },
-                receipt_email=email
+                })
+                stripe_customer_id = customer.id
+
+            # Persist on student for future reuse
+            student.stripe_customer_id = stripe_customer_id
+            student.save(update_fields=['stripe_customer_id'])
+
+        # ── 2. Ensure a Stripe Price exists for this plan ──────────────────────
+        if not plan.stripe_price_id:
+            # Auto-create a Price in Stripe for this plan
+            interval_map = {
+                'monthly': ('month', 1),
+                'quarterly': ('month', 3),
+                'semi_annual': ('month', 6),
+                'annual': ('year', 1),
+            }
+            interval, interval_count = interval_map.get(plan.duration, ('month', 1))
+            amount_cents = int(float(plan.get_final_price()) * 100)
+
+            price = stripe.Price.create(
+                unit_amount=amount_cents,
+                currency='usd',
+                recurring={'interval': interval, 'interval_count': interval_count},
+                product_data={'name': plan.name},
             )
-            
-            print(f"✅ Payment intent created successfully!")
-            print(f"   Intent ID: {intent.id}")
-            print(f"   Client Secret: {intent.client_secret[:30]}...")
-            print("="*80 + "\n")
-            
-            return JsonResponse({
-                'clientSecret': intent.client_secret,
-                'paymentIntentId': intent.id,
-                'status': 'success'
-            })
-        except stripe.error.CardError as e:
-            print(f"\n❌ Stripe Card Error: {str(e.user_message)}")
-            return JsonResponse({'error': f'Card error: {str(e.user_message)}'}, status=400)
-        except stripe.error.RateLimitError:
-            print(f"\n❌ Stripe Rate Limit Error")
-            return JsonResponse({'error': 'Rate limit exceeded. Please try again later.'}, status=400)
-        except stripe.error.InvalidRequestError as e:
-            print(f"\n❌ Stripe Invalid Request: {str(e)}")
-            print(f"Details: {e.http_body}")
-            return JsonResponse({'error': f'Invalid request: {str(e)}'}, status=400)
-        except stripe.error.AuthenticationError as e:
-            print(f"\n❌ Stripe Authentication Error!")
-            print(f"Error message: {str(e)}")
-            print(f"HTTP status: {e.http_status}")
-            print(f"HTTP body: {e.http_body}")
-            print(f"This usually means your Stripe API key is invalid or expired.")
-            return JsonResponse({
-                'error': 'Stripe authentication failed - Invalid API key',
-                'details': str(e)
-            }, status=400)
-        except stripe.error.APIConnectionError as e:
-            print(f"\n❌ Stripe API Connection Error")
-            print(f"Error: {str(e)}")
-            return JsonResponse({'error': 'Network connection error. Please try again.'}, status=400)
-        except stripe.error.StripeError as e:
-            print(f"\n❌ Stripe Error: {str(e)}")
-            print(f"Type: {type(e).__name__}")
-            return JsonResponse({'error': f'Stripe error: {str(e)}'}, status=400)
-        except json.JSONDecodeError as e:
-            print(f"\n❌ JSON Decode Error: {str(e)}")
-            print(f"Request body was: {request.body}")
-            return JsonResponse({'error': 'Invalid JSON in request body'}, status=400)
-        except Exception as e:
-            import traceback
-            print(f"\n❌ Unexpected Error: {str(e)}")
-            print(traceback.format_exc())
-            return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)
-    
-    print(f"\n❌ Invalid request method: {request.method}")
-    return JsonResponse({'error': 'Invalid request method. Use POST.'}, status=405)
+            plan.stripe_price_id = price.id
+            plan.save(update_fields=['stripe_price_id'])
+
+        # ── 3. Calculate first-of-next-month billing anchor ───────────────────
+        import calendar
+        today = date.today()
+        # First day of next month (UTC midnight)
+        if today.month == 12:
+            first_next_month = date(today.year + 1, 1, 1)
+        else:
+            first_next_month = date(today.month // 12 and today.year, today.month + 1, 1)
+            first_next_month = date(today.year, today.month + 1, 1)
+        import datetime as _dt
+        billing_anchor_ts = int(_dt.datetime.combine(first_next_month, _dt.time.min).timestamp())
+
+        # ── 4. Create the Stripe Subscription ─────────────────────────────────
+        # trial_end = first of next month → rest of current month is free
+        # billing_cycle_anchor = same date → all future invoices on the 1st
+        stripe_sub = stripe.Subscription.create(
+            customer=stripe_customer_id,
+            items=[{'price': plan.stripe_price_id}],
+            payment_behavior='default_incomplete',
+            payment_settings={'save_default_payment_method': 'on_subscription'},
+            billing_cycle_anchor=billing_anchor_ts,
+            trial_end=billing_anchor_ts,
+            expand=['latest_invoice.payment_intent'],
+            metadata={
+                'plan_id': str(plan_id),
+                'student_id': str(student_id),
+            },
+        )
+
+        payment_intent = stripe_sub['latest_invoice']['payment_intent']
+        # With trial_end, the initial $0 invoice has no PaymentIntent — nothing to confirm upfront.
+        client_secret = payment_intent['client_secret'] if payment_intent else None
+        stripe_sub_id = stripe_sub['id']
+        is_trialing = (stripe_sub.get('status') == 'trialing')
+
+        # ── 5. Pre-create a pending local Subscription record ──────────────────
+        # end_date=None → ongoing subscription (no expiry); access controlled by Stripe webhooks
+
+        local_sub = models.Subscription.objects.create(
+            student=student,
+            plan=plan,
+            status='pending',
+            is_paid=False,
+            price_paid=plan.get_final_price(),
+            start_date=today,
+            end_date=None,
+            stripe_customer_id=stripe_customer_id,
+            stripe_subscription_id=stripe_sub_id,
+            auto_renew=True,
+        )
+
+        return JsonResponse({
+            'clientSecret': client_secret,           # None when in trial (no immediate charge)
+            'isTrialing': is_trialing,
+            'stripeSubscriptionId': stripe_sub_id,
+            'localSubscriptionId': local_sub.id,
+            'status': 'success',
+        })
+
+    except stripe.error.CardError as e:
+        return JsonResponse({'error': str(e.user_message)}, status=400)
+    except stripe.error.StripeError as e:
+        return JsonResponse({'error': f'Stripe error: {str(e)}'}, status=400)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)
+
+
+@csrf_exempt
+def stripe_webhook(request):
+    """
+    Handle Stripe webhook events to keep local subscription state in sync.
+    Handles:
+      - invoice.payment_succeeded  → activate/renew subscription
+      - invoice.payment_failed     → mark as expired
+      - customer.subscription.deleted → cancel immediately
+    """
+    import stripe
+    import os
+    from django.utils import timezone
+
+    stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+    webhook_secret = os.environ.get('STRIPE_WEBHOOK_SECRET')
+
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+    except stripe.error.SignatureVerificationError:
+        return JsonResponse({'error': 'Invalid signature'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+    event_type = event['type']
+    data_obj = event['data']['object']
+
+    # ── invoice.payment_succeeded ─────────────────────────────────────────────
+    if event_type == 'invoice.payment_succeeded':
+        stripe_sub_id = data_obj.get('subscription')
+        if not stripe_sub_id:
+            return JsonResponse({'received': True})
+
+        try:
+            sub = models.Subscription.objects.get(stripe_subscription_id=stripe_sub_id)
+        except models.Subscription.DoesNotExist:
+            return JsonResponse({'received': True})
+
+        from datetime import date, timedelta
+        duration_days = {'monthly': 31, 'quarterly': 92, 'semi_annual': 183, 'annual': 365}
+        days = duration_days.get(sub.plan.duration if sub.plan else 'monthly', 31)
+
+        today = date.today()
+        sub.status = 'active'
+        sub.is_paid = True
+        sub.payment_date = timezone.now()
+        sub.start_date = today
+        sub.end_date = today + timedelta(days=days)
+        sub.activated_at = sub.activated_at or timezone.now()
+        sub.cancel_at_period_end = False
+        sub.save()
+
+        models.SubscriptionHistory.objects.create(
+            subscription=sub,
+            action='renewed' if sub.status == 'active' else 'activated',
+            new_status='active',
+            new_plan=sub.plan,
+            changed_by='stripe_webhook',
+            notes=f'Payment succeeded via Stripe invoice {data_obj.get("id")}'
+        )
+
+    # ── invoice.payment_failed ────────────────────────────────────────────────
+    elif event_type == 'invoice.payment_failed':
+        stripe_sub_id = data_obj.get('subscription')
+        if stripe_sub_id:
+            try:
+                sub = models.Subscription.objects.get(stripe_subscription_id=stripe_sub_id)
+                sub.status = 'expired'
+                sub.is_paid = False
+                sub.save()
+                models.SubscriptionHistory.objects.create(
+                    subscription=sub,
+                    action='cancelled',
+                    new_status='expired',
+                    changed_by='stripe_webhook',
+                    notes='Recurring payment failed'
+                )
+            except models.Subscription.DoesNotExist:
+                pass
+
+    # ── customer.subscription.deleted ────────────────────────────────────────
+    elif event_type == 'customer.subscription.deleted':
+        stripe_sub_id = data_obj.get('id')
+        if stripe_sub_id:
+            try:
+                sub = models.Subscription.objects.get(stripe_subscription_id=stripe_sub_id)
+                if sub.status not in ('cancelled', 'expired'):
+                    sub.cancel()
+                    models.SubscriptionHistory.objects.create(
+                        subscription=sub,
+                        action='cancelled',
+                        new_status='cancelled',
+                        changed_by='stripe_webhook',
+                        notes='Subscription deleted in Stripe'
+                    )
+            except models.Subscription.DoesNotExist:
+                pass
+
+    return JsonResponse({'received': True})
 
 
 @csrf_exempt
@@ -8741,6 +9273,8 @@ def send_message(request):
         msg.sender_admin_id = data.get('sender_id')
     elif sender_type == 'student':
         msg.sender_student_id = data.get('sender_id')
+    elif sender_type == 'school':
+        msg.sender_school_id = data.get('sender_id')
 
     # Set recipient
     recipient_type = data.get('recipient_type')
@@ -8752,6 +9286,8 @@ def send_message(request):
         msg.recipient_admin_id = data.get('recipient_id')
     elif recipient_type == 'student':
         msg.recipient_student_id = data.get('recipient_id')
+    elif recipient_type == 'school':
+        msg.recipient_school_id = data.get('recipient_id')
 
     msg.save()
 
@@ -8807,6 +9343,178 @@ def mark_messages_read(request, parent_link_id):
 
 
 @csrf_exempt
+def delete_message(request, message_id):
+    """DELETE — Remove a message.
+    - Regular users may only delete their own messages.
+    - Admins (deleter_type='admin') may delete any message for moderation."""
+    if request.method != 'DELETE':
+        return JsonResponse({'error': 'DELETE required'}, status=405)
+
+    try:
+        msg = models.Message.objects.get(id=message_id)
+    except models.Message.DoesNotExist:
+        return JsonResponse({'error': 'Message not found'}, status=404)
+
+    try:
+        data = json.loads(request.body) if request.body else {}
+    except json.JSONDecodeError:
+        data = {}
+
+    deleter_type = data.get('deleter_type') or data.get('sender_type')
+    deleter_id   = str(data.get('deleter_id') or data.get('sender_id', ''))
+
+    # Admin override — validate admin exists, then allow deletion of any message
+    if deleter_type == 'admin' and deleter_id:
+        if not models.Admin.objects.filter(id=deleter_id).exists():
+            return JsonResponse({'error': 'Admin not found'}, status=403)
+        msg.delete()
+        return JsonResponse({'deleted': True, 'message_id': message_id})
+
+    # Regular sender ownership check
+    if deleter_type and deleter_id:
+        owner_map = {
+            'teacher': str(msg.sender_teacher_id),
+            'student': str(msg.sender_student_id),
+            'school':  str(msg.sender_school_id),
+            'parent':  str(msg.sender_parent_id),
+        }
+        expected = owner_map.get(deleter_type, '')
+        if msg.sender_type != deleter_type or expected != deleter_id:
+            return JsonResponse({'error': 'You can only delete your own messages'}, status=403)
+
+    msg.delete()
+    return JsonResponse({'deleted': True, 'message_id': message_id})
+
+
+@csrf_exempt
+def admin_delete_conversation(request, admin_id, user_type, user_id):
+    """DELETE — Admin deletes an entire admin<->user conversation thread (all messages)."""
+    if request.method != 'DELETE':
+        return JsonResponse({'error': 'DELETE required'}, status=405)
+    if not models.Admin.objects.filter(id=admin_id).exists():
+        return JsonResponse({'error': 'Admin not found'}, status=404)
+
+    conv_key = f"admin:{admin_id}:{user_type}:{user_id}"
+    deleted_count, _ = models.Message.objects.filter(admin_conversation_key=conv_key).delete()
+    return JsonResponse({'deleted': True, 'messages_deleted': deleted_count})
+
+
+def admin_oversight_list(request, admin_id):
+    """GET — List all user-to-user conversation threads visible to admin:
+    Teacher↔Student (by TeacherStudent assignment) and Parent↔Student (by StudentParentLink).
+    Returns metadata: participants, last message, unread count."""
+    if not models.Admin.objects.filter(id=admin_id).exists():
+        return JsonResponse({'error': 'Admin not found'}, status=404)
+
+    conversations = []
+
+    # ── Teacher ↔ Student threads ──────────────────────────────────────────
+    ts_ids = (
+        models.Message.objects
+        .filter(teacher_student__isnull=False)
+        .order_by('teacher_student_id')          # clear model-level ordering before distinct()
+        .values_list('teacher_student_id', flat=True)
+        .distinct()
+    )
+    for ts_id in ts_ids:
+        ts = models.TeacherStudent.objects.select_related('teacher', 'student').filter(id=ts_id).first()
+        if not ts:
+            continue
+        last_msg = (
+            models.Message.objects
+            .filter(teacher_student_id=ts_id)
+            .order_by('-created_at')
+            .first()
+        )
+        msg_count = models.Message.objects.filter(teacher_student_id=ts_id).count()
+        conversations.append({
+            'thread_type':    'teacher_student',
+            'thread_id':      ts_id,
+            'participant_a':  {'type': 'teacher', 'id': ts.teacher.id, 'name': ts.teacher.full_name,
+                               'profile_img': ts.teacher.profile_img.url if ts.teacher.profile_img else None},
+            'participant_b':  {'type': 'student', 'id': ts.student.id, 'name': ts.student.fullname,
+                               'profile_img': None},
+            'last_message':   last_msg.content[:80] if last_msg else '',
+            'last_message_at': last_msg.created_at.isoformat() if last_msg else '',
+            'last_sender_type': last_msg.sender_type if last_msg else '',
+            'message_count':  msg_count,
+        })
+
+    # ── Parent ↔ Teacher threads (via StudentParentLink) ───────────────────
+    pl_ids = (
+        models.Message.objects
+        .filter(parent_link__isnull=False)
+        .order_by('parent_link_id')              # clear model-level ordering before distinct()
+        .values_list('parent_link_id', flat=True)
+        .distinct()
+    )
+    for pl_id in pl_ids:
+        pl = models.StudentParentLink.objects.select_related('student', 'parent').filter(id=pl_id).first()
+        if not pl:
+            continue
+        last_msg = (
+            models.Message.objects
+            .filter(parent_link_id=pl_id)
+            .order_by('-created_at')
+            .first()
+        )
+        msg_count = models.Message.objects.filter(parent_link_id=pl_id).count()
+        conversations.append({
+            'thread_type':    'parent_student',
+            'thread_id':      pl_id,
+            'participant_a':  {'type': 'parent',  'id': pl.parent.id,  'name': pl.parent.fullname,  'profile_img': None},
+            'participant_b':  {'type': 'student', 'id': pl.student.id, 'name': pl.student.fullname, 'profile_img': None},
+            'last_message':   last_msg.content[:80] if last_msg else '',
+            'last_message_at': last_msg.created_at.isoformat() if last_msg else '',
+            'last_sender_type': last_msg.sender_type if last_msg else '',
+            'message_count':  msg_count,
+        })
+
+    # Sort by most recent first
+    conversations.sort(key=lambda x: x['last_message_at'], reverse=True)
+    return JsonResponse({'conversations': conversations})
+
+
+def admin_oversight_ts_messages(request, admin_id, ts_id):
+    """GET — Fetch all messages in a Teacher↔Student thread for admin oversight."""
+    if not models.Admin.objects.filter(id=admin_id).exists():
+        return JsonResponse({'error': 'Admin not found'}, status=404)
+    ts = models.TeacherStudent.objects.select_related('teacher', 'student').filter(id=ts_id).first()
+    if not ts:
+        return JsonResponse({'error': 'TeacherStudent not found'}, status=404)
+
+    msgs = models.Message.objects.filter(teacher_student_id=ts_id).order_by('created_at')
+    data = MessageSerializer(msgs, many=True).data
+    return JsonResponse({
+        'messages': list(data),
+        'thread_type': 'teacher_student',
+        'thread_id': ts_id,
+        'participant_a': {'type': 'teacher', 'id': ts.teacher.id, 'name': ts.teacher.full_name,
+                          'profile_img': ts.teacher.profile_img.url if ts.teacher.profile_img else None},
+        'participant_b': {'type': 'student', 'id': ts.student.id, 'name': ts.student.fullname, 'profile_img': None},
+    })
+
+
+def admin_oversight_pl_messages(request, admin_id, pl_id):
+    """GET — Fetch all messages in a Parent↔Student thread for admin oversight."""
+    if not models.Admin.objects.filter(id=admin_id).exists():
+        return JsonResponse({'error': 'Admin not found'}, status=404)
+    pl = models.StudentParentLink.objects.select_related('student', 'parent').filter(id=pl_id).first()
+    if not pl:
+        return JsonResponse({'error': 'StudentParentLink not found'}, status=404)
+
+    msgs = models.Message.objects.filter(parent_link_id=pl_id).order_by('created_at')
+    data = MessageSerializer(msgs, many=True).data
+    return JsonResponse({
+        'messages': list(data),
+        'thread_type': 'parent_student',
+        'thread_id': pl_id,
+        'participant_a': {'type': 'parent',  'id': pl.parent.id,  'name': pl.parent.fullname,  'profile_img': None},
+        'participant_b': {'type': 'student', 'id': pl.student.id, 'name': pl.student.fullname, 'profile_img': None},
+    })
+
+
+@csrf_exempt
 def unread_message_count(request):
     """Get unread message count for a user. Query params: user_type, user_id"""
     user_type = request.GET.get('user_type')
@@ -8824,6 +9532,8 @@ def unread_message_count(request):
         qs = qs.filter(recipient_admin_id=user_id)
     elif user_type == 'student':
         qs = qs.filter(recipient_student_id=user_id)
+    elif user_type == 'school':
+        qs = qs.filter(recipient_school_id=user_id)
     else:
         return JsonResponse({'error': 'Invalid user_type'}, status=400)
 
@@ -8886,6 +9596,320 @@ def student_teacher_conversations(request, student_id):
         })
 
     return JsonResponse({'conversations': conversations})
+
+
+# ==================== ADMIN CHAT VIEWS ====================
+
+def admin_user_search(request):
+    """GET /admin/users/search/?q=query&user_type=all|teacher|student|school
+    Returns lightweight user objects for the admin compose modal."""
+    q = request.GET.get('q', '').strip()
+    user_type = request.GET.get('user_type', 'all')
+    results = []
+
+    if user_type in ('all', 'teacher'):
+        qs = models.Teacher.objects.all()
+        if q:
+            qs = qs.filter(Q(full_name__icontains=q) | Q(email__icontains=q))
+        for t in qs[:20]:
+            results.append({
+                'id': t.id,
+                'name': t.full_name,
+                'email': t.email,
+                'type': 'teacher',
+                'profile_img': request.build_absolute_uri(t.profile_img.url) if t.profile_img else None,
+            })
+
+    if user_type in ('all', 'student'):
+        qs = models.Student.objects.all()
+        if q:
+            qs = qs.filter(Q(fullname__icontains=q) | Q(email__icontains=q))
+        for s in qs[:20]:
+            results.append({
+                'id': s.id,
+                'name': s.fullname,
+                'email': s.email,
+                'type': 'student',
+                'profile_img': request.build_absolute_uri(s.profile_img.url) if s.profile_img else None,
+            })
+
+    if user_type in ('all', 'school'):
+        qs = models.School.objects.all()
+        if q:
+            qs = qs.filter(Q(name__icontains=q) | Q(email__icontains=q))
+        for sc in qs[:20]:
+            results.append({
+                'id': sc.id,
+                'name': sc.name,
+                'email': sc.email,
+                'type': 'school',
+                'profile_img': request.build_absolute_uri(sc.logo.url) if sc.logo else None,
+            })
+
+    results.sort(key=lambda x: x['name'].lower())
+    return JsonResponse({'users': results[:30]})
+
+
+def admin_conversation_inbox(request, admin_id):
+    """GET — Admin inbox: list every unique user who has exchanged at least one message
+    with this admin, ordered by most-recent message, with unread counts.
+    Supports ?user_type=student|teacher|school filter and ?search= name filter."""
+    admin_obj = models.Admin.objects.filter(id=admin_id).first()
+    if not admin_obj:
+        return JsonResponse({'error': 'Admin not found'}, status=404)
+
+    filter_type = request.GET.get('user_type', '')
+    search_q = request.GET.get('search', '').strip().lower()
+
+    # All messages involving this admin, ordered newest first
+    msgs = models.Message.objects.filter(
+        Q(sender_admin_id=admin_id) | Q(recipient_admin_id=admin_id)
+    ).order_by('-created_at')
+
+    # Build one entry per unique conversation key
+    seen_keys = set()
+    conversations = []
+
+    for msg in msgs:
+        key = msg.admin_conversation_key
+        if not key or key in seen_keys:
+            continue
+        seen_keys.add(key)
+
+        # Parse key: "admin:{admin_id}:{user_type}:{user_id}"
+        parts = key.split(':')
+        if len(parts) != 4:
+            continue
+        user_type = parts[2]
+        user_id = parts[3]
+
+        if filter_type and user_type != filter_type:
+            continue
+
+        # Resolve display name and profile image
+        display_name = None
+        profile_img = None
+        if user_type == 'teacher':
+            obj = models.Teacher.objects.filter(id=user_id).first()
+            if obj:
+                display_name = obj.full_name
+                profile_img = obj.profile_img.url if obj.profile_img else None
+        elif user_type == 'student':
+            obj = models.Student.objects.filter(id=user_id).first()
+            if obj:
+                display_name = obj.fullname
+                profile_img = obj.profile_picture.url if getattr(obj, 'profile_picture', None) and obj.profile_picture else None
+        elif user_type == 'school':
+            obj = models.School.objects.filter(id=user_id).first()
+            if obj:
+                display_name = obj.name
+                profile_img = obj.logo.url if obj.logo else None
+        elif user_type == 'parent':
+            obj = models.ParentAccount.objects.filter(id=user_id).first()
+            if obj:
+                display_name = obj.fullname
+
+        if display_name is None:
+            continue
+
+        if search_q and search_q not in display_name.lower():
+            continue
+
+        # Unread count = messages sent TO admin by this user that haven't been read
+        unread = models.Message.objects.filter(
+            admin_conversation_key=key,
+            recipient_admin_id=admin_id,
+            is_read=False
+        ).count()
+
+        conversations.append({
+            'conversation_key': key,
+            'user_type': user_type,
+            'user_id': int(user_id),
+            'display_name': display_name,
+            'profile_img': profile_img,
+            'unread_count': unread,
+            'last_message': msg.content[:80],
+            'last_message_at': msg.created_at.isoformat(),
+            'last_sender_type': msg.sender_type,
+        })
+
+    return JsonResponse({'conversations': conversations})
+
+
+def admin_get_conversation(request, admin_id, user_type, user_id):
+    """GET — All messages in a specific admin <-> user thread."""
+    admin_obj = models.Admin.objects.filter(id=admin_id).first()
+    if not admin_obj:
+        return JsonResponse({'error': 'Admin not found'}, status=404)
+
+    conv_key = f"admin:{admin_id}:{user_type}:{user_id}"
+    msgs = models.Message.objects.filter(
+        admin_conversation_key=conv_key
+    ).order_by('created_at')
+
+    data = MessageSerializer(msgs, many=True).data
+
+    # Resolve other party info
+    other_name = None
+    other_img = None
+    if user_type == 'teacher':
+        obj = models.Teacher.objects.filter(id=user_id).first()
+        if obj:
+            other_name = obj.full_name
+            other_img = obj.profile_img.url if obj.profile_img else None
+    elif user_type == 'student':
+        obj = models.Student.objects.filter(id=user_id).first()
+        if obj:
+            other_name = obj.fullname
+            other_img = getattr(obj, 'profile_picture', None) and obj.profile_picture.url if getattr(obj, 'profile_picture', None) and obj.profile_picture else None
+    elif user_type == 'school':
+        obj = models.School.objects.filter(id=user_id).first()
+        if obj:
+            other_name = obj.name
+            other_img = obj.logo.url if obj.logo else None
+    elif user_type == 'parent':
+        obj = models.ParentAccount.objects.filter(id=user_id).first()
+        if obj:
+            other_name = obj.fullname
+
+    return JsonResponse({
+        'messages': list(data),
+        'conversation_key': conv_key,
+        'other_party': {
+            'user_type': user_type,
+            'user_id': int(user_id),
+            'display_name': other_name or 'Unknown',
+            'profile_img': other_img,
+        },
+        'admin': {
+            'id': admin_obj.id,
+            'full_name': admin_obj.full_name,
+        },
+    })
+
+
+@csrf_exempt
+def admin_mark_conversation_read(request, admin_id, user_type, user_id):
+    """POST — Mark all messages in a thread as read from the admin's perspective."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    conv_key = f"admin:{admin_id}:{user_type}:{user_id}"
+    count = models.Message.objects.filter(
+        admin_conversation_key=conv_key,
+        recipient_admin_id=admin_id,
+        is_read=False
+    ).update(is_read=True, read_at=timezone.now())
+    return JsonResponse({'marked_read': count})
+
+
+def user_admin_conversation(request, user_type, user_id):
+    """GET — Fetch the message thread between a user (teacher/student/school) and the admin.
+    The admin_id is resolved automatically by looking at existing messages or defaulting
+    to the first active admin.
+    Returns: messages list + admin info + unread count for the user."""
+    # Find admin: prefer one already in a thread with this user; fall back to first active
+    conv_key_prefix = f"admin:"
+    existing = models.Message.objects.filter(
+        admin_conversation_key__startswith=conv_key_prefix,
+        admin_conversation_key__endswith=f":{user_type}:{user_id}"
+    ).values_list('admin_conversation_key', flat=True).first()
+
+    if existing:
+        parts = existing.split(':')
+        admin_id = int(parts[1])
+    else:
+        admin_obj = models.Admin.objects.filter(is_active=True).order_by('id').first()
+        if not admin_obj:
+            return JsonResponse({'error': 'No admin available'}, status=404)
+        admin_id = admin_obj.id
+
+    conv_key = f"admin:{admin_id}:{user_type}:{user_id}"
+    msgs = models.Message.objects.filter(
+        admin_conversation_key=conv_key
+    ).order_by('created_at')
+
+    data = MessageSerializer(msgs, many=True).data
+
+    admin_obj = models.Admin.objects.filter(id=admin_id).first()
+
+    unread = models.Message.objects.filter(
+        admin_conversation_key=conv_key,
+        is_read=False
+    )
+    # Unread for the user = messages sent to them by admin
+    if user_type == 'teacher':
+        unread = unread.filter(recipient_teacher_id=user_id)
+    elif user_type == 'student':
+        unread = unread.filter(recipient_student_id=user_id)
+    elif user_type == 'school':
+        unread = unread.filter(recipient_school_id=user_id)
+    else:
+        unread = unread.none()
+
+    return JsonResponse({
+        'messages': list(data),
+        'conversation_key': conv_key,
+        'admin_id': admin_id,
+        'admin_name': admin_obj.full_name if admin_obj else 'Admin',
+        'admin_profile_img': admin_obj.profile_img.url if admin_obj and admin_obj.profile_img else None,
+        'unread_count': unread.count(),
+    })
+
+
+@csrf_exempt
+def user_mark_admin_messages_read(request, user_type, user_id):
+    """POST — Mark messages sent by admin to this user as read."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    admin_id = data.get('admin_id')
+    if not admin_id:
+        return JsonResponse({'error': 'admin_id required'}, status=400)
+
+    conv_key = f"admin:{admin_id}:{user_type}:{user_id}"
+    qs = models.Message.objects.filter(
+        admin_conversation_key=conv_key,
+        sender_admin_id=admin_id,
+        is_read=False
+    )
+    if user_type == 'teacher':
+        qs = qs.filter(recipient_teacher_id=user_id)
+    elif user_type == 'student':
+        qs = qs.filter(recipient_student_id=user_id)
+    elif user_type == 'school':
+        qs = qs.filter(recipient_school_id=user_id)
+    else:
+        return JsonResponse({'error': 'Invalid user_type'}, status=400)
+
+    count = qs.update(is_read=True, read_at=timezone.now())
+    return JsonResponse({'marked_read': count})
+
+
+@csrf_exempt
+def user_open_safety_report_count(request, user_type, user_id):
+    """GET — Return count of open/in_review SafetyReports involving a specific user (teacher or student)."""
+    from django.db.models import Q
+    try:
+        if user_type == 'teacher':
+            count = models.SafetyReport.objects.filter(
+                Q(reported_teacher_id=user_id) | Q(reported_by_teacher_id=user_id),
+                status__in=['open', 'in_review']
+            ).count()
+        elif user_type == 'student':
+            count = models.SafetyReport.objects.filter(
+                Q(reported_student_id=user_id) | Q(reported_by_student_id=user_id),
+                status__in=['open', 'in_review']
+            ).count()
+        else:
+            count = 0
+        return JsonResponse({'count': count})
+    except Exception as e:
+        return JsonResponse({'count': 0, 'error': str(e)})
 
 
 # ==================== CHAT LOCK POLICY VIEWS ====================

@@ -127,6 +127,8 @@ const ProfileSetting = () => {
         studentFormData.append("username", studentData.username || '')
         studentFormData.append("interseted_categories", studentData.interseted_categories || '')
         studentFormData.append("date_of_birth", studentData.date_of_birth || '')
+        studentFormData.append("phone_number", studentData.phone_number || '')
+        studentFormData.append("address", studentData.address || '')
         if (studentData.p_img && studentData.p_img !== '') {
             studentFormData.append('profile_img', studentData.p_img, studentData.p_img.name)
         }
@@ -400,6 +402,35 @@ const ProfileSetting = () => {
                                     value={studentData.date_of_birth || ''}
                                     onChange={handleChange}
                                     className="form-control"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>
+                                    <i className='bi bi-telephone' aria-hidden="true"></i>Phone Number
+                                </label>
+                                <input
+                                    name='phone_number'
+                                    type="tel"
+                                    value={studentData.phone_number || ''}
+                                    onChange={handleChange}
+                                    className="form-control"
+                                    placeholder="+1 (555) 000-0000"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>
+                                    <i className='bi bi-geo-alt' aria-hidden="true"></i>Address
+                                </label>
+                                <textarea
+                                    name='address'
+                                    value={studentData.address || ''}
+                                    onChange={handleChange}
+                                    className="form-control"
+                                    placeholder="Street, City, State, ZIP"
+                                    rows={3}
+                                    style={{ resize: 'vertical' }}
                                 />
                             </div>
 

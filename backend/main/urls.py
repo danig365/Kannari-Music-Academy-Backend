@@ -11,6 +11,7 @@ urlpatterns =[
         path('teacher-login',views.teacher_login),
 
      path('verify-email/teacher/', views.verify_teacher_email, name='verify-teacher-email'),
+   path('verify-email/resend/teacher/', views.resend_teacher_verification_email),
    path('password-reset/request/teacher/', views.request_teacher_password_reset),
    path('password-reset/confirm/teacher/', views.confirm_teacher_password_reset),
 
@@ -25,6 +26,7 @@ urlpatterns =[
         path('student-login',views.student_login),
 
      path('verify-email/student/', views.verify_student_email, name='verify-student-email'),
+   path('verify-email/resend/student/', views.resend_student_verification_email),
    path('password-reset/request/student/', views.request_student_password_reset),
    path('password-reset/confirm/student/', views.confirm_student_password_reset),
 
@@ -131,6 +133,7 @@ urlpatterns =[
       path('admin/teacher/<int:teacher_id>/verification/review-id/', views.admin_review_teacher_id_verification),
       path('admin/teacher/<int:teacher_id>/verification/review-background/', views.admin_review_teacher_background_check),
       path('admin/teacher/<int:teacher_id>/verification/review-agreement/<int:signature_id>/', views.admin_review_teacher_agreement),
+      path('admin/teacher/<int:teacher_id>/verification/override-minors/', views.admin_override_teacher_minor_approval),
       path('admin/teacher/<int:teacher_id>/verification/activate/', views.admin_activate_teacher_after_verification),
       path('admin/teacher/<int:teacher_id>/verification/reject/', views.admin_reject_teacher_verification),
         path('admin/students/', views.AdminStudentList.as_view()),
@@ -276,6 +279,10 @@ urlpatterns =[
         path('subscription/<int:subscription_id>/activate/', views.activate_subscription),
         path('subscription/<int:subscription_id>/cancel/', views.cancel_subscription),
         path('subscription/<int:pk>/', views.SubscriptionDetail.as_view()),
+        path('stripe/webhook/', views.stripe_webhook),
+        # Card-on-signup endpoints (Phase 2)
+        path('student/setup-intent/', views.create_setup_intent),
+        path('student/save-payment-method/', views.save_payment_method),
         
         # Subscription History
         path('subscription-history/', views.SubscriptionHistoryList.as_view()),
@@ -409,9 +416,29 @@ urlpatterns =[
         path('messages/direct-conversation/<int:teacher_student_id>/', views.DirectMessageConversation.as_view()),
         path('messages/send/', views.send_message),
         path('messages/mark-read/<int:parent_link_id>/', views.mark_messages_read),
+        path('message/<int:message_id>/delete/', views.delete_message),
         path('messages/mark-read-direct/<int:teacher_student_id>/', views.mark_direct_messages_read),
         path('messages/unread-count/', views.unread_message_count),
         path('student/<int:student_id>/teacher-conversations/', views.student_teacher_conversations),
+
+        # ==================== ADMIN CHAT URLS ====================
+
+        # Admin-side: user search for compose modal + inbox + per-thread read/write
+        path('admin/users/search/', views.admin_user_search),
+        path('admin/<int:admin_id>/conversations/', views.admin_conversation_inbox),
+        path('admin/<int:admin_id>/conversation/<str:user_type>/<int:user_id>/', views.admin_get_conversation),
+        path('admin/<int:admin_id>/conversation/<str:user_type>/<int:user_id>/mark-read/', views.admin_mark_conversation_read),
+        path('admin/<int:admin_id>/conversation/<str:user_type>/<int:user_id>/delete-all/', views.admin_delete_conversation),
+
+        # User-side: teacher/student/school → admin thread
+        path('user-admin-conversation/<str:user_type>/<int:user_id>/', views.user_admin_conversation),
+        path('user-admin-conversation/<str:user_type>/<int:user_id>/mark-read/', views.user_mark_admin_messages_read),
+        path('user/<str:user_type>/<int:user_id>/open-safety-report-count/', views.user_open_safety_report_count),
+
+        # Admin Oversight — view & moderate all user-to-user conversations
+        path('admin/<int:admin_id>/oversight/conversations/', views.admin_oversight_list),
+        path('admin/<int:admin_id>/oversight/ts/<int:ts_id>/', views.admin_oversight_ts_messages),
+        path('admin/<int:admin_id>/oversight/pl/<int:pl_id>/', views.admin_oversight_pl_messages),
 
         # ==================== CHAT LOCK & UNLOCK URLS ====================
 

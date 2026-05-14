@@ -34,6 +34,55 @@ export const getUnreadMessageCount = (userType, userId) =>
 export const getStudentTeacherConversations = (studentId) =>
   axios.get(`${api}/student/${studentId}/teacher-conversations/`);
 
+// ==================== ADMIN CHAT ====================
+
+// Admin-side: inbox listing all conversations
+export const getAdminConversations = (adminId, params = '') =>
+  axios.get(`${api}/admin/${adminId}/conversations/${params}`);
+
+// Admin-side: fetch one thread
+export const getAdminConversation = (adminId, userType, userId) =>
+  axios.get(`${api}/admin/${adminId}/conversation/${userType}/${userId}/`);
+
+// Admin-side: mark thread read
+export const markAdminConversationRead = (adminId, userType, userId) =>
+  axios.post(`${api}/admin/${adminId}/conversation/${userType}/${userId}/mark-read/`);
+
+// User-side (teacher/student/school): fetch their thread with admin
+export const getUserAdminConversation = (userType, userId) =>
+  axios.get(`${api}/user-admin-conversation/${userType}/${userId}/`);
+
+// User-side: mark admin messages as read
+export const markUserAdminMessagesRead = (userType, userId, adminId) =>
+  axios.post(
+    `${api}/user-admin-conversation/${userType}/${userId}/mark-read/`,
+    JSON.stringify({ admin_id: adminId }),
+    { headers: { 'Content-Type': 'application/json' } }
+  );
+
+// Delete a message (sender only, or admin override)
+export const deleteMessage = (messageId, deleterType, deleterId) =>
+  axios.delete(`${api}/message/${messageId}/delete/`, {
+    data: { deleter_type: deleterType, deleter_id: deleterId },
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+// Admin: delete an entire admin<->user conversation thread
+export const adminDeleteConversation = (adminId, userType, userId) =>
+  axios.delete(`${api}/admin/${adminId}/conversation/${userType}/${userId}/delete-all/`);
+
+// Admin Oversight: list all user-to-user conversations
+export const getOversightConversations = (adminId) =>
+  axios.get(`${api}/admin/${adminId}/oversight/conversations/`);
+
+// Admin Oversight: fetch messages for a Teacher↔Student thread
+export const getOversightTsMessages = (adminId, tsId) =>
+  axios.get(`${api}/admin/${adminId}/oversight/ts/${tsId}/`);
+
+// Admin Oversight: fetch messages for a Parent↔Student thread
+export const getOversightPlMessages = (adminId, plId) =>
+  axios.get(`${api}/admin/${adminId}/oversight/pl/${plId}/`);
+
 // ==================== CHAT LOCK / UNLOCK ====================
 
 export const getChatLockStatus = (parentLinkId) =>

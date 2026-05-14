@@ -1,0 +1,15 @@
+Convert the attached React Native landing page for Kannari Music Academy into a fully responsive web landing page.
+
+Requirements:
+- Preserve the exact content, section order, copy, colors, and visual hierarchy from the React Native landing page.
+- Recreate all sections from the home screen: hero, proof bar, method, programs, why Kannari, journey, voices/testimonial, teach with us, final CTA, and footer.
+- Use the provided assets exactly as referenced in the React Native code.
+- Keep the design polished, modern, and faithful to the original brand look.
+- Make the layout responsive for desktop, tablet, and mobile.
+- Replace React Native components and styles with web equivalents using React, HTML, and CSS.
+- Preserve navigation intent using web routes or placeholder links if routes are not available.
+- If icons are needed, recreate the BootstrapIcon mappings with a web icon solution.
+- Do not simplify the layout into a generic template; keep the page visually close to the React Native version.
+- Optimize images for the web if needed, but do not change the visual design.
+
+Files included in this handoff are the React Native landing page source, the shared header/footer/icon components it depends on, and all image assets referenced by those files.

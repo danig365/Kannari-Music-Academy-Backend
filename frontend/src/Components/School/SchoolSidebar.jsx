@@ -35,6 +35,7 @@ const SchoolSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onN
         { path: '/school/lesson-assignments', icon: 'bi-journal-bookmark', label: 'Lesson Assignments' },
         { path: '/school/progress', icon: 'bi-graph-up', label: 'Progress Overview' },
         { path: '/school/chat-locks', icon: 'bi-shield-lock', label: 'Chat Lock Management' },
+        { path: '/school/messages', icon: 'bi-chat-dots', label: 'Messages' },
     ];
 
     return (

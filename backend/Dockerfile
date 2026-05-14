@@ -11,19 +11,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Install Python dependencies first (separate layer — only rebuilds when requirements change)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy project
+# Copy project source (excludes .env, __pycache__, media/ — see .dockerignore)
 COPY . .
 
-# Collect static files
-RUN python manage.py collectstatic --noinput || true
+# Collect static files at build time using a throwaway secret key.
+# Real SECRET_KEY is injected at runtime via env_file; this value is never used in production.
+RUN SECRET_KEY=build-collect-static-only python manage.py collectstatic --noinput
 
-# Create media directory
+# Ensure media directory exists
 RUN mkdir -p /app/media
+
+# Make entrypoint executable
+RUN chmod +x /app/entrypoint.sh
 
 EXPOSE 8000
 
-CMD ["gunicorn", "lms_api.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "600"]
+ENTRYPOINT ["/app/entrypoint.sh"]

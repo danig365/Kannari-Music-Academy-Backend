@@ -4,11 +4,204 @@ import axios from 'axios'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Swal from 'sweetalert2'
+import { loadStripe } from '@stripe/stripe-js'
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 
 import { API_BASE_URL } from '../../config';
 import { validateStudentRegisterForm, FieldError } from '../../utils/formValidation';
 
 const baseUrl = `${API_BASE_URL}/student/`;
+const stripePublicKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || 'pk_live_51SUGuu5660mVKr4oXfErDtBTL6gARjogpSlaC7hPrDdXlKTu7oFU9NYhVFjAynfAScVH6LzHwlgxVGjeFE4v9iXi00VVc57kSv';
+const stripePromise = loadStripe(stripePublicKey);
+
+// ── Card capture step (must live inside <Elements>) ─────────────────────────
+const CardStep = ({ studentData, studentId, onBack, onComplete }) => {
+    const stripe = useStripe();
+    const elements = useElements();
+    const [cardLoading, setCardLoading] = useState(false);
+    const [cardError, setCardError] = useState(null);
+
+    const handleCardSubmit = async (e) => {
+        e.preventDefault();
+        if (!stripe || !elements) return;
+        setCardLoading(true);
+        setCardError(null);
+        try {
+            // 1. Create SetupIntent on backend
+            const setupRes = await axios.post(`${API_BASE_URL}/student/setup-intent/`, {
+                student_id: studentId,
+                email: studentData.email,
+                name: studentData.fullname,
+            });
+            const { clientSecret } = setupRes.data;
+
+            // 2. Confirm card setup (zero-charge — only tokenises the card)
+            const cardElement = elements.getElement(CardElement);
+            const { setupIntent, error: stripeErr } = await stripe.confirmCardSetup(clientSecret, {
+                payment_method: {
+                    card: cardElement,
+                    billing_details: {
+                        name: studentData.fullname,
+                        email: studentData.email,
+                    },
+                },
+            });
+
+            if (stripeErr) {
+                setCardError(stripeErr.message);
+                return;
+            }
+
+            // 3. Persist payment method as customer default
+            await axios.post(`${API_BASE_URL}/student/save-payment-method/`, {
+                student_id: studentId,
+                payment_method_id: setupIntent.payment_method,
+            });
+
+            onComplete();
+        } catch (err) {
+            setCardError(err.response?.data?.error || err.message || 'Card setup failed. Please try again.');
+        } finally {
+            setCardLoading(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleCardSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {/* No-charge notice */}
+            <div style={{
+                display: 'flex', gap: '12px', alignItems: 'flex-start',
+                padding: '16px', background: '#f0fdf4', border: '1px solid #86efac',
+                borderRadius: '12px',
+            }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" style={{ flexShrink: 0, marginTop: '1px' }}>
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <div>
+                    <p style={{ margin: '0 0 4px', fontWeight: '600', color: '#15803d', fontSize: '14px' }}>
+                        No charge today
+                    </p>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#166534', lineHeight: '1.5' }}>
+                        Your card is saved securely for future billing. Charges begin on the <strong>1st of next month</strong> after you choose a plan — the rest of this month is free.
+                    </p>
+                </div>
+            </div>
+
+            {/* Pre-filled name */}
+            <div>
+                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+                    Name on card
+                </label>
+                <input
+                    type="text"
+                    value={studentData.fullname}
+                    readOnly
+                    style={{
+                        width: '100%', padding: '12px 16px', fontSize: '15px',
+                        border: '1px solid #e5e7eb', borderRadius: '8px', outline: 'none',
+                        boxSizing: 'border-box', color: '#6b7280', background: '#f9fafb',
+                    }}
+                />
+            </div>
+
+            {/* Card element */}
+            <div>
+                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+                    Card information
+                </label>
+                <div style={{
+                    padding: '14px 16px', border: '1px solid #e5e7eb', borderRadius: '8px',
+                    background: '#fff',
+                }}>
+                    <CardElement
+                        options={{
+                            hidePostalCode: true,
+                            style: {
+                                base: {
+                                    fontSize: '15px',
+                                    color: '#1a1a1a',
+                                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                                    '::placeholder': { color: '#9ca3af' },
+                                },
+                                invalid: { color: '#dc2626' },
+                            },
+                        }}
+                    />
+                </div>
+            </div>
+
+            {/* Error */}
+            {cardError && (
+                <div style={{
+                    padding: '12px 16px', background: '#fef2f2', border: '1px solid #fecaca',
+                    borderRadius: '8px', color: '#dc2626', fontSize: '14px',
+                }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px', verticalAlign: 'middle' }}>
+                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    {cardError}
+                </div>
+            )}
+
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                    type="button"
+                    onClick={onBack}
+                    disabled={cardLoading}
+                    style={{
+                        padding: '12px 20px', background: 'white', color: '#6b7280',
+                        border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '15px',
+                        fontWeight: '500', cursor: cardLoading ? 'not-allowed' : 'pointer',
+                        opacity: cardLoading ? 0.5 : 1,
+                    }}
+                >
+                    ← Back
+                </button>
+                <button
+                    type="submit"
+                    disabled={!stripe || cardLoading}
+                    style={{
+                        flex: 1, padding: '14px 24px',
+                        background: cardLoading ? '#9ca3af' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white', border: 'none', borderRadius: '8px',
+                        fontSize: '15px', fontWeight: '600',
+                        cursor: (!stripe || cardLoading) ? 'not-allowed' : 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                        boxShadow: cardLoading ? 'none' : '0 4px 12px rgba(102, 126, 234, 0.4)',
+                    }}
+                >
+                    {cardLoading ? (
+                        <>
+                            <span style={{
+                                width: '16px', height: '16px', border: '2px solid #fff',
+                                borderTopColor: 'transparent', borderRadius: '50%',
+                                display: 'inline-block', animation: 'spin 0.6s linear infinite',
+                            }}></span>
+                            Saving card...
+                            <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+                        </>
+                    ) : (
+                        <>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                            </svg>
+                            Complete Registration
+                        </>
+                    )}
+                </button>
+            </div>
+
+            {/* Stripe trust badge */}
+            <p style={{ textAlign: 'center', fontSize: '12px', color: '#9ca3af', margin: 0 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '4px', verticalAlign: 'middle' }}>
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Your card details are encrypted and processed securely by <strong>Stripe</strong>. We never store your card number.
+            </p>
+        </form>
+    );
+};
 
 const Register = () => {
     useEffect(()=>{
@@ -25,6 +218,8 @@ const Register = () => {
         'password':'',
         'username':'',
         'date_of_birth':'',
+        'phone_number':'',
+        'address':'',
         'interseted_categories':'',
         'parent_email':'',
         'parent_name':'',
@@ -33,6 +228,8 @@ const Register = () => {
     const [loading, setLoading] = useState(false)
     const [isMinor, setIsMinor] = useState(false)
     const [fieldErrors, setFieldErrors] = useState({})
+    const [step, setStep] = useState(1)           // 1 = profile, 2 = payment
+    const [newStudentId, setNewStudentId] = useState(null)
 
     const handleChange=(event)=>{
         const { name, value } = event.target;
@@ -91,6 +288,8 @@ const Register = () => {
             studentFormData.append("date_of_birth",studentData.date_of_birth)
         }
         studentFormData.append("interseted_categories",studentData.interseted_categories)
+        if(studentData.phone_number) studentFormData.append("phone_number",studentData.phone_number)
+        if(studentData.address) studentFormData.append("address",studentData.address)
         if(isMinor && studentData.parent_email.trim()) {
             studentFormData.append("parent_email", studentData.parent_email.trim())
         }
@@ -101,41 +300,33 @@ const Register = () => {
       setLoading(true)
         try{
           const response = await axios.post(baseUrl,studentFormData)
-          setStudentData({
-            'fullname':'',
-            'email':'',
-            'password':'',
-            'username':'',
-            'date_of_birth':'',
-            'interseted_categories':'',
-            'parent_email':'',
-            'parent_name':'',
-            'status':'success'
-          });
-          if(response.status==200 || response.status==201){
-            const isMinorReg = response.data?.parent_required === true;
-            Swal.fire({
-              title: isMinorReg 
-                ? 'Registered! A consent email has been sent to your parent/guardian.'
-                : 'Registered! Please verify your email.',
-              icon:'success',
-              toast:true,
-              timer: isMinorReg ? 4000 : 2000,
-              position:'top-right',
-              timerProgressBar: true,
-              showConfirmButton: false
-            });
+          if(response.status===200 || response.status===201){
+            const studentId = response.data?.id
+            setNewStudentId(studentId)
+            // Advance to card capture step
+            setStep(2)
+            window.scrollTo(0, 0)
           }
-          let tID = setTimeout(function () {
-            window.location.href='/student/login';
-            window.clearTimeout(tID);
-          }, 2500);
         }catch(error){
             console.log(error);
-        setStudentData((prev)=>({ ...prev, 'status':'error' }))
+            setStudentData((prev)=>({ ...prev, 'status':'error' }))
       } finally {
         setLoading(false)
         }
+    }
+
+    const onCardComplete = () => {
+        Swal.fire({
+          title: 'Registration complete!',
+          text: 'Your account is ready. Please check your email to verify, then log in.',
+          icon: 'success',
+          timer: 3000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+          position: 'top-right',
+          toast: true,
+        });
+        setTimeout(() => { window.location.href = '/student/login'; }, 3000);
     }
 
   return (
@@ -213,6 +404,27 @@ const Register = () => {
               Back to role selection
             </Link>
 
+            {/* Step indicator */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '32px' }}>
+              {[{ n: 1, label: 'Profile' }, { n: 2, label: 'Payment' }].map(({ n, label }, i) => (
+                <React.Fragment key={n}>
+                  {i > 0 && <div style={{ flex: 1, height: '2px', background: step >= n ? '#667eea' : '#e5e7eb', transition: 'background 0.3s' }} />}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{
+                      width: '28px', height: '28px', borderRadius: '50%', display: 'flex',
+                      alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '700',
+                      background: step >= n ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#f3f4f6',
+                      color: step >= n ? 'white' : '#9ca3af',
+                      transition: 'all 0.3s',
+                    }}>{n}</div>
+                    <span style={{ fontSize: '13px', fontWeight: step === n ? '600' : '400', color: step === n ? '#374151' : '#9ca3af' }}>{label}</span>
+                  </div>
+                </React.Fragment>
+              ))}
+            </div>
+
+            {/* ── Step 1: Profile ────────────────────────────────────────────── */}
+            {step === 1 && (<>
             {/* Header with Icon */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
               <div style={{
@@ -475,6 +687,40 @@ const Register = () => {
                 }}>Required for child safety compliance. Students under 18 need parental consent for certain features.</p>
               </div>
 
+              {/* Phone Number */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151', fontSize: '14px' }}>
+                  Phone Number <span style={{ color: '#9ca3af', fontWeight: 400 }}>(optional)</span>
+                </label>
+                <input
+                  type="tel"
+                  name="phone_number"
+                  value={studentData.phone_number}
+                  onChange={handleChange}
+                  placeholder="+1 (555) 000-0000"
+                  style={{ width: '100%', padding: '12px 16px', border: '1px solid #e5e7eb', borderRadius: '10px', fontSize: '15px', outline: 'none', boxSizing: 'border-box', background: '#fff', color: '#111827' }}
+                  onFocus={e => { e.target.style.borderColor='#3b82f6'; e.target.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'; }}
+                  onBlur={e => { e.target.style.borderColor='#e5e7eb'; e.target.style.boxShadow='none'; }}
+                />
+              </div>
+
+              {/* Address */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151', fontSize: '14px' }}>
+                  Address <span style={{ color: '#9ca3af', fontWeight: 400 }}>(optional)</span>
+                </label>
+                <textarea
+                  name="address"
+                  value={studentData.address}
+                  onChange={handleChange}
+                  placeholder="Street, City, State, ZIP"
+                  rows={3}
+                  style={{ width: '100%', padding: '12px 16px', border: '1px solid #e5e7eb', borderRadius: '10px', fontSize: '15px', outline: 'none', boxSizing: 'border-box', background: '#fff', color: '#111827', resize: 'vertical' }}
+                  onFocus={e => { e.target.style.borderColor='#3b82f6'; e.target.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'; }}
+                  onBlur={e => { e.target.style.borderColor='#e5e7eb'; e.target.style.boxShadow='none'; }}
+                />
+              </div>
+
               {/* Minor Notice + Parent Email Fields */}
               {isMinor && (
                 <>
@@ -663,7 +909,7 @@ const Register = () => {
                   </>
                 ) : (
                   <>
-                    Complete Profile Setup
+                    Continue to Payment
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M5 12h14M12 5l7 7-7 7"/>
                     </svg>
@@ -715,6 +961,40 @@ const Register = () => {
               </Link>
 
             </div>
+            </>)} {/* end step 1 */}
+
+            {/* ── Step 2: Payment (card capture) ─────────────────────────── */}
+            {step === 2 && (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '28px' }}>
+                  <div style={{
+                    width: '56px', height: '56px',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  }}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                      <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#1a1a1a', marginBottom: '4px', letterSpacing: '-0.3px' }}>
+                      Payment Information
+                    </h2>
+                    <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
+                      Save a card for your future subscription
+                    </p>
+                  </div>
+                </div>
+                <Elements stripe={stripePromise}>
+                  <CardStep
+                    studentData={studentData}
+                    studentId={newStudentId}
+                    onBack={() => setStep(1)}
+                    onComplete={onCardComplete}
+                  />
+                </Elements>
+              </div>
+            )}
           </div>
         </div>
       </div>

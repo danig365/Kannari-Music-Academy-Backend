@@ -441,22 +441,33 @@ const StudentCoursePlayer = () => {
         return icons[fileType] || 'bi-file-earmark-fill';
     };
 
-    // Extract YouTube video ID from various URL formats
+    // Extract YouTube video ID from common URL formats and normalize it for embeds.
     const getYouTubeEmbedUrl = (url) => {
         if (!url) return null;
+
+        const normalizedUrl = String(url).trim();
         let videoId = null;
+
         try {
-            const urlObj = new URL(url);
-            if (urlObj.hostname.includes('youtube.com')) {
+            const urlObj = new URL(normalizedUrl);
+            const hostname = urlObj.hostname.replace(/^www\./, '');
+
+            if (hostname.includes('youtube.com')) {
                 videoId = urlObj.searchParams.get('v');
-            } else if (urlObj.hostname.includes('youtu.be')) {
-                videoId = urlObj.pathname.slice(1);
+
+                if (!videoId) {
+                    const pathMatch = urlObj.pathname.match(/\/(?:embed|v|shorts)\/([a-zA-Z0-9_-]{11})/);
+                    if (pathMatch) videoId = pathMatch[1];
+                }
+            } else if (hostname.includes('youtu.be')) {
+                videoId = urlObj.pathname.split('/').filter(Boolean)[0];
             }
         } catch (e) {
-            // Try regex as fallback
-            const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            // Try regex as fallback for pasted links or slightly malformed URLs.
+            const match = normalizedUrl.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
             if (match) videoId = match[1];
         }
+
         return videoId ? `https://www.youtube.com/embed/${videoId}?rel=0` : null;
     };
 
@@ -516,6 +527,25 @@ const StudentCoursePlayer = () => {
             );
         }
         
+        // If the lesson has a YouTube link, prioritize the embed for video lessons.
+        if (youtubeEmbedUrl && content_type === 'video') {
+            return (
+                <div className="content-section-wrapper">
+                    <div className="content-player-wrapper">
+                        <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '12px' }}>
+                            <iframe
+                                src={youtubeEmbedUrl}
+                                title={title}
+                                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            ></iframe>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
         // YouTube-only lesson (no file uploaded)
         if (!fileUrl && youtubeEmbedUrl) {
             return (

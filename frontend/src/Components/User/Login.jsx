@@ -24,6 +24,8 @@ const Login = () => {
 
       const [errorMsg, setErrorMsg]=useState('')
       const [loading, setLoading] = useState(false)
+      const [resendingVerification, setResendingVerification] = useState(false)
+      const [showResendVerification, setShowResendVerification] = useState(false)
       const [fieldErrors, setFieldErrors] = useState({})
 
       const handleChange=(event)=>{
@@ -44,6 +46,7 @@ const Login = () => {
         studentFormData.append('email',studentLoginData.email)
         studentFormData.append('password',studentLoginData.password)
       setErrorMsg('')
+      setShowResendVerification(false)
       setLoading(true)
         try{
         const res = await axios.post(baseUrl+'/student-login',studentFormData)
@@ -54,6 +57,7 @@ const Login = () => {
         }else{
           const message = res.data?.message || 'Please enter valid login details.'
           setErrorMsg(message)
+          setShowResendVerification(/verify your email/i.test(message))
           Swal.fire({
             title: message,
             icon:'error',
@@ -68,6 +72,7 @@ const Login = () => {
             console.log(error)
         const message = error?.response?.data?.message || 'Login failed. Please try again.'
         setErrorMsg(message)
+        setShowResendVerification(/verify your email/i.test(message))
         Swal.fire({
           title: message,
           icon:'error',
@@ -80,6 +85,50 @@ const Login = () => {
       } finally {
         setLoading(false)
         }
+    }
+
+    const resendVerificationEmail = async () => {
+      const email = (studentLoginData.email || '').trim()
+      if (!email) {
+        Swal.fire({
+          title: 'Please enter your email first',
+          icon: 'warning',
+          toast: true,
+          timer: 2200,
+          position: 'top',
+          timerProgressBar: true,
+          showConfirmButton: false
+        })
+        return
+      }
+
+      setResendingVerification(true)
+      try {
+        const res = await axios.post(baseUrl + '/verify-email/resend/student/', { email })
+        const msg = res?.data?.message || 'If this email exists, a verification link has been sent.'
+        Swal.fire({
+          title: msg,
+          icon: res?.data?.bool ? 'success' : 'warning',
+          toast: true,
+          timer: 3200,
+          position: 'top',
+          timerProgressBar: true,
+          showConfirmButton: false
+        })
+      } catch (error) {
+        const msg = error?.response?.data?.message || 'Could not resend verification email right now.'
+        Swal.fire({
+          title: msg,
+          icon: 'error',
+          toast: true,
+          timer: 3200,
+          position: 'top',
+          timerProgressBar: true,
+          showConfirmButton: false
+        })
+      } finally {
+        setResendingVerification(false)
+      }
     }
 
     if(studentLoginStatus=='true'){
@@ -212,6 +261,39 @@ const Login = () => {
                 fontWeight: '500'
               }}>
                 ⚠ {errorMsg}
+              </div>
+            )}
+
+            {showResendVerification && (
+              <div style={{
+                marginTop: '-8px',
+                marginBottom: '16px',
+                padding: '12px',
+                background: '#eff6ff',
+                border: '1px solid #bfdbfe',
+                borderRadius: '8px'
+              }}>
+                <p style={{ margin: '0 0 10px', fontSize: '13px', color: '#1e3a8a' }}>
+                  Verification email nahi mili? Dubara bhej dein.
+                </p>
+                <button
+                  type="button"
+                  onClick={resendVerificationEmail}
+                  disabled={resendingVerification}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    background: resendingVerification ? '#93c5fd' : '#2563eb',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: resendingVerification ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {resendingVerification ? 'Resending...' : 'Resend Verification Email'}
+                </button>
               </div>
             )}
 

@@ -3,29 +3,28 @@ FROM node:18-alpine AS build
 
 WORKDIR /app
 
-# Copy package files
+# Install dependencies first (separate layer — only rebuilds when package files change)
 COPY package.json package-lock.json ./
-
-# Install dependencies
 RUN npm ci
 
-# Copy source code
+# Copy source (excludes node_modules/, build/, .env — see .dockerignore)
 COPY . .
 
-# Optional frontend build-time env vars can be passed externally if needed.
-ENV REACT_APP_STRIPE_PUBLISHABLE_KEY=pk_test_51Sh85EG1PnxKY4Lec23vbHBIy95m3DU3hgOrrWCXmrzBKyoWcovHXx4DNBUpTFrXXKlWfXzrBcUIEEeJYQT49pds007yEvTFJD
+# Receive the publishable key as a build argument (passed from docker-compose.yml).
+# This is a public-facing key (safe to embed in the JS bundle) but should not be
+# hardcoded in the Dockerfile itself.
+ARG REACT_APP_STRIPE_PUBLISHABLE_KEY
+ENV REACT_APP_STRIPE_PUBLISHABLE_KEY=$REACT_APP_STRIPE_PUBLISHABLE_KEY
+
+# Treat warnings as warnings, not errors
 ENV CI=false
 
-# Build the app
 RUN npm run build
 
-# Production stage - serve with Nginx
+# Production stage — serve compiled assets with Nginx
 FROM nginx:alpine
 
-# Copy built files
 COPY --from=build /app/build /usr/share/nginx/html
-
-# Copy custom nginx config for React SPA routing
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80

@@ -232,11 +232,13 @@ class ModuleProgressSerializer(serializers.ModelSerializer):
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model=models.Student
-        fields=['id','fullname','email','password','username','interseted_categories','profile_img','date_of_birth','parent_account_required','parent_linked_at']
+        fields=['id','fullname','email','password','username','interseted_categories','profile_img','date_of_birth','phone_number','address','parent_account_required','parent_linked_at']
         extra_kwargs = {
             'password': {'required': False, 'allow_blank': True},
             'interseted_categories': {'required': False, 'allow_blank': True},
             'profile_img': {'required': False},
+            'phone_number': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'address': {'required': False, 'allow_blank': True, 'allow_null': True},
         }
     
     def __init__(self, *args, **kwargs):
@@ -1384,11 +1386,14 @@ class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Message
         fields = ['id', 'sender_type', 'sender_parent', 'sender_teacher', 'sender_admin', 'sender_student',
+                  'sender_school',
                   'recipient_type', 'recipient_parent', 'recipient_teacher', 'recipient_admin', 'recipient_student',
-                  'parent_link', 'teacher_student', 'content', 'is_read', 'read_at',
+                  'recipient_school',
+                  'parent_link', 'teacher_student', 'admin_conversation_key',
+                  'content', 'is_read', 'read_at',
                   'is_hidden_by_sender', 'is_hidden_by_recipient',
                   'sender_display', 'recipient_display', 'created_at']
-        read_only_fields = ['created_at', 'read_at', 'sender_display', 'recipient_display']
+        read_only_fields = ['created_at', 'read_at', 'sender_display', 'recipient_display', 'admin_conversation_key']
 
 
 class ChatLockPolicySerializer(serializers.ModelSerializer):

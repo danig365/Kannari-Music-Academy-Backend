@@ -1,0 +1,36 @@
+# ── Secrets & environment ──────────────────────────────────────────────────────
+.env
+.env.*
+
+# ── Python cache ───────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# ── Generated / build artefacts ───────────────────────────────────────────────
+staticfiles/
+media/
+*.sqlite3
+*.db
+db.sqlite3
+
+# ── Development tooling ────────────────────────────────────────────────────────
+.git/
+.gitignore
+.gitattributes
+.github/
+.vscode/
+.idea/
+
+# ── Logs & OS artefacts ────────────────────────────────────────────────────────
+*.log
+.DS_Store
+Thumbs.db
+
+# ── Test & CI ─────────────────────────────────────────────────────────────────
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
