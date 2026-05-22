@@ -1267,6 +1267,7 @@ const UsersManagement = () => {
                                                     <th>Name</th>
                                                     <th>Email</th>
                                                     <th>Username</th>
+                                                    <th>Phone</th>
                                                     <th>Enrolled</th>
                                                     <th>Actions</th>
                                                 </tr>
@@ -1279,6 +1280,7 @@ const UsersManagement = () => {
                                                             <TableCell label="Name"><strong>{student.fullname}</strong></TableCell>
                                                             <TableCell label="Email">{student.email}</TableCell>
                                                             <TableCell label="Username">{student.username || 'N/A'}</TableCell>
+                                                            <TableCell label="Phone">{student.phone_number || 'N/A'}</TableCell>
                                                             <TableCell label="Enrolled">
                                                                 <span className="badge bg-primary">
                                                                     {student.enrolled_courses || 0}
@@ -1302,7 +1304,7 @@ const UsersManagement = () => {
                                                     ))
                                                 ) : (
                                                     <tr>
-                                                        <td colSpan="6" className="text-center text-muted users-empty-state">
+                                                        <td colSpan="7" className="text-center text-muted users-empty-state">
                                                             No students found
                                                         </td>
                                                     </tr>
@@ -1422,7 +1424,7 @@ const UsersManagement = () => {
                                                     <th>Email</th>
                                                     <th>Approval</th>
                                                     <th>Verification</th>
-                                                    <th>Mobile</th>
+                                                    <th>Phone Number</th>
                                                     <th>Courses</th>
                                                     <th>Actions</th>
                                                 </tr>
@@ -1451,7 +1453,7 @@ const UsersManagement = () => {
                                                                     </span>
                                                                 </div>
                                                             </TableCell>
-                                                            <TableCell label="Mobile">{teacher.mobile_no || 'N/A'}</TableCell>
+                                                            <TableCell label="Phone Number">{teacher.mobile_no || 'N/A'}</TableCell>
                                                             <TableCell label="Courses">
                                                                 <span className="badge bg-primary">
                                                                     {teacher.total_teacher_course || 0}
@@ -1616,7 +1618,7 @@ const UsersManagement = () => {
                                                     <th>#</th>
                                                     <th>School Name</th>
                                                     <th>Email</th>
-                                                    <th>Phone</th>
+                                                    <th>Phone Number</th>
                                                     <th>City</th>
                                                     <th>Status</th>
                                                     <th>Subscription</th>
@@ -1630,7 +1632,7 @@ const UsersManagement = () => {
                                                             <TableCell label="#">{index + 1}</TableCell>
                                                             <TableCell label="School Name"><strong>{school.name}</strong></TableCell>
                                                             <TableCell label="Email">{school.email}</TableCell>
-                                                            <TableCell label="Phone">{school.phone || 'N/A'}</TableCell>
+                                                            <TableCell label="Phone Number">{school.phone || 'N/A'}</TableCell>
                                                             <TableCell label="City">{school.city || 'N/A'}</TableCell>
                                                             <TableCell label="Status">
                                                                 <span className={`badge ${getStatusBadge(school.status)}`}>
@@ -1708,7 +1710,9 @@ const UsersManagement = () => {
                                                     <tr>
                                                         <th>Student</th>
                                                         <th>Email</th>
+                                                        <th>Student Phone</th>
                                                         <th>Parent</th>
+                                                        <th>Parent Phone</th>
                                                         <th>Link</th>
                                                         <th>Auth Mode</th>
                                                         <th>Live Consent</th>
@@ -1719,7 +1723,9 @@ const UsersManagement = () => {
                                                         <tr key={minor.student_id}>
                                                             <TableCell label="Student"><strong>{minor.student_name}</strong></TableCell>
                                                             <TableCell label="Email">{minor.student_email}</TableCell>
+                                                            <TableCell label="Student Phone">{minor.student_phone || minor.student_phone_number || 'N/A'}</TableCell>
                                                             <TableCell label="Parent">{minor.parent_name || 'Not linked'}</TableCell>
+                                                            <TableCell label="Parent Phone">{minor.parent_phone || minor.parent_phone_number || 'N/A'}</TableCell>
                                                             <TableCell label="Link">
                                                                 <span className={`badge ${minor.parent_link_status === 'approved' ? 'bg-success' : minor.parent_link_status === 'pending' ? 'bg-warning text-dark' : 'bg-secondary'}`}>
                                                                     {minor.parent_link_status}
@@ -1734,7 +1740,7 @@ const UsersManagement = () => {
                                                         </tr>
                                                     )) : (
                                                         <tr>
-                                                            <td colSpan="6" className="text-center text-muted py-4">No minor records found</td>
+                                                            <td colSpan="8" className="text-center text-muted py-4">No minor records found</td>
                                                         </tr>
                                                     )}
                                                 </tbody>
