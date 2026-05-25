@@ -83,6 +83,8 @@ const AdminLessonManagement = ({
         title: '',
         description: '',
         content_type: 'video',
+        interaction_type: 'content',
+        play_along_track_type: 'backing_track',
         file: null,
         youtube_url: '',
         duration_seconds: 0,
@@ -133,6 +135,7 @@ const AdminLessonManagement = ({
             description: 'Standard video lesson with objectives',
             defaults: {
                 content_type: 'video',
+                interaction_type: 'content',
                 objectives: '• Watch the full video\n• Take notes on key concepts\n• Practice the techniques shown',
                 is_preview: false,
                 is_locked: false
@@ -146,6 +149,7 @@ const AdminLessonManagement = ({
             description: 'Audio practice with play-along tracks',
             defaults: {
                 content_type: 'audio',
+                interaction_type: 'content',
                 objectives: '• Listen to the demonstration\n• Practice at slow tempo\n• Gradually increase speed\n• Record yourself for review',
                 is_preview: false,
                 is_locked: false
@@ -159,6 +163,7 @@ const AdminLessonManagement = ({
             description: 'PDF document with theory content',
             defaults: {
                 content_type: 'pdf',
+                interaction_type: 'content',
                 objectives: '• Read through the material\n• Highlight key concepts\n• Complete any exercises\n• Review terminology',
                 is_preview: false,
                 is_locked: false
@@ -172,8 +177,24 @@ const AdminLessonManagement = ({
             description: 'Unlocked preview lesson for non-enrolled users',
             defaults: {
                 content_type: 'video',
+                interaction_type: 'content',
                 objectives: '• Get a taste of the course content\n• See the teaching style\n• Decide if this course is right for you',
                 is_preview: true,
+                is_locked: false
+            }
+        },
+        {
+            id: 'play_along',
+            name: 'Play Along',
+            icon: 'bi-headphones',
+            color: '#22c55e',
+            description: 'Immersive practice with backing track',
+            defaults: {
+                content_type: 'audio',
+                interaction_type: 'play_along',
+                play_along_track_type: 'backing_track',
+                objectives: '• Put on headphones\n• Press play\n• Practice along with the track',
+                is_preview: false,
                 is_locked: false
             }
         },
@@ -185,6 +206,7 @@ const AdminLessonManagement = ({
             description: 'Start from scratch',
             defaults: {
                 content_type: 'video',
+                interaction_type: 'content',
                 objectives: '',
                 is_preview: false,
                 is_locked: false
@@ -575,6 +597,8 @@ const AdminLessonManagement = ({
             title: '',
             description: '',
             content_type: 'video',
+            interaction_type: 'content',
+            play_along_track_type: 'backing_track',
             file: null,
             youtube_url: '',
             duration_seconds: 0,
@@ -596,6 +620,8 @@ const AdminLessonManagement = ({
         setLessonFormData(prev => ({
             ...prev,
             content_type: template.defaults.content_type,
+            interaction_type: template.defaults.interaction_type || 'content',
+            play_along_track_type: template.defaults.play_along_track_type || 'backing_track',
             objectives: template.defaults.objectives,
             is_preview: template.defaults.is_preview,
             is_locked: template.defaults.is_locked
@@ -614,10 +640,24 @@ const AdminLessonManagement = ({
         setCurrentModuleId(moduleId);
         setDuplicateContext(duplicationMeta);
         setSelectedTemplate(null);
+        let parsedConfig = {};
+        if (lesson.interaction_config) {
+            if (typeof lesson.interaction_config === 'string') {
+                try {
+                    parsedConfig = JSON.parse(lesson.interaction_config);
+                } catch (err) {
+                    parsedConfig = {};
+                }
+            } else {
+                parsedConfig = lesson.interaction_config;
+            }
+        }
         setLessonFormData({
             title: lesson.title,
             description: lesson.description || '',
             content_type: lesson.content_type,
+            interaction_type: lesson.interaction_type || 'content',
+            play_along_track_type: parsedConfig.track_type || 'backing_track',
             file: null,
             youtube_url: lesson.youtube_url || '',
             duration_seconds: lesson.duration_seconds,
@@ -756,6 +796,11 @@ const AdminLessonManagement = ({
             formData.append('content_type', lessonFormData.content_type);
             formData.append('module', currentModuleId);
             formData.append('objectives', lessonFormData.objectives);
+            formData.append('interaction_type', lessonFormData.interaction_type || 'content');
+            const interactionConfig = lessonFormData.interaction_type === 'play_along'
+                ? { track_type: lessonFormData.play_along_track_type || 'backing_track' }
+                : {};
+            formData.append('interaction_config', JSON.stringify(interactionConfig));
             formData.append('repeat_after_me_enabled', lessonFormData.repeat_after_me_enabled);
             formData.append('repeat_after_me_prompt', lessonFormData.repeat_after_me_prompt || '');
             formData.append('is_preview', lessonFormData.is_preview);
@@ -1568,6 +1613,12 @@ const AdminLessonManagement = ({
                                                                                     YouTube
                                                                                 </span>
                                                                             )}
+                                                                            {lesson.interaction_type === 'play_along' && (
+                                                                                <span className="badge" style={{ backgroundColor: '#dcfce7', color: '#15803d', fontSize: '11px', fontWeight: 500 }}>
+                                                                                    <i className="bi bi-headphones me-1"></i>
+                                                                                    Play Along
+                                                                                </span>
+                                                                            )}
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -2005,7 +2056,7 @@ const AdminLessonManagement = ({
                                     )}
                                     
                                     <div className="row g-3">
-                                        <div className="col-md-8">
+                                        <div className="col-md-6">
                                             <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>Lesson Title <span style={{ color: '#ef4444' }}>*</span></label>
                                             <input
                                                 type="text"
@@ -2017,7 +2068,7 @@ const AdminLessonManagement = ({
                                                 style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '10px 14px' }}
                                             />
                                         </div>
-                                        <div className="col-md-4">
+                                        <div className="col-md-3">
                                             <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>Content Type <span style={{ color: '#ef4444' }}>*</span></label>
                                             <select
                                                 className="form-select"
@@ -2031,6 +2082,48 @@ const AdminLessonManagement = ({
                                                 <option value="image">Image</option>
                                             </select>
                                         </div>
+                                        <div className="col-md-3">
+                                            <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>Lesson Mode</label>
+                                            <select
+                                                className="form-select"
+                                                value={lessonFormData.interaction_type}
+                                                onChange={(e) => {
+                                                    const nextType = e.target.value;
+                                                    setLessonFormData(prev => ({
+                                                        ...prev,
+                                                        interaction_type: nextType,
+                                                        content_type: nextType === 'play_along' ? 'audio' : prev.content_type
+                                                    }));
+                                                }}
+                                                style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '10px 14px' }}
+                                            >
+                                                <option value="content">Standard</option>
+                                                <option value="play_along">Play Along</option>
+                                            </select>
+                                        </div>
+                                        {lessonFormData.interaction_type === 'play_along' && (
+                                            <div className="col-md-6">
+                                                <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>
+                                                    Play Along Track Type
+                                                </label>
+                                                <select
+                                                    className="form-select"
+                                                    value={lessonFormData.play_along_track_type}
+                                                    onChange={(e) => setLessonFormData({ ...lessonFormData, play_along_track_type: e.target.value })}
+                                                    style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '10px 14px' }}
+                                                >
+                                                    <option value="backing_track">Backing track</option>
+                                                    <option value="instrumental">Instrumental</option>
+                                                    <option value="rhythm_loop">Rhythm loop</option>
+                                                    <option value="warmup_sound">Warm-up sound</option>
+                                                    <option value="scale_practice">Scale practice</option>
+                                                    <option value="metronome_track">Metronome track</option>
+                                                    <option value="slow_practice">Slow practice</option>
+                                                    <option value="call_response">Call-and-response</option>
+                                                </select>
+                                                <small className="text-muted">Used to label the play-along track for students</small>
+                                            </div>
+                                        )}
                                         <div className="col-12">
                                             <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>Description</label>
                                             <textarea

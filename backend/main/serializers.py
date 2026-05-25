@@ -174,7 +174,7 @@ class ModuleLessonSerializer(serializers.ModelSerializer):
                   'content_type', 'file', 'youtube_url', 'duration_seconds', 'duration_formatted', 
                   'file_size_formatted', 'order', 'is_preview', 'is_locked', 'is_premium',
                   'repeat_after_me_enabled', 'repeat_after_me_prompt', 'repeat_after_me_audio',
-                  'required_access_level',
+                  'required_access_level', 'interaction_type', 'interaction_config',
                   'downloadables', 'created_at', 'updated_at']
     
     def __init__(self, *args, **kwargs):

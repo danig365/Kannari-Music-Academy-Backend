@@ -32,6 +32,14 @@ const StudentCoursePlayer = () => {
     const [lessonAccess, setLessonAccess] = useState({ can_access: true, checking: true });
     const [subscriptionInfo, setSubscriptionInfo] = useState(null);
     const [showYouTubeModal, setShowYouTubeModal] = useState(false);
+    const [playbackRate, setPlaybackRate] = useState(1);
+    const [loopEnabled, setLoopEnabled] = useState(false);
+    const [loopStart, setLoopStart] = useState(0);
+    const [loopEnd, setLoopEnd] = useState(0);
+    const [metronomeEnabled, setMetronomeEnabled] = useState(false);
+    const metronomeIntervalRef = useRef(null);
+    const metronomeAudioRef = useRef(null);
+    const METRONOME_BPM = 60;
 
     const milestoneMessages = {
         25: { emoji: '🚀', title: 'Great Start!', text: "You're 25% through! Keep up the momentum!" },
@@ -186,6 +194,7 @@ const StudentCoursePlayer = () => {
             clearTimeout(resizeTimeout);
         };
     }, []);
+
 
     const launchConfetti = (intensity = 'small') => {
         const canvas = document.createElement('canvas');
@@ -451,6 +460,94 @@ const StudentCoursePlayer = () => {
         }
     };
 
+    const playMetronomeTick = () => {
+        const AudioContextRef = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextRef) return;
+        if (!metronomeAudioRef.current) {
+            metronomeAudioRef.current = new AudioContextRef();
+        }
+        const ctx = metronomeAudioRef.current;
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        oscillator.type = 'square';
+        oscillator.frequency.value = 1000;
+        gainNode.gain.value = 0.08;
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + 0.05);
+    };
+
+    const startMetronome = () => {
+        stopMetronome();
+        playMetronomeTick();
+        const intervalMs = Math.round(60000 / METRONOME_BPM);
+        metronomeIntervalRef.current = setInterval(playMetronomeTick, intervalMs);
+    };
+
+    const stopMetronome = () => {
+        if (metronomeIntervalRef.current) {
+            clearInterval(metronomeIntervalRef.current);
+            metronomeIntervalRef.current = null;
+        }
+    };
+
+    const handleMetronomeToggle = () => {
+        setMetronomeEnabled((prev) => {
+            const next = !prev;
+            if (next) {
+                startMetronome();
+            } else {
+                stopMetronome();
+            }
+            return next;
+        });
+    };
+
+    const handlePlaybackRateChange = (rate) => {
+        setPlaybackRate(rate);
+        if (audioRef.current) {
+            audioRef.current.playbackRate = rate;
+        }
+    };
+
+    const handleReplay = () => {
+        if (!audioRef.current) return;
+        audioRef.current.currentTime = 0;
+        audioRef.current.play();
+    };
+
+    const handleSetLoopStart = () => {
+        if (!audioRef.current) return;
+        setLoopStart(Math.floor(audioRef.current.currentTime));
+    };
+
+    const handleSetLoopEnd = () => {
+        if (!audioRef.current) return;
+        setLoopEnd(Math.floor(audioRef.current.currentTime));
+    };
+
+    const handleLoopToggle = () => {
+        setLoopEnabled((prev) => !prev);
+    };
+
+    const handleAudioTimeUpdate = () => {
+        if (!audioRef.current || !loopEnabled) return;
+        if (loopEnd > loopStart && audioRef.current.currentTime >= loopEnd) {
+            audioRef.current.currentTime = loopStart;
+        }
+    };
+
+    useEffect(() => {
+        setPlaybackRate(1);
+        setLoopEnabled(false);
+        setLoopStart(0);
+        setLoopEnd(0);
+        stopMetronome();
+    }, [lesson_id]);
+
+    useEffect(() => () => stopMetronome(), []);
+
     const getContentTypeIcon = (type) => {
         const icons = {
             'video': 'bi-play-circle-fill',
@@ -502,6 +599,21 @@ const StudentCoursePlayer = () => {
         }
 
         return videoId ? `https://www.youtube.com/embed/${videoId}?rel=0` : null;
+    };
+
+    const getPlayAlongConfig = (lesson) => {
+        if (!lesson) return { enabled: false, trackType: null };
+        let config = lesson.interaction_config;
+        if (typeof config === 'string') {
+            try {
+                config = JSON.parse(config);
+            } catch (err) {
+                config = null;
+            }
+        }
+        const trackType = config?.track_type || null;
+        const enabled = lesson.interaction_type === 'play_along' || !!trackType;
+        return { enabled, trackType };
     };
 
     const renderContent = () => {
@@ -673,6 +785,7 @@ const StudentCoursePlayer = () => {
                 );
 
             case 'audio':
+                const playAlongConfig = getPlayAlongConfig(currentLesson);
                 return (
                     <div className="content-section-wrapper">
                         <div className="content-player-wrapper audio-wrapper">
@@ -680,11 +793,141 @@ const StudentCoursePlayer = () => {
                                 <div className="audio-player-icon">
                                     <i className="bi bi-music-note-beamed"></i>
                                 </div>
-                                <audio ref={audioRef} className="audio-player" controls onPause={saveVideoPosition} onEnded={saveVideoPosition}>
+                                <audio
+                                    ref={audioRef}
+                                    className="audio-player"
+                                    controls
+                                    onPause={saveVideoPosition}
+                                    onEnded={saveVideoPosition}
+                                    onTimeUpdate={handleAudioTimeUpdate}
+                                    playbackRate={playbackRate}
+                                >
                                     <source src={fileUrl} type="audio/mpeg" />
                                     Your browser does not support the audio tag.
                                 </audio>
                             </div>
+                            {playAlongConfig.enabled && (
+                                <div style={{
+                                    marginTop: '16px',
+                                    padding: '14px',
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: '12px',
+                                    background: '#f8fafc'
+                                }}>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', marginBottom: '12px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Speed</span>
+                                            {[0.75, 1, 1.25, 1.5].map(rate => (
+                                                <button
+                                                    key={rate}
+                                                    type="button"
+                                                    onClick={() => handlePlaybackRateChange(rate)}
+                                                    style={{
+                                                        border: '1px solid #e2e8f0',
+                                                        background: playbackRate === rate ? '#dbeafe' : '#fff',
+                                                        color: playbackRate === rate ? '#1d4ed8' : '#334155',
+                                                        padding: '6px 10px',
+                                                        borderRadius: '8px',
+                                                        fontSize: '12px',
+                                                        fontWeight: 600,
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    {rate}x
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Loop</span>
+                                            <button
+                                                type="button"
+                                                onClick={handleSetLoopStart}
+                                                style={{
+                                                    border: '1px solid #e2e8f0',
+                                                    background: '#fff',
+                                                    color: '#334155',
+                                                    padding: '6px 10px',
+                                                    borderRadius: '8px',
+                                                    fontSize: '12px',
+                                                    fontWeight: 600,
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Set A
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={handleSetLoopEnd}
+                                                style={{
+                                                    border: '1px solid #e2e8f0',
+                                                    background: '#fff',
+                                                    color: '#334155',
+                                                    padding: '6px 10px',
+                                                    borderRadius: '8px',
+                                                    fontSize: '12px',
+                                                    fontWeight: 600,
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Set B
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={handleLoopToggle}
+                                                style={{
+                                                    border: '1px solid #e2e8f0',
+                                                    background: loopEnabled ? '#dcfce7' : '#fff',
+                                                    color: loopEnabled ? '#15803d' : '#334155',
+                                                    padding: '6px 10px',
+                                                    borderRadius: '8px',
+                                                    fontSize: '12px',
+                                                    fontWeight: 600,
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                {loopEnabled ? 'Loop On' : 'Loop Off'}
+                                            </button>
+                                            <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+                                                {loopStart}s - {loopEnd}s
+                                            </span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <button
+                                                type="button"
+                                                onClick={handleReplay}
+                                                style={{
+                                                    border: '1px solid #e2e8f0',
+                                                    background: '#fff',
+                                                    color: '#334155',
+                                                    padding: '6px 10px',
+                                                    borderRadius: '8px',
+                                                    fontSize: '12px',
+                                                    fontWeight: 600,
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Replay
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={handleMetronomeToggle}
+                                                style={{
+                                                    border: '1px solid #e2e8f0',
+                                                    background: metronomeEnabled ? '#fee2e2' : '#fff',
+                                                    color: metronomeEnabled ? '#b91c1c' : '#334155',
+                                                    padding: '6px 10px',
+                                                    borderRadius: '8px',
+                                                    fontSize: '12px',
+                                                    fontWeight: 600,
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                {metronomeEnabled ? 'Metronome On' : 'Metronome Off'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         <YouTubeButton />
                     </div>
