@@ -94,6 +94,7 @@ services:
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/ssl/letsencrypt/www:/var/www/certbot:ro
       - media_data:/app/media:ro             # serve uploads without hitting backend
     networks:
       - app_net

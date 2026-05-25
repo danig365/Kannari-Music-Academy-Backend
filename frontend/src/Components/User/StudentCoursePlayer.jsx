@@ -272,6 +272,39 @@ const StudentCoursePlayer = () => {
         }
     };
 
+    const handleRepeatAfterMeAction = async (action) => {
+        try {
+            await axios.post(`${baseUrl}/student/${studentId}/lesson/${lesson_id}/repeat-after-me/`, { action });
+            const labelMap = {
+                done: 'Done',
+                again: 'Practice Again',
+                got_it: 'I Got It'
+            };
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: `✅ ${labelMap[action]}`,
+                showConfirmButton: false,
+                timer: 1800,
+                timerProgressBar: true,
+                background: '#1a1a2e',
+                color: '#fff'
+            });
+        } catch (error) {
+            console.error('Error recording Repeat After Me action:', error);
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: 'Could not record action',
+                showConfirmButton: false,
+                timer: 1800,
+                timerProgressBar: true
+            });
+        }
+    };
+
     const checkMilestoneProgress = (oldProgress, newProgress) => {
         const milestones = [25, 50, 75, 90];
         for (const milestone of milestones) {
@@ -911,6 +944,87 @@ const StudentCoursePlayer = () => {
                     {currentLesson && !currentLesson.is_locked && (
                         <div className="media-player-container">
                             {renderContent()}
+                        </div>
+                    )}
+
+                    {/* Repeat After Me */}
+                    {currentLesson?.repeat_after_me_enabled && !currentLesson.is_locked && (
+                        <div className="repeat-after-me-container" style={{
+                            marginTop: '20px',
+                            padding: '16px',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '12px',
+                            background: '#f8fafc'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                                <div style={{
+                                    width: '36px',
+                                    height: '36px',
+                                    borderRadius: '10px',
+                                    background: '#e0e7ff',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <i className="bi bi-mic-fill" style={{ color: '#4338ca' }}></i>
+                                </div>
+                                <div>
+                                    <h6 style={{ margin: 0, color: '#1e293b', fontWeight: 700 }}>Repeat After Me</h6>
+                                    <small style={{ color: '#64748b' }}>Listen, practice, then mark your progress.</small>
+                                </div>
+                                {currentLesson.repeat_after_me_status?.action && (
+                                    <span style={{
+                                        marginLeft: 'auto',
+                                        background: '#dcfce7',
+                                        color: '#166534',
+                                        padding: '4px 10px',
+                                        borderRadius: '999px',
+                                        fontSize: '12px',
+                                        fontWeight: 600
+                                    }}>
+                                        {currentLesson.repeat_after_me_status.action === 'done' && '✅ Done'}
+                                        {currentLesson.repeat_after_me_status.action === 'again' && '🔁 Practicing'}
+                                        {currentLesson.repeat_after_me_status.action === 'got_it' && '⭐ Got It'}
+                                    </span>
+                                )}
+                            </div>
+                            {currentLesson.repeat_after_me_prompt && (
+                                <p style={{ marginBottom: '12px', color: '#334155' }}>
+                                    {currentLesson.repeat_after_me_prompt}
+                                </p>
+                            )}
+                            {currentLesson.repeat_after_me_audio && (
+                                <audio
+                                    controls
+                                    style={{ width: '100%', marginBottom: '12px' }}
+                                    src={currentLesson.repeat_after_me_audio.startsWith('http')
+                                        ? currentLesson.repeat_after_me_audio
+                                        : `${mediaUrl}${currentLesson.repeat_after_me_audio.startsWith('/') ? '' : '/'}${currentLesson.repeat_after_me_audio}`}
+                                />
+                            )}
+                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                                <button
+                                    className="btn"
+                                    onClick={() => handleRepeatAfterMeAction('done')}
+                                    style={{ background: '#16a34a', color: '#fff', borderRadius: '10px', padding: '8px 14px', border: 'none' }}
+                                >
+                                    ✅ Done
+                                </button>
+                                <button
+                                    className="btn"
+                                    onClick={() => handleRepeatAfterMeAction('again')}
+                                    style={{ background: '#f59e0b', color: '#fff', borderRadius: '10px', padding: '8px 14px', border: 'none' }}
+                                >
+                                    🔁 Practice Again
+                                </button>
+                                <button
+                                    className="btn"
+                                    onClick={() => handleRepeatAfterMeAction('got_it')}
+                                    style={{ background: '#3b82f6', color: '#fff', borderRadius: '10px', padding: '8px 14px', border: 'none' }}
+                                >
+                                    ⭐ I Got It
+                                </button>
+                            </div>
                         </div>
                     )}
 

@@ -167,6 +167,7 @@ urlpatterns =[
         path('student/<int:student_id>/course/<int:course_id>/progress-enhanced/', views.StudentModuleProgressEnhanced.as_view()),
         path('student/<int:student_id>/lesson/<int:lesson_id>/complete/', views.mark_lesson_complete),
         path('student/<int:student_id>/lesson/<int:lesson_id>/position/', views.update_lesson_position),
+        path('student/<int:student_id>/lesson/<int:lesson_id>/repeat-after-me/', views.record_repeat_after_me_action),
         path('student/<int:student_id>/course/<int:course_id>/lesson/<int:current_lesson_id>/navigation/', views.StudentCourseNavigation.as_view()),
         path('student/<int:student_id>/lesson/<int:lesson_id>/unlock-status/', views.check_lesson_unlock_status),
         path('lesson/<int:lesson_id>/detail/', views.LessonDetailWithDownloadables.as_view()),

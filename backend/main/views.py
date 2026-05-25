@@ -26,10 +26,13 @@ from django.db import transaction
 from . import models
 from rest_framework.pagination import PageNumberPagination
 from django.utils import timezone
+import logging
 import os
 import uuid
 import json
 import secrets
+
+logger = logging.getLogger(__name__)
 
 
 # ==================== AUDIT LOG HELPERS ====================
@@ -4936,6 +4939,7 @@ class TeacherProgressDashboard(APIView):
         from datetime import date, timedelta
         from django.db.models import Count, Avg, Sum, Q
         from django.utils import timezone
+        from django.utils.dateparse import parse_date
         
         try:
             teacher = models.Teacher.objects.get(pk=teacher_id)
@@ -5153,6 +5157,58 @@ class TeacherProgressDashboard(APIView):
                 'enrollments': enrollments,
                 'avg_progress': round(avg_course_progress, 1),
             })
+
+        # Repeat After Me activity (recent + counts)
+        repeat_actions_qs = models.RepeatAfterMeAction.objects.filter(
+            lesson__module__course__teacher=teacher
+        ).select_related('student', 'lesson').order_by('-created_at')
+
+        action_filter = (request.GET.get('repeat_after_me_action') or '').strip().lower()
+        student_filter = request.GET.get('repeat_after_me_student_id')
+        lesson_filter = request.GET.get('repeat_after_me_lesson_id')
+        from_date = parse_date(request.GET.get('repeat_after_me_from', '') or '')
+        to_date = parse_date(request.GET.get('repeat_after_me_to', '') or '')
+
+        if action_filter in {'done', 'again', 'got_it'}:
+            repeat_actions_qs = repeat_actions_qs.filter(action=action_filter)
+        if student_filter:
+            repeat_actions_qs = repeat_actions_qs.filter(student_id=student_filter)
+        if lesson_filter:
+            repeat_actions_qs = repeat_actions_qs.filter(lesson_id=lesson_filter)
+        if from_date:
+            repeat_actions_qs = repeat_actions_qs.filter(created_at__date__gte=from_date)
+        if to_date:
+            repeat_actions_qs = repeat_actions_qs.filter(created_at__date__lte=to_date)
+
+        try:
+            repeat_limit = int(request.GET.get('repeat_after_me_limit', 20))
+        except (TypeError, ValueError):
+            repeat_limit = 20
+        try:
+            repeat_offset = int(request.GET.get('repeat_after_me_offset', 0))
+        except (TypeError, ValueError):
+            repeat_offset = 0
+
+        repeat_limit = max(1, min(100, repeat_limit))
+        repeat_offset = max(0, repeat_offset)
+
+        repeat_total = repeat_actions_qs.count()
+        repeat_recent = [
+            {
+                'student_id': action.student.id,
+                'student_name': action.student.fullname,
+                'lesson_id': action.lesson.id,
+                'lesson_title': action.lesson.title,
+                'action': action.action,
+                'created_at': action.created_at,
+            }
+            for action in repeat_actions_qs[repeat_offset:repeat_offset + repeat_limit]
+        ]
+
+        repeat_counts = {'done': 0, 'again': 0, 'got_it': 0, 'total': 0}
+        for row in repeat_actions_qs.values('action').annotate(count=Count('id')):
+            repeat_counts[row['action']] = row['count']
+            repeat_counts['total'] += row['count']
         
         return Response({
             'overall_progress': round(avg_progress, 1),
@@ -5167,6 +5223,18 @@ class TeacherProgressDashboard(APIView):
             'top_students': top_students_data,
             'attention_needed': attention_data,
             'course_stats': course_stats,
+            'repeat_after_me_recent': repeat_recent,
+            'repeat_after_me_counts': repeat_counts,
+            'repeat_after_me_recent_meta': {
+                'total': repeat_total,
+                'limit': repeat_limit,
+                'offset': repeat_offset,
+                'action': action_filter or None,
+                'student_id': int(student_filter) if student_filter and str(student_filter).isdigit() else None,
+                'lesson_id': int(lesson_filter) if lesson_filter and str(lesson_filter).isdigit() else None,
+                'from': from_date.isoformat() if from_date else None,
+                'to': to_date.isoformat() if to_date else None,
+            },
         })
 
 
@@ -5228,7 +5296,7 @@ class AdminModuleLessonList(generics.ListCreateAPIView):
         """Override create to validate file size and type before saving"""
         import os
         file = request.FILES.get('file')
-        content_type = request.data.get('content_type', 'video')
+        content_type = (request.data.get('content_type') or 'video').lower()
         
         if file:
             ext = os.path.splitext(file.name)[1].lower()
@@ -5251,7 +5319,19 @@ class AdminModuleLessonList(generics.ListCreateAPIView):
                            status='failed', error_message=err_msg)
                 return JsonResponse({'error': err_msg}, status=400)
         
-        return super().create(request, *args, **kwargs)
+        try:
+            data = request.data.copy()
+            module_id = self.kwargs.get('module_id')
+            if module_id and not data.get('module'):
+                data['module'] = module_id
+            serializer = self.get_serializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=201, headers=headers)
+        except Exception as e:
+            logger.exception("AdminModuleLessonList.create failed")
+            return JsonResponse({'error': f'Lesson create failed: {e}'}, status=500)
     
     def perform_create(self, serializer):
         # Auto-detect content type from file extension
@@ -5373,6 +5453,9 @@ def duplicate_module_lesson(request, lesson_id):
                 is_preview=lesson.is_preview,
                 is_locked=lesson.is_locked,
                 is_premium=lesson.is_premium,
+                repeat_after_me_enabled=lesson.repeat_after_me_enabled,
+                repeat_after_me_prompt=lesson.repeat_after_me_prompt,
+                repeat_after_me_audio=lesson.repeat_after_me_audio.name if lesson.repeat_after_me_audio else None,
                 required_access_level=lesson.required_access_level,
             )
 
@@ -5504,6 +5587,9 @@ class AdminCourseModulesWithLessons(APIView):
                     'is_preview': lesson.is_preview,
                     'is_locked': lesson.is_locked,
                     'is_premium': lesson.is_premium,
+                    'repeat_after_me_enabled': lesson.repeat_after_me_enabled,
+                    'repeat_after_me_prompt': lesson.repeat_after_me_prompt,
+                    'repeat_after_me_audio': request.build_absolute_uri(lesson.repeat_after_me_audio.url) if lesson.repeat_after_me_audio else None,
                     'required_access_level': lesson.required_access_level,
                 } for lesson in lessons]
                 
@@ -5727,6 +5813,63 @@ def update_lesson_position(request, student_id, lesson_id):
     return JsonResponse({'bool': False, 'message': 'Invalid request method'})
 
 
+@csrf_exempt
+def record_repeat_after_me_action(request, student_id, lesson_id):
+    """Record a student's Repeat After Me action for a lesson"""
+    if request.method != 'POST':
+        return JsonResponse({'bool': False, 'message': 'Invalid request method'}, status=405)
+
+    try:
+        payload = _extract_request_data(request)
+        action = (payload.get('action') or '').strip().lower()
+
+        if action not in {'done', 'again', 'got_it'}:
+            return JsonResponse({'bool': False, 'message': 'Invalid action'}, status=400)
+
+        student = models.Student.objects.get(pk=student_id)
+        lesson = models.ModuleLesson.objects.get(pk=lesson_id)
+
+        if not lesson.repeat_after_me_enabled:
+            return JsonResponse({'bool': False, 'message': 'Repeat After Me is not enabled for this lesson'}, status=400)
+
+        if not lesson.is_preview:
+            enrollment_exists = models.StudentCourseEnrollment.objects.filter(
+                student=student,
+                course=lesson.module.course
+            ).exists()
+            if not enrollment_exists:
+                return JsonResponse({'bool': False, 'message': 'You must enroll in this course to access this lesson.'}, status=403)
+
+            from .access_control import SubscriptionAccessControl
+            has_sub, _, sub_msg = SubscriptionAccessControl.check_subscription_status(student_id)
+            if not has_sub:
+                return JsonResponse({'bool': False, 'message': sub_msg}, status=403)
+
+        log_activity(
+            request=request,
+            action='repeat_after_me',
+            description=(
+                f'Student {student.fullname} marked Repeat After Me as "{action}" '
+                f'for lesson "{lesson.title}"'
+            ),
+            model_name='ModuleLesson',
+            object_id=lesson.id,
+            student=student
+        )
+
+        models.RepeatAfterMeAction.objects.create(
+            student=student,
+            lesson=lesson,
+            action=action
+        )
+
+        return JsonResponse({'bool': True, 'message': 'Action recorded', 'action': action})
+    except (models.Student.DoesNotExist, models.ModuleLesson.DoesNotExist) as e:
+        return JsonResponse({'bool': False, 'message': str(e)}, status=404)
+    except Exception as e:
+        return JsonResponse({'bool': False, 'message': str(e)}, status=400)
+
+
 class StudentCourseNavigation(APIView):
     """Get next/previous module and lesson for navigation"""
     
@@ -5824,6 +5967,30 @@ class StudentModuleProgressEnhanced(APIView):
                     lesson_progress = models.ModuleLessonProgress.objects.filter(
                         student=student, lesson=lesson
                     ).first()
+
+                    repeat_action = None
+                    if lesson.repeat_after_me_enabled:
+                        repeat_action = models.RepeatAfterMeAction.objects.filter(
+                            student=student, lesson=lesson
+                        ).order_by('-created_at').first()
+
+                    repeat_action = None
+                    if lesson.repeat_after_me_enabled:
+                        repeat_action = models.RepeatAfterMeAction.objects.filter(
+                            student=student, lesson=lesson
+                        ).order_by('-created_at').first()
+
+                    repeat_action = None
+                    if lesson.repeat_after_me_enabled:
+                        repeat_action = models.RepeatAfterMeAction.objects.filter(
+                            student=student, lesson=lesson
+                        ).order_by('-created_at').first()
+
+                    repeat_action = None
+                    if lesson.repeat_after_me_enabled:
+                        repeat_action = models.RepeatAfterMeAction.objects.filter(
+                            student=student, lesson=lesson
+                        ).order_by('-created_at').first()
                     
                     is_completed = lesson_progress.is_completed if lesson_progress else False
                     if is_completed:
@@ -6375,6 +6542,12 @@ class StudentLessonPageData(APIView):
                                 'file_size_formatted': downloadable.file_size_formatted,
                                 'download_count': downloadable.download_count,
                             })
+
+                    repeat_action = None
+                    if lesson.repeat_after_me_enabled:
+                        repeat_action = models.RepeatAfterMeAction.objects.filter(
+                            student=student, lesson=lesson
+                        ).order_by('-created_at').first()
                     
                     lesson_obj = {
                         'id': lesson.id,
@@ -6393,6 +6566,13 @@ class StudentLessonPageData(APIView):
                         'last_position': lesson_progress.last_position_seconds if lesson_progress else 0,
                         'objectives': lesson.objectives,
                         'objectives_list': lesson.objectives_list or [],
+                        'repeat_after_me_enabled': lesson.repeat_after_me_enabled,
+                        'repeat_after_me_prompt': lesson.repeat_after_me_prompt,
+                        'repeat_after_me_audio': request.build_absolute_uri(lesson.repeat_after_me_audio.url) if lesson.repeat_after_me_audio else None,
+                        'repeat_after_me_status': {
+                            'action': repeat_action.action,
+                            'created_at': repeat_action.created_at
+                        } if repeat_action else None,
                         'downloadables': downloadables_data,
                         'module_id': module.id,
                         'module_title': module.title,
@@ -6484,6 +6664,14 @@ class StudentLessonPageData(APIView):
         except models.Course.DoesNotExist:
             return Response({'error': 'Course not found'}, status=404)
         except Exception as e:
+            logger.exception(
+                "StudentLessonPageData failed",
+                extra={
+                    'student_id': student_id,
+                    'course_id': course_id,
+                    'lesson_id': lesson_id,
+                }
+            )
             return Response({'error': str(e)}, status=400)
 
 

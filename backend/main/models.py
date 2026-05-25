@@ -151,11 +151,16 @@ class ModuleLesson(models.Model):
     content_type = models.CharField(max_length=20, choices=CONTENT_TYPE_CHOICES, default='video')
     file = models.FileField(upload_to='lesson_content/', blank=True, null=True, max_length=500)
     youtube_url = models.URLField(max_length=500, blank=True, null=True, help_text="Optional YouTube video link for this lesson")
+    interaction_type = models.CharField(max_length=30, default='content')
+    interaction_config = models.JSONField(default=dict)
     duration_seconds = models.IntegerField(default=0)  # For video/audio
     order = models.PositiveIntegerField(default=0)
     is_preview = models.BooleanField(default=False, help_text="Allow non-enrolled users to preview this lesson")
     is_locked = models.BooleanField(default=True, help_text="Lesson locked until previous lessons completed")
     is_premium = models.BooleanField(default=False, help_text="Mark as premium content")
+    repeat_after_me_enabled = models.BooleanField(default=False)
+    repeat_after_me_prompt = models.TextField(blank=True, null=True)
+    repeat_after_me_audio = models.FileField(upload_to='lesson_interactions/repeat_after_me/', blank=True, null=True, max_length=500)
     required_access_level = models.CharField(max_length=20, choices=[
         ('free', 'Free'),
         ('basic', 'Basic'),
@@ -300,6 +305,27 @@ class ModuleLessonProgress(models.Model):
     def __str__(self):
         status = "Completed" if self.is_completed else "In Progress"
         return f"{self.student.fullname} - {self.lesson.title} - {status}"
+
+
+class RepeatAfterMeAction(models.Model):
+    """Tracks Repeat After Me interactions for a lesson"""
+    ACTION_CHOICES = [
+        ('done', 'Done'),
+        ('again', 'Practice Again'),
+        ('got_it', 'I Got It')
+    ]
+
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='repeat_after_me_actions')
+    lesson = models.ForeignKey(ModuleLesson, on_delete=models.CASCADE, related_name='repeat_after_me_actions')
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "4e. Repeat After Me Actions"
+        ordering = ['-created_at', '-id']
+
+    def __str__(self):
+        return f"{self.student.fullname} - {self.lesson.title} - {self.action}"
 
 
 class ModuleProgress(models.Model):

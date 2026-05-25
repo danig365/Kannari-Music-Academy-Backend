@@ -1,0 +1,961 @@
+2026-05-24 16:06:53,628:DEBUG:certbot._internal.main:certbot version: 5.3.1
+2026-05-24 16:06:53,629:DEBUG:certbot._internal.main:Location of certbot entry point: /usr/local/bin/certbot
+2026-05-24 16:06:53,629:DEBUG:certbot._internal.main:Arguments: ['--webroot', '-w', '/var/www/certbot', '-d', 'kannarimusicacademy.com', '-d', 'www.kannarimusicacademy.com', '-d', 'meet.kannarimusicacademy.com', '--email', 'contactsaxman@gmail.com', '--agree-tos', '--no-eff-email']
+2026-05-24 16:06:53,629:DEBUG:certbot._internal.main:Discovered plugins: PluginsRegistry(PluginEntryPoint#manual,PluginEntryPoint#null,PluginEntryPoint#standalone,PluginEntryPoint#webroot)
+2026-05-24 16:06:53,642:DEBUG:certbot._internal.log:Root logging level set at 30
+2026-05-24 16:06:53,642:DEBUG:certbot._internal.plugins.selection:Requested authenticator webroot and installer None
+2026-05-24 16:06:53,643:DEBUG:certbot._internal.plugins.selection:Single candidate plugin: * webroot
+Description: Saves the necessary validation files to a .well-known/acme-challenge/ directory within the nominated webroot path. A separate HTTP server must be running and serving files from the webroot path. HTTP challenge only (wildcards not supported).
+Interfaces: Authenticator, Plugin
+Entry point: EntryPoint(name='webroot', value='certbot._internal.plugins.webroot:Authenticator', group='certbot.plugins')
+Initialized: <certbot._internal.plugins.webroot.Authenticator object at 0x70b9dfcc0290>
+Prep: True
+2026-05-24 16:06:53,643:DEBUG:certbot._internal.plugins.selection:Selected authenticator <certbot._internal.plugins.webroot.Authenticator object at 0x70b9dfcc0290> and installer None
+2026-05-24 16:06:53,643:INFO:certbot._internal.plugins.selection:Plugins selected: Authenticator webroot, Installer None
+2026-05-24 16:06:53,694:DEBUG:certbot._internal.main:Picked account: <Account(RegistrationResource(body=Registration(key=None, contact=(), agreement=None, status=None, terms_of_service_agreed=None, only_return_existing=None, external_account_binding=None), uri='https://acme-v02.api.letsencrypt.org/acme/acct/3088320946', new_authzr_uri=None, terms_of_service=None), 09d8afe4d878caf5e13eb81733a809b2, Meta(creation_dt=datetime.datetime(2026, 2, 22, 19, 51, 41, tzinfo=datetime.timezone.utc), creation_host='26bfa23a8fbf', register_to_eff=None))>
+2026-05-24 16:06:53,695:DEBUG:acme.client:Sending GET request to https://acme-v02.api.letsencrypt.org/directory.
+2026-05-24 16:06:53,697:DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): acme-v02.api.letsencrypt.org:443
+2026-05-24 16:06:53,826:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "GET /directory HTTP/1.1" 200 1033
+2026-05-24 16:06:53,827:DEBUG:acme.client:Received response:
+HTTP 200
+Server: nginx
+Date: Sun, 24 May 2026 16:06:53 GMT
+Content-Type: application/json
+Content-Length: 1033
+Connection: keep-alive
+Cache-Control: public, max-age=0, no-cache
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+{
+  "keyChange": "https://acme-v02.api.letsencrypt.org/acme/key-change",
+  "meta": {
+    "caaIdentities": [
+      "letsencrypt.org"
+    ],
+    "profiles": {
+      "classic": "https://letsencrypt.org/docs/profiles#classic",
+      "shortlived": "https://letsencrypt.org/docs/profiles#shortlived",
+      "tlsclient": "https://letsencrypt.org/docs/profiles#tlsclient",
+      "tlsserver": "https://letsencrypt.org/docs/profiles#tlsserver"
+    },
+    "termsOfService": "https://letsencrypt.org/documents/LE-SA-v1.6-August-18-2025.pdf",
+    "website": "https://letsencrypt.org"
+  },
+  "newAccount": "https://acme-v02.api.letsencrypt.org/acme/new-acct",
+  "newNonce": "https://acme-v02.api.letsencrypt.org/acme/new-nonce",
+  "newOrder": "https://acme-v02.api.letsencrypt.org/acme/new-order",
+  "renewalInfo": "https://acme-v02.api.letsencrypt.org/acme/renewal-info",
+  "revokeCert": "https://acme-v02.api.letsencrypt.org/acme/revoke-cert",
+  "zdF3bqGkd8k": "https://community.letsencrypt.org/t/adding-random-entries-to-the-directory/33417"
+}
+2026-05-24 16:06:53,836:DEBUG:acme.client:Sending GET request to https://acme-v02.api.letsencrypt.org/directory.
+2026-05-24 16:06:53,837:DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): acme-v02.api.letsencrypt.org:443
+2026-05-24 16:06:54,022:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "GET /directory HTTP/1.1" 200 1033
+2026-05-24 16:06:54,022:DEBUG:acme.client:Received response:
+HTTP 200
+Server: nginx
+Date: Sun, 24 May 2026 16:06:53 GMT
+Content-Type: application/json
+Content-Length: 1033
+Connection: keep-alive
+Cache-Control: public, max-age=0, no-cache
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+{
+  "SdfWQpKgPVw": "https://community.letsencrypt.org/t/adding-random-entries-to-the-directory/33417",
+  "keyChange": "https://acme-v02.api.letsencrypt.org/acme/key-change",
+  "meta": {
+    "caaIdentities": [
+      "letsencrypt.org"
+    ],
+    "profiles": {
+      "classic": "https://letsencrypt.org/docs/profiles#classic",
+      "shortlived": "https://letsencrypt.org/docs/profiles#shortlived",
+      "tlsclient": "https://letsencrypt.org/docs/profiles#tlsclient",
+      "tlsserver": "https://letsencrypt.org/docs/profiles#tlsserver"
+    },
+    "termsOfService": "https://letsencrypt.org/documents/LE-SA-v1.6-August-18-2025.pdf",
+    "website": "https://letsencrypt.org"
+  },
+  "newAccount": "https://acme-v02.api.letsencrypt.org/acme/new-acct",
+  "newNonce": "https://acme-v02.api.letsencrypt.org/acme/new-nonce",
+  "newOrder": "https://acme-v02.api.letsencrypt.org/acme/new-order",
+  "renewalInfo": "https://acme-v02.api.letsencrypt.org/acme/renewal-info",
+  "revokeCert": "https://acme-v02.api.letsencrypt.org/acme/revoke-cert"
+}
+2026-05-24 16:06:54,023:INFO:certbot._internal.renewal:Certificate is due for renewal, auto-renewing...
+2026-05-24 16:06:54,025:DEBUG:certbot._internal.display.obj:Notifying user: Renewing an existing certificate for kannarimusicacademy.com and 2 more
+2026-05-24 16:06:54,027:DEBUG:acme.client:Requesting fresh nonce
+2026-05-24 16:06:54,027:DEBUG:acme.client:Sending HEAD request to https://acme-v02.api.letsencrypt.org/acme/new-nonce.
+2026-05-24 16:06:54,069:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "HEAD /acme/new-nonce HTTP/1.1" 200 0
+2026-05-24 16:06:54,069:DEBUG:acme.client:Received response:
+HTTP 200
+Server: nginx
+Date: Sun, 24 May 2026 16:06:54 GMT
+Connection: keep-alive
+Cache-Control: public, max-age=0, no-cache
+Link: <https://acme-v02.api.letsencrypt.org/directory>;rel="index"
+Replay-Nonce: I78CA660kvZytqHbAEbB863UKcNeiGCVGxjLHR-wXHQ5GJM-WvE
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+
+2026-05-24 16:06:54,069:DEBUG:acme.client:Storing nonce: I78CA660kvZytqHbAEbB863UKcNeiGCVGxjLHR-wXHQ5GJM-WvE
+2026-05-24 16:06:54,070:DEBUG:acme.client:JWS payload:
+b'{\n  "identifiers": [\n    {\n      "type": "dns",\n      "value": "kannarimusicacademy.com"\n    },\n    {\n      "type": "dns",\n      "value": "www.kannarimusicacademy.com"\n    },\n    {\n      "type": "dns",\n      "value": "meet.kannarimusicacademy.com"\n    }\n  ]\n}'
+2026-05-24 16:06:54,073:DEBUG:acme.client:Sending POST request to https://acme-v02.api.letsencrypt.org/acme/new-order:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2FjY3QvMzA4ODMyMDk0NiIsICJub25jZSI6ICJJNzhDQTY2MGt2Wnl0cUhiQUViQjg2M1VLY05laUdDVkd4akxIUi13WEhRNUdKTS1XdkUiLCAidXJsIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL25ldy1vcmRlciJ9",
+  "signature": "TcUcnvUinO8rkn2ryy7XsSykgS_8n2BrAA6Pw0kxZl-kNT1SGfy4b96CESPQ9fTFNX7Wo53DogEMAK3V5AOyANTRIJZ2EDXEbr9tzUBRaht-XOLEL8CSl_YM9bolKYOPZemum7Iu56dOVdHtkP5UBybVEtiJcMgFY5MVkcAABKHETJo2N6X2OTG0epd0IRPOjTk6tEPHT_QyFzoqZzsyFyP00U5k0t3wLWzEosWIVBUR95kUiMdVjSinVTA7LagfMUsNtXveXyaaSW3ruVx534osNt9-yZQqCcXaghLenhIkbaGCBCkJ8Ms-ih_N4LWUuTi-MPgWi6StfBIuvp0Kxw",
+  "payload": "ewogICJpZGVudGlmaWVycyI6IFsKICAgIHsKICAgICAgInR5cGUiOiAiZG5zIiwKICAgICAgInZhbHVlIjogImthbm5hcmltdXNpY2FjYWRlbXkuY29tIgogICAgfSwKICAgIHsKICAgICAgInR5cGUiOiAiZG5zIiwKICAgICAgInZhbHVlIjogInd3dy5rYW5uYXJpbXVzaWNhY2FkZW15LmNvbSIKICAgIH0sCiAgICB7CiAgICAgICJ0eXBlIjogImRucyIsCiAgICAgICJ2YWx1ZSI6ICJtZWV0Lmthbm5hcmltdXNpY2FjYWRlbXkuY29tIgogICAgfQogIF0KfQ"
+}
+2026-05-24 16:06:54,363:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "POST /acme/new-order HTTP/1.1" 201 674
+2026-05-24 16:06:54,364:DEBUG:acme.client:Received response:
+HTTP 201
+Server: nginx
+Date: Sun, 24 May 2026 16:06:54 GMT
+Content-Type: application/json
+Content-Length: 674
+Connection: keep-alive
+Boulder-Requester: 3088320946
+Cache-Control: public, max-age=0, no-cache
+Link: <https://acme-v02.api.letsencrypt.org/directory>;rel="index"
+Location: https://acme-v02.api.letsencrypt.org/acme/order/3088320946/514324132906
+Replay-Nonce: I78CA660VUqklqAiBgEP-UQaLm7n_BQwYCVbvxXnw7Aehf00yeQ
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+{
+  "status": "pending",
+  "expires": "2026-05-31T16:06:54Z",
+  "identifiers": [
+    {
+      "type": "dns",
+      "value": "kannarimusicacademy.com"
+    },
+    {
+      "type": "dns",
+      "value": "meet.kannarimusicacademy.com"
+    },
+    {
+      "type": "dns",
+      "value": "www.kannarimusicacademy.com"
+    }
+  ],
+  "authorizations": [
+    "https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909069986",
+    "https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909070096",
+    "https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909070226"
+  ],
+  "finalize": "https://acme-v02.api.letsencrypt.org/acme/finalize/3088320946/514324132906"
+}
+2026-05-24 16:06:54,364:DEBUG:acme.client:Storing nonce: I78CA660VUqklqAiBgEP-UQaLm7n_BQwYCVbvxXnw7Aehf00yeQ
+2026-05-24 16:06:54,364:DEBUG:acme.client:JWS payload:
+b''
+2026-05-24 16:06:54,366:DEBUG:acme.client:Sending POST request to https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909069986:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2FjY3QvMzA4ODMyMDk0NiIsICJub25jZSI6ICJJNzhDQTY2MFZVcWtscUFpQmdFUC1VUWFMbTduX0JRd1lDVmJ2eFhudzdBZWhmMDB5ZVEiLCAidXJsIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2F1dGh6LzMwODgzMjA5NDYvNzA5OTA5MDY5OTg2In0",
+  "signature": "VGbuP_w_v-uH6movsHYRw1Hxg3QhMptuGVk0mP3CKbcf5yBTojia_neHTIazZWSQHR4hzFIs_2zW2MJ15l9lxqHyF0KXUFWyZHg3uYkwsrnELce_GsTncEXAYMDZriIHhGTnmUvqrBzXy8taokch-1G7amPN92TwT-1othKPQIlLx1c8NP42U45KQ4Yl8-1hlRmYj4nFOx15rhTN9o1WkCCoCyQpkOslfiii7zRmGYyRNn0LXoFKlRSQst26x9veQUfWzpfn5UY9qqdnSCuValAiQI4VrhxvsiY0_j274TBVX5Xjz6U86WSHs6BUF1pYQUCHEXI2EwY96k95uWBCqQ",
+  "payload": ""
+}
+2026-05-24 16:06:54,411:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "POST /acme/authz/3088320946/709909069986 HTTP/1.1" 200 831
+2026-05-24 16:06:54,411:DEBUG:acme.client:Received response:
+HTTP 200
+Server: nginx
+Date: Sun, 24 May 2026 16:06:54 GMT
+Content-Type: application/json
+Content-Length: 831
+Connection: keep-alive
+Boulder-Requester: 3088320946
+Cache-Control: public, max-age=0, no-cache
+Link: <https://acme-v02.api.letsencrypt.org/directory>;rel="index"
+Replay-Nonce: YXn3IxfDj8mPrE-FOqXiYsGl62F0twbVh4_0e-FReszQf8cpGvk
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+{
+  "identifier": {
+    "type": "dns",
+    "value": "kannarimusicacademy.com"
+  },
+  "status": "pending",
+  "expires": "2026-05-31T16:06:54Z",
+  "challenges": [
+    {
+      "type": "http-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909069986/vO5sYw",
+      "status": "pending",
+      "token": "Q5SnPfO_lPLDa6Dsp6MUu_qi1lLT5etU685Ni3zk6Mw"
+    },
+    {
+      "type": "dns-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909069986/D1KKNQ",
+      "status": "pending",
+      "token": "Q5SnPfO_lPLDa6Dsp6MUu_qi1lLT5etU685Ni3zk6Mw"
+    },
+    {
+      "type": "tls-alpn-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909069986/lyz0Hg",
+      "status": "pending",
+      "token": "Q5SnPfO_lPLDa6Dsp6MUu_qi1lLT5etU685Ni3zk6Mw"
+    }
+  ]
+}
+2026-05-24 16:06:54,411:DEBUG:acme.client:Storing nonce: YXn3IxfDj8mPrE-FOqXiYsGl62F0twbVh4_0e-FReszQf8cpGvk
+2026-05-24 16:06:54,412:DEBUG:acme.challenges:tls-alpn-01 was not recognized, full message: {'type': 'tls-alpn-01', 'url': 'https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909069986/lyz0Hg', 'status': 'pending', 'token': 'Q5SnPfO_lPLDa6Dsp6MUu_qi1lLT5etU685Ni3zk6Mw'}
+2026-05-24 16:06:54,412:DEBUG:acme.client:JWS payload:
+b''
+2026-05-24 16:06:54,413:DEBUG:acme.client:Sending POST request to https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909070096:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2FjY3QvMzA4ODMyMDk0NiIsICJub25jZSI6ICJZWG4zSXhmRGo4bVByRS1GT3FYaVlzR2w2MkYwdHdiVmg0XzBlLUZSZXN6UWY4Y3BHdmsiLCAidXJsIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2F1dGh6LzMwODgzMjA5NDYvNzA5OTA5MDcwMDk2In0",
+  "signature": "X_pXIif80NSOuedvNmLCyDYYj2F833sS2VxWIj9vXpKQ9aFL0AVH62EOsZpS3vgybCG0501P23Fgw0AXLylV2uptE-MqOHMIhI3YKVyYnDh0JZ5lnFXBnyDe8xGGkA-SGG7vEK0vSFjKL0KmZIWFL9nmJqR_Uc8zb3T1aXjsLVAzYLMYTt39CrYI2q74iIH2MZ-ggtKKbTnsUYXhTN1-YExl0tVWv4XvwzAhNYk1VDX1LevWiuCLcIVccic6cT2Oz3L6dvmjuOyCraBHdtEH_xkndIaACQDHonsanduoAfWLMjUhULvHTATpAEoUxosu1__cFbjTFgm_VaHxNf2vXg",
+  "payload": ""
+}
+2026-05-24 16:06:54,457:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "POST /acme/authz/3088320946/709909070096 HTTP/1.1" 200 836
+2026-05-24 16:06:54,458:DEBUG:acme.client:Received response:
+HTTP 200
+Server: nginx
+Date: Sun, 24 May 2026 16:06:54 GMT
+Content-Type: application/json
+Content-Length: 836
+Connection: keep-alive
+Boulder-Requester: 3088320946
+Cache-Control: public, max-age=0, no-cache
+Link: <https://acme-v02.api.letsencrypt.org/directory>;rel="index"
+Replay-Nonce: I78CA6609Wb09-Gculu19cpOE6EeBJtPR4fglhfWCq2PIHf5DHk
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+{
+  "identifier": {
+    "type": "dns",
+    "value": "meet.kannarimusicacademy.com"
+  },
+  "status": "pending",
+  "expires": "2026-05-31T16:06:54Z",
+  "challenges": [
+    {
+      "type": "http-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070096/Q4Bxrg",
+      "status": "pending",
+      "token": "X1vAyTJwRU8K7-IEWlPg5WqN4_7_mbaPswW3M1VZVFI"
+    },
+    {
+      "type": "dns-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070096/YwmD6Q",
+      "status": "pending",
+      "token": "X1vAyTJwRU8K7-IEWlPg5WqN4_7_mbaPswW3M1VZVFI"
+    },
+    {
+      "type": "tls-alpn-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070096/xfOzfA",
+      "status": "pending",
+      "token": "X1vAyTJwRU8K7-IEWlPg5WqN4_7_mbaPswW3M1VZVFI"
+    }
+  ]
+}
+2026-05-24 16:06:54,458:DEBUG:acme.client:Storing nonce: I78CA6609Wb09-Gculu19cpOE6EeBJtPR4fglhfWCq2PIHf5DHk
+2026-05-24 16:06:54,459:DEBUG:acme.challenges:tls-alpn-01 was not recognized, full message: {'type': 'tls-alpn-01', 'url': 'https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070096/xfOzfA', 'status': 'pending', 'token': 'X1vAyTJwRU8K7-IEWlPg5WqN4_7_mbaPswW3M1VZVFI'}
+2026-05-24 16:06:54,459:DEBUG:acme.client:JWS payload:
+b''
+2026-05-24 16:06:54,460:DEBUG:acme.client:Sending POST request to https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909070226:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2FjY3QvMzA4ODMyMDk0NiIsICJub25jZSI6ICJJNzhDQTY2MDlXYjA5LUdjdWx1MTljcE9FNkVlQkp0UFI0ZmdsaGZXQ3EyUElIZjVESGsiLCAidXJsIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2F1dGh6LzMwODgzMjA5NDYvNzA5OTA5MDcwMjI2In0",
+  "signature": "BxPhffJvnonRfv4Cek0B3Qsgn5-D4LNimqPYzjIjXlv2lk8siJqod_gFeQWVXRmyA9vK26zpMZV6VY7TBbob4tD0-UmfcK9v_ac-0_re6BMlL63Ye2P7XdSXHP5hqqSiSvw-O9l6qAXl_hvBSYzatvlYmIjBM6JQHAKQtIfrFhEIPlVry_5FnGEIkqjMg_V65bUGUVOemHoYnPUTf0a9_XXNqoU13Ne9UE5Ir4Z-9cOMcOLaVq7lFeEnp0F5H7DYbLBRO--FHpPhWjYvHR9M3WYX-Qe8luPvHi9ldCUdFObY13GCosv2eIjNQz9C0xhz8o3gQnr0ze4ueIgAXWcmJQ",
+  "payload": ""
+}
+2026-05-24 16:06:54,516:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "POST /acme/authz/3088320946/709909070226 HTTP/1.1" 200 835
+2026-05-24 16:06:54,517:DEBUG:acme.client:Received response:
+HTTP 200
+Server: nginx
+Date: Sun, 24 May 2026 16:06:54 GMT
+Content-Type: application/json
+Content-Length: 835
+Connection: keep-alive
+Boulder-Requester: 3088320946
+Cache-Control: public, max-age=0, no-cache
+Link: <https://acme-v02.api.letsencrypt.org/directory>;rel="index"
+Replay-Nonce: YXn3IxfDtLjsud1GHhOoC8taB4qKUDE2pFWQgDAcAKPalg4cZpo
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+{
+  "identifier": {
+    "type": "dns",
+    "value": "www.kannarimusicacademy.com"
+  },
+  "status": "pending",
+  "expires": "2026-05-31T16:06:54Z",
+  "challenges": [
+    {
+      "type": "dns-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070226/IaObag",
+      "status": "pending",
+      "token": "aeo6D_Z0Wfn2GX6GJrWt2P43Nrnwq35GIrcj6GlMpjI"
+    },
+    {
+      "type": "http-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070226/AMfjbg",
+      "status": "pending",
+      "token": "aeo6D_Z0Wfn2GX6GJrWt2P43Nrnwq35GIrcj6GlMpjI"
+    },
+    {
+      "type": "tls-alpn-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070226/yNOy7A",
+      "status": "pending",
+      "token": "aeo6D_Z0Wfn2GX6GJrWt2P43Nrnwq35GIrcj6GlMpjI"
+    }
+  ]
+}
+2026-05-24 16:06:54,517:DEBUG:acme.client:Storing nonce: YXn3IxfDtLjsud1GHhOoC8taB4qKUDE2pFWQgDAcAKPalg4cZpo
+2026-05-24 16:06:54,518:DEBUG:acme.challenges:tls-alpn-01 was not recognized, full message: {'type': 'tls-alpn-01', 'url': 'https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070226/yNOy7A', 'status': 'pending', 'token': 'aeo6D_Z0Wfn2GX6GJrWt2P43Nrnwq35GIrcj6GlMpjI'}
+2026-05-24 16:06:54,518:INFO:certbot._internal.auth_handler:Performing the following challenges:
+2026-05-24 16:06:54,518:INFO:certbot._internal.auth_handler:http-01 challenge for Identifier(typ=IdentifierType(dns), value='kannarimusicacademy.com')
+2026-05-24 16:06:54,518:INFO:certbot._internal.auth_handler:http-01 challenge for Identifier(typ=IdentifierType(dns), value='meet.kannarimusicacademy.com')
+2026-05-24 16:06:54,519:INFO:certbot._internal.auth_handler:http-01 challenge for Identifier(typ=IdentifierType(dns), value='www.kannarimusicacademy.com')
+2026-05-24 16:06:54,519:INFO:certbot._internal.plugins.webroot:Using the webroot path /var/www/certbot for all unmatched domains.
+2026-05-24 16:06:54,519:DEBUG:certbot._internal.plugins.webroot:Creating root challenges validation dir at /var/www/certbot/.well-known/acme-challenge
+2026-05-24 16:06:54,519:DEBUG:certbot._internal.plugins.webroot:Creating root challenges validation dir at /var/www/certbot/.well-known/acme-challenge
+2026-05-24 16:06:54,520:DEBUG:certbot._internal.plugins.webroot:Creating root challenges validation dir at /var/www/certbot/.well-known/acme-challenge
+2026-05-24 16:06:54,521:DEBUG:certbot._internal.plugins.webroot:Attempting to save validation to /var/www/certbot/.well-known/acme-challenge/Q5SnPfO_lPLDa6Dsp6MUu_qi1lLT5etU685Ni3zk6Mw
+2026-05-24 16:06:54,521:DEBUG:certbot._internal.plugins.webroot:Attempting to save validation to /var/www/certbot/.well-known/acme-challenge/X1vAyTJwRU8K7-IEWlPg5WqN4_7_mbaPswW3M1VZVFI
+2026-05-24 16:06:54,522:DEBUG:certbot._internal.plugins.webroot:Attempting to save validation to /var/www/certbot/.well-known/acme-challenge/aeo6D_Z0Wfn2GX6GJrWt2P43Nrnwq35GIrcj6GlMpjI
+2026-05-24 16:06:54,522:DEBUG:acme.client:JWS payload:
+b'{}'
+2026-05-24 16:06:54,524:DEBUG:acme.client:Sending POST request to https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909069986/vO5sYw:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2FjY3QvMzA4ODMyMDk0NiIsICJub25jZSI6ICJZWG4zSXhmRHRManN1ZDFHSGhPb0M4dGFCNHFLVURFMnBGV1FnREFjQUtQYWxnNGNacG8iLCAidXJsIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2NoYWxsLzMwODgzMjA5NDYvNzA5OTA5MDY5OTg2L3ZPNXNZdyJ9",
+  "signature": "JrBDzm04eEmkSj3Piy-bxg1JLBvTaZOhGz203NkgskYHR5NDII7RAsPUlpl1KA9bh4V7uoFVn28qDtDxXnnQK-9Mdz1PtFbtJzPt_TXy5liVdiNeyT89wnwjlK8b-Am9K2HdUCeyeFUNfvai1rEBlK0jwRcpyFrOSWQQmbSnApWha3d57REiIRZHfSmT8kHX51O8Qv2eMVJU_q7T7oo44FdzALzZKsi5KILSLWATzvQCBCqz902XVxy_D3ftpwG0UzTQipg-zAv6gXK8CMOkrALwOgAMrL4Ne4TiOtYCE6mV0UeQkmgxbg0Ez0P_yIhifVQdmgcQwVap2t126ciQiA",
+  "payload": "e30"
+}
+2026-05-24 16:06:54,569:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "POST /acme/chall/3088320946/709909069986/vO5sYw HTTP/1.1" 200 195
+2026-05-24 16:06:54,569:DEBUG:acme.client:Received response:
+HTTP 200
+Server: nginx
+Date: Sun, 24 May 2026 16:06:54 GMT
+Content-Type: application/json
+Content-Length: 195
+Connection: keep-alive
+Boulder-Requester: 3088320946
+Cache-Control: public, max-age=0, no-cache
+Link: <https://acme-v02.api.letsencrypt.org/directory>;rel="index", <https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909069986>;rel="up"
+Location: https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909069986/vO5sYw
+Replay-Nonce: YXn3IxfDd-5A0Hd5x7hnhg7QLTDSul-whvLBjuPex0DB6CjAJfo
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+{
+  "type": "http-01",
+  "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909069986/vO5sYw",
+  "status": "pending",
+  "token": "Q5SnPfO_lPLDa6Dsp6MUu_qi1lLT5etU685Ni3zk6Mw"
+}
+2026-05-24 16:06:54,570:DEBUG:acme.client:Storing nonce: YXn3IxfDd-5A0Hd5x7hnhg7QLTDSul-whvLBjuPex0DB6CjAJfo
+2026-05-24 16:06:54,570:DEBUG:acme.client:JWS payload:
+b'{}'
+2026-05-24 16:06:54,571:DEBUG:acme.client:Sending POST request to https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070096/Q4Bxrg:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2FjY3QvMzA4ODMyMDk0NiIsICJub25jZSI6ICJZWG4zSXhmRGQtNUEwSGQ1eDdobmhnN1FMVERTdWwtd2h2TEJqdVBleDBEQjZDakFKZm8iLCAidXJsIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2NoYWxsLzMwODgzMjA5NDYvNzA5OTA5MDcwMDk2L1E0QnhyZyJ9",
+  "signature": "zM8XFdoa_rQ2biraRjQEU8GM6b3YMGoHsBrUTgvNIBUF9CXXLi7hQvz4hjAIrh09v74MNyEytS834pjYKc54L2clYn3jbSlppU4DJ0ph1lln2qfHv_sBoqsACc7LoAhd7CQXNEgK5SKXwYKZKfpgo4e_VNpoxzOR0JHDnMjukgyn-NRGRtIjrutsiA0VcxnrltlDTUF_NeQ7QXmcsHS3PzHgqn_2AIyNefMmGZKWkq7r6Awh8VmHkUWNoHPWMWZj4Qwrd4tadZi1InsK6u7T3DzStqqVzOrdnz-o-wEABwIGMqIfET_SSC7CVGz5gGS6YfiWgm9HlhkOD4sFugrZog",
+  "payload": "e30"
+}
+2026-05-24 16:06:54,616:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "POST /acme/chall/3088320946/709909070096/Q4Bxrg HTTP/1.1" 200 195
+2026-05-24 16:06:54,617:DEBUG:acme.client:Received response:
+HTTP 200
+Server: nginx
+Date: Sun, 24 May 2026 16:06:54 GMT
+Content-Type: application/json
+Content-Length: 195
+Connection: keep-alive
+Boulder-Requester: 3088320946
+Cache-Control: public, max-age=0, no-cache
+Link: <https://acme-v02.api.letsencrypt.org/directory>;rel="index", <https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909070096>;rel="up"
+Location: https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070096/Q4Bxrg
+Replay-Nonce: YXn3IxfDH3Vbi4LmXnc2uvvLPOol88PY36ZL0777MwSaqBNieaY
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+{
+  "type": "http-01",
+  "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070096/Q4Bxrg",
+  "status": "pending",
+  "token": "X1vAyTJwRU8K7-IEWlPg5WqN4_7_mbaPswW3M1VZVFI"
+}
+2026-05-24 16:06:54,617:DEBUG:acme.client:Storing nonce: YXn3IxfDH3Vbi4LmXnc2uvvLPOol88PY36ZL0777MwSaqBNieaY
+2026-05-24 16:06:54,617:DEBUG:acme.client:JWS payload:
+b'{}'
+2026-05-24 16:06:54,618:DEBUG:acme.client:Sending POST request to https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070226/AMfjbg:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2FjY3QvMzA4ODMyMDk0NiIsICJub25jZSI6ICJZWG4zSXhmREgzVmJpNExtWG5jMnV2dkxQT29sODhQWTM2WkwwNzc3TXdTYXFCTmllYVkiLCAidXJsIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2NoYWxsLzMwODgzMjA5NDYvNzA5OTA5MDcwMjI2L0FNZmpiZyJ9",
+  "signature": "H1LoN-W1sUBX4DrporVxUiP5ThXSoW2MIVJKqETENpHgwWr7E4x3MsCoNO_S0Za77yQxVK_xtM5L-tSE1LCAIEb7z8fwk9EKGi6uXMn0lnkTwgz4ohtuaTuRfn6Ij_JKSTXCD3bNpr1-p5M74qV4C8UgIm0n3bFTu5RypuNAdeEXkbaXLlDYhpuncfVKxyNCqC8dE4TWInaZT77plu5aH32qap6wreSfw1I5Yr59VU3Bcw7_UHHM0RCRFaFflQv7GSMRQBeQGa6o1p9Gr3XgROfWj9rKERHfl2U-M4QjGUsqGyP7gtkPAbl1WktwGR1AWbrgo3dUZ_V_7ZEeW0K19A",
+  "payload": "e30"
+}
+2026-05-24 16:06:54,664:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "POST /acme/chall/3088320946/709909070226/AMfjbg HTTP/1.1" 200 195
+2026-05-24 16:06:54,665:DEBUG:acme.client:Received response:
+HTTP 200
+Server: nginx
+Date: Sun, 24 May 2026 16:06:54 GMT
+Content-Type: application/json
+Content-Length: 195
+Connection: keep-alive
+Boulder-Requester: 3088320946
+Cache-Control: public, max-age=0, no-cache
+Link: <https://acme-v02.api.letsencrypt.org/directory>;rel="index", <https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909070226>;rel="up"
+Location: https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070226/AMfjbg
+Replay-Nonce: YXn3IxfDMb6TPqzjsNhUhXdmmvEUtAA5Ix2WTQGGOw0GTgBim_U
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+{
+  "type": "http-01",
+  "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070226/AMfjbg",
+  "status": "pending",
+  "token": "aeo6D_Z0Wfn2GX6GJrWt2P43Nrnwq35GIrcj6GlMpjI"
+}
+2026-05-24 16:06:54,665:DEBUG:acme.client:Storing nonce: YXn3IxfDMb6TPqzjsNhUhXdmmvEUtAA5Ix2WTQGGOw0GTgBim_U
+2026-05-24 16:06:54,665:INFO:certbot._internal.auth_handler:Waiting for verification...
+2026-05-24 16:06:55,665:DEBUG:acme.client:JWS payload:
+b''
+2026-05-24 16:06:55,667:DEBUG:acme.client:Sending POST request to https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909069986:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2FjY3QvMzA4ODMyMDk0NiIsICJub25jZSI6ICJZWG4zSXhmRE1iNlRQcXpqc05oVWhYZG1tdkVVdEFBNUl4MldUUUdHT3cwR1RnQmltX1UiLCAidXJsIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2F1dGh6LzMwODgzMjA5NDYvNzA5OTA5MDY5OTg2In0",
+  "signature": "poGHmAkyZf7q5OM5xtheRFQh1z59kJrBEsI6Qhqedj8SjO4gtDXomUJJ0XeW_Pqkju-GHP3lZAZoLeLqzOctgHboujnIAIoECA0uDgW6FIMs1tpHGPwOFU874IEmo2_Mqt0M-LdmROpjkENqY-xk0IgO_n3CxgYnxh5qlr2u0OlCISDVn0lAaveRWh-Tw2DAMf9E-T_bcPg8sJapNF9CiVTKKrTIKc7cKk80UM_k9nG9kyESD4ZVoMZ7vLQwh5LW2qbw0m7Jyi4bYsdrJ0ogzTF-nvoC36cbOh7UVyn-CISLsNJ-AQNzEzEgyN80IAEk01WSpg2joH7Qv386BB7hUw",
+  "payload": ""
+}
+2026-05-24 16:06:55,710:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "POST /acme/authz/3088320946/709909069986 HTTP/1.1" 200 831
+2026-05-24 16:06:55,711:DEBUG:acme.client:Received response:
+HTTP 200
+Server: nginx
+Date: Sun, 24 May 2026 16:06:55 GMT
+Content-Type: application/json
+Content-Length: 831
+Connection: keep-alive
+Boulder-Requester: 3088320946
+Cache-Control: public, max-age=0, no-cache
+Link: <https://acme-v02.api.letsencrypt.org/directory>;rel="index"
+Replay-Nonce: YXn3IxfDA-qQCA9R8GHR1XahuhMy8EG0F04fFzPCjP6hFAybyxM
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+{
+  "identifier": {
+    "type": "dns",
+    "value": "kannarimusicacademy.com"
+  },
+  "status": "pending",
+  "expires": "2026-05-31T16:06:54Z",
+  "challenges": [
+    {
+      "type": "tls-alpn-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909069986/lyz0Hg",
+      "status": "pending",
+      "token": "Q5SnPfO_lPLDa6Dsp6MUu_qi1lLT5etU685Ni3zk6Mw"
+    },
+    {
+      "type": "http-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909069986/vO5sYw",
+      "status": "pending",
+      "token": "Q5SnPfO_lPLDa6Dsp6MUu_qi1lLT5etU685Ni3zk6Mw"
+    },
+    {
+      "type": "dns-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909069986/D1KKNQ",
+      "status": "pending",
+      "token": "Q5SnPfO_lPLDa6Dsp6MUu_qi1lLT5etU685Ni3zk6Mw"
+    }
+  ]
+}
+2026-05-24 16:06:55,711:DEBUG:acme.client:Storing nonce: YXn3IxfDA-qQCA9R8GHR1XahuhMy8EG0F04fFzPCjP6hFAybyxM
+2026-05-24 16:06:55,711:DEBUG:acme.challenges:tls-alpn-01 was not recognized, full message: {'type': 'tls-alpn-01', 'url': 'https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909069986/lyz0Hg', 'status': 'pending', 'token': 'Q5SnPfO_lPLDa6Dsp6MUu_qi1lLT5etU685Ni3zk6Mw'}
+2026-05-24 16:06:55,711:DEBUG:acme.client:JWS payload:
+b''
+2026-05-24 16:06:55,712:DEBUG:acme.client:Sending POST request to https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909070096:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2FjY3QvMzA4ODMyMDk0NiIsICJub25jZSI6ICJZWG4zSXhmREEtcVFDQTlSOEdIUjFYYWh1aE15OEVHMEYwNGZGelBDalA2aEZBeWJ5eE0iLCAidXJsIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2F1dGh6LzMwODgzMjA5NDYvNzA5OTA5MDcwMDk2In0",
+  "signature": "Zhgx-p8HQu_0z8h1QGeJpCrxv9Lb4mnkFiAWQ0QkAzdEuTB4tQzLHuOPSqNn38EMwTZ7ZsFDXN-be2_HDWHRgVuclzsbQK7RMUrVDgkaEoLixn4G9wS8WqF119nOE4bVNZY0G0ceERcBm4i0S5K8OsVGcDS6IPVnNzrgD1Ymj1x6_rZSLyFfErG94ZFtWNX6rh-pFRjxCuW1LSGJUX8mWsFvhV9VR2Qm8RN7HQUWbW4sYxv7XOrHwPd7oAY3XJar6SH4pSV9yOYKiraIAIJQlwED76pCnpTwNOu-zaPJzeQx6HKicFyzCFH5Bdf2xJMNJdculRIqFeu8z_GKwwJoLg",
+  "payload": ""
+}
+2026-05-24 16:06:55,756:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "POST /acme/authz/3088320946/709909070096 HTTP/1.1" 200 836
+2026-05-24 16:06:55,757:DEBUG:acme.client:Received response:
+HTTP 200
+Server: nginx
+Date: Sun, 24 May 2026 16:06:55 GMT
+Content-Type: application/json
+Content-Length: 836
+Connection: keep-alive
+Boulder-Requester: 3088320946
+Cache-Control: public, max-age=0, no-cache
+Link: <https://acme-v02.api.letsencrypt.org/directory>;rel="index"
+Replay-Nonce: I78CA660TJewblog5RQmtPvTVW3iSGqZBsyMqKf3b12Kv2Cu9Cw
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+{
+  "identifier": {
+    "type": "dns",
+    "value": "meet.kannarimusicacademy.com"
+  },
+  "status": "pending",
+  "expires": "2026-05-31T16:06:54Z",
+  "challenges": [
+    {
+      "type": "tls-alpn-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070096/xfOzfA",
+      "status": "pending",
+      "token": "X1vAyTJwRU8K7-IEWlPg5WqN4_7_mbaPswW3M1VZVFI"
+    },
+    {
+      "type": "dns-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070096/YwmD6Q",
+      "status": "pending",
+      "token": "X1vAyTJwRU8K7-IEWlPg5WqN4_7_mbaPswW3M1VZVFI"
+    },
+    {
+      "type": "http-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070096/Q4Bxrg",
+      "status": "pending",
+      "token": "X1vAyTJwRU8K7-IEWlPg5WqN4_7_mbaPswW3M1VZVFI"
+    }
+  ]
+}
+2026-05-24 16:06:55,757:DEBUG:acme.client:Storing nonce: I78CA660TJewblog5RQmtPvTVW3iSGqZBsyMqKf3b12Kv2Cu9Cw
+2026-05-24 16:06:55,757:DEBUG:acme.challenges:tls-alpn-01 was not recognized, full message: {'type': 'tls-alpn-01', 'url': 'https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070096/xfOzfA', 'status': 'pending', 'token': 'X1vAyTJwRU8K7-IEWlPg5WqN4_7_mbaPswW3M1VZVFI'}
+2026-05-24 16:06:55,757:DEBUG:acme.client:JWS payload:
+b''
+2026-05-24 16:06:55,758:DEBUG:acme.client:Sending POST request to https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909070226:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2FjY3QvMzA4ODMyMDk0NiIsICJub25jZSI6ICJJNzhDQTY2MFRKZXdibG9nNVJRbXRQdlRWVzNpU0dxWkJzeU1xS2YzYjEyS3YyQ3U5Q3ciLCAidXJsIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2F1dGh6LzMwODgzMjA5NDYvNzA5OTA5MDcwMjI2In0",
+  "signature": "qmi3YT7Go80dDI0jTtynzqPD7PCULdIf6xA9rhuYB9GEAXSfVibWN1TIbbObvcRkCpPW7pEdM-62Hj8NuST1xQNq0RhXy5449hfuQWG4xpQ9cnH0qZPHkYlrpOMVh-hbvbltUjQxeXjYLFiycbgGFRsGIc-HZ6t5zjf3JjYLBf05bBetwuW0h62OvKaqZS70z6l2HAeK6ZuxdHjPGy6pXStudMx_3M7ok36_F5oKJEPqWn4dRk-ZJCWD813UV4XyWWppAIsa4uJhfYvkL3M37i6z5BJnTCjOPKrp7sb75yLmEs4wiW_--orjsCoHCYx9lhZtV7JWXfKkB9L4Ixf7qA",
+  "payload": ""
+}
+2026-05-24 16:06:55,803:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "POST /acme/authz/3088320946/709909070226 HTTP/1.1" 200 835
+2026-05-24 16:06:55,803:DEBUG:acme.client:Received response:
+HTTP 200
+Server: nginx
+Date: Sun, 24 May 2026 16:06:55 GMT
+Content-Type: application/json
+Content-Length: 835
+Connection: keep-alive
+Boulder-Requester: 3088320946
+Cache-Control: public, max-age=0, no-cache
+Link: <https://acme-v02.api.letsencrypt.org/directory>;rel="index"
+Replay-Nonce: YXn3IxfDpYjUljmhlOq9wYAozMDfMJyp1_A2YSDynAyAtyab9Xg
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+{
+  "identifier": {
+    "type": "dns",
+    "value": "www.kannarimusicacademy.com"
+  },
+  "status": "pending",
+  "expires": "2026-05-31T16:06:54Z",
+  "challenges": [
+    {
+      "type": "http-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070226/AMfjbg",
+      "status": "pending",
+      "token": "aeo6D_Z0Wfn2GX6GJrWt2P43Nrnwq35GIrcj6GlMpjI"
+    },
+    {
+      "type": "tls-alpn-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070226/yNOy7A",
+      "status": "pending",
+      "token": "aeo6D_Z0Wfn2GX6GJrWt2P43Nrnwq35GIrcj6GlMpjI"
+    },
+    {
+      "type": "dns-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070226/IaObag",
+      "status": "pending",
+      "token": "aeo6D_Z0Wfn2GX6GJrWt2P43Nrnwq35GIrcj6GlMpjI"
+    }
+  ]
+}
+2026-05-24 16:06:55,803:DEBUG:acme.client:Storing nonce: YXn3IxfDpYjUljmhlOq9wYAozMDfMJyp1_A2YSDynAyAtyab9Xg
+2026-05-24 16:06:55,804:DEBUG:acme.challenges:tls-alpn-01 was not recognized, full message: {'type': 'tls-alpn-01', 'url': 'https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070226/yNOy7A', 'status': 'pending', 'token': 'aeo6D_Z0Wfn2GX6GJrWt2P43Nrnwq35GIrcj6GlMpjI'}
+2026-05-24 16:06:58,804:DEBUG:acme.client:JWS payload:
+b''
+2026-05-24 16:06:58,806:DEBUG:acme.client:Sending POST request to https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909069986:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2FjY3QvMzA4ODMyMDk0NiIsICJub25jZSI6ICJZWG4zSXhmRHBZalVsam1obE9xOXdZQW96TURmTUp5cDFfQTJZU0R5bkF5QXR5YWI5WGciLCAidXJsIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2F1dGh6LzMwODgzMjA5NDYvNzA5OTA5MDY5OTg2In0",
+  "signature": "AirSsRYK2N5SQDWjjbiC5-a2nwGlcjtZdq52Nw2HQkrg4IiNwLGQBctrd2SDEL0NVhT1GvWY0b06rB0D-g4L_fTlgvIGHLnvrjagC5CTl76L4nnF-ur81hNEPB6MgQdN5MpuBb0tzR_J9PVwVfc9BR7Zf4NN_GkvdafaM9jDgCyvGpizma1NCNfnIq7AT2Jac5CJOi-1T_3HZDWpjEtgfvNeslSTgfMNMvp-7bgtKHQKE1uaTR6QBBtA2_HjpGxjIrkjZtjbD08S1Ij7HRGo92BbuhiQNbS0dzYxgd_GLi2iWiIvgynOgpZROX7IpzXvv-e0rvM-clFK8DNXX0skvQ",
+  "payload": ""
+}
+2026-05-24 16:06:58,849:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "POST /acme/authz/3088320946/709909069986 HTTP/1.1" 200 1133
+2026-05-24 16:06:58,850:DEBUG:acme.client:Received response:
+HTTP 200
+Server: nginx
+Date: Sun, 24 May 2026 16:06:58 GMT
+Content-Type: application/json
+Content-Length: 1133
+Connection: keep-alive
+Boulder-Requester: 3088320946
+Cache-Control: public, max-age=0, no-cache
+Link: <https://acme-v02.api.letsencrypt.org/directory>;rel="index"
+Replay-Nonce: YXn3IxfDsz5x-aq65hpBpIenlhTIZJ0W0jB3OALFu2kFl9QIYrY
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+{
+  "identifier": {
+    "type": "dns",
+    "value": "kannarimusicacademy.com"
+  },
+  "status": "valid",
+  "expires": "2026-06-23T16:06:56Z",
+  "challenges": [
+    {
+      "type": "http-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909069986/vO5sYw",
+      "status": "valid",
+      "validated": "2026-05-24T16:06:54Z",
+      "token": "Q5SnPfO_lPLDa6Dsp6MUu_qi1lLT5etU685Ni3zk6Mw",
+      "validationRecord": [
+        {
+          "url": "http://kannarimusicacademy.com/.well-known/acme-challenge/Q5SnPfO_lPLDa6Dsp6MUu_qi1lLT5etU685Ni3zk6Mw",
+          "hostname": "kannarimusicacademy.com",
+          "port": "80",
+          "addressesResolved": [
+            "178.156.242.253"
+          ],
+          "addressUsed": "178.156.242.253"
+        },
+        {
+          "url": "https://kannarimusicacademy.com/.well-known/acme-challenge/Q5SnPfO_lPLDa6Dsp6MUu_qi1lLT5etU685Ni3zk6Mw",
+          "hostname": "kannarimusicacademy.com",
+          "port": "443",
+          "addressesResolved": [
+            "178.156.242.253"
+          ],
+          "addressUsed": "178.156.242.253"
+        }
+      ]
+    }
+  ]
+}
+2026-05-24 16:06:58,850:DEBUG:acme.client:Storing nonce: YXn3IxfDsz5x-aq65hpBpIenlhTIZJ0W0jB3OALFu2kFl9QIYrY
+2026-05-24 16:06:58,850:DEBUG:acme.client:JWS payload:
+b''
+2026-05-24 16:06:58,852:DEBUG:acme.client:Sending POST request to https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909070096:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2FjY3QvMzA4ODMyMDk0NiIsICJub25jZSI6ICJZWG4zSXhmRHN6NXgtYXE2NWhwQnBJZW5saFRJWkowVzBqQjNPQUxGdTJrRmw5UUlZclkiLCAidXJsIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2F1dGh6LzMwODgzMjA5NDYvNzA5OTA5MDcwMDk2In0",
+  "signature": "YguRTn9dHEw38DRJUHN7H6qHTg8BGiGtr03GsdD5xPL1LYbimkETEJkE7tDngmoWd2RPZ34ha7I1aZP5ZnihzCf-0VZZxBaQT42aXI8wMuL9IbVStxUgfPdsE4Q-zcJzrtPDFGKPAi0Wv24TlcgdQsH6Xf7QrnCmP-74UVNnS1znw9wBUiS31ZWBehi-fKJ00DG2oAS31yToZpDsuSz5Ut8dxZ9yMvZqK330acDv0Zmc1XgaL9kNMzT704u52FLMmGjQ81CWhsLBAXPXnl8JG8cq-1nHJtw-iFf-cbxkoIARwyebIvf7Ws6uR7IIU3jPUMxUekuzw3-Kba0HA2bJsQ",
+  "payload": ""
+}
+2026-05-24 16:06:58,896:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "POST /acme/authz/3088320946/709909070096 HTTP/1.1" 200 1158
+2026-05-24 16:06:58,897:DEBUG:acme.client:Received response:
+HTTP 200
+Server: nginx
+Date: Sun, 24 May 2026 16:06:58 GMT
+Content-Type: application/json
+Content-Length: 1158
+Connection: keep-alive
+Boulder-Requester: 3088320946
+Cache-Control: public, max-age=0, no-cache
+Link: <https://acme-v02.api.letsencrypt.org/directory>;rel="index"
+Replay-Nonce: I78CA660GBO0MUt1SrH8s6RZy0_SoZKRuWSL7vjG5XBNkR6OW34
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+{
+  "identifier": {
+    "type": "dns",
+    "value": "meet.kannarimusicacademy.com"
+  },
+  "status": "valid",
+  "expires": "2026-06-23T16:06:56Z",
+  "challenges": [
+    {
+      "type": "http-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070096/Q4Bxrg",
+      "status": "valid",
+      "validated": "2026-05-24T16:06:54Z",
+      "token": "X1vAyTJwRU8K7-IEWlPg5WqN4_7_mbaPswW3M1VZVFI",
+      "validationRecord": [
+        {
+          "url": "http://meet.kannarimusicacademy.com/.well-known/acme-challenge/X1vAyTJwRU8K7-IEWlPg5WqN4_7_mbaPswW3M1VZVFI",
+          "hostname": "meet.kannarimusicacademy.com",
+          "port": "80",
+          "addressesResolved": [
+            "178.156.242.253"
+          ],
+          "addressUsed": "178.156.242.253"
+        },
+        {
+          "url": "https://meet.kannarimusicacademy.com/.well-known/acme-challenge/X1vAyTJwRU8K7-IEWlPg5WqN4_7_mbaPswW3M1VZVFI",
+          "hostname": "meet.kannarimusicacademy.com",
+          "port": "443",
+          "addressesResolved": [
+            "178.156.242.253"
+          ],
+          "addressUsed": "178.156.242.253"
+        }
+      ]
+    }
+  ]
+}
+2026-05-24 16:06:58,897:DEBUG:acme.client:Storing nonce: I78CA660GBO0MUt1SrH8s6RZy0_SoZKRuWSL7vjG5XBNkR6OW34
+2026-05-24 16:06:58,897:DEBUG:acme.client:JWS payload:
+b''
+2026-05-24 16:06:58,898:DEBUG:acme.client:Sending POST request to https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909070226:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2FjY3QvMzA4ODMyMDk0NiIsICJub25jZSI6ICJJNzhDQTY2MEdCTzBNVXQxU3JIOHM2Ulp5MF9Tb1pLUnVXU0w3dmpHNVhCTmtSNk9XMzQiLCAidXJsIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2F1dGh6LzMwODgzMjA5NDYvNzA5OTA5MDcwMjI2In0",
+  "signature": "I5FrQgREphdBteTESmGI5ZLLz4FsEiFr0gbmEwpwUXtovjV6PrrVxoQ1PajIqTHcHWjInYWCN9cTm-34oa1TP2MxlkJB4S0aQaRL0RpPIkso5GjbWZpg6-2MlTLBcFJ7S42FFFJW3ibqa-gLHRWUdMfqQhCUIJn0G-MwlJ0fDZKOZhcglhqbseWpBPhxOEaNEiB0hTZ2qK_ioPmfC7uU1uwoHjl-q00cCj0J2gF7DFX1rGT1unWA5g9Z4YMbr0Ceo-vE2lEKe-YQXQpjmffzBSYnxLSMB3JxRbzVBCGY30u2xX-GHndPklVT-vFgauXvlTy3an4yUmOUNfYWiy6YQQ",
+  "payload": ""
+}
+2026-05-24 16:06:58,954:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "POST /acme/authz/3088320946/709909070226 HTTP/1.1" 200 1153
+2026-05-24 16:06:58,955:DEBUG:acme.client:Received response:
+HTTP 200
+Server: nginx
+Date: Sun, 24 May 2026 16:06:58 GMT
+Content-Type: application/json
+Content-Length: 1153
+Connection: keep-alive
+Boulder-Requester: 3088320946
+Cache-Control: public, max-age=0, no-cache
+Link: <https://acme-v02.api.letsencrypt.org/directory>;rel="index"
+Replay-Nonce: YXn3IxfDPUtMQWgAYtVyIInsW2hTxXXpNbz1ADt58HTWBt2fzCo
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+{
+  "identifier": {
+    "type": "dns",
+    "value": "www.kannarimusicacademy.com"
+  },
+  "status": "valid",
+  "expires": "2026-06-23T16:06:56Z",
+  "challenges": [
+    {
+      "type": "http-01",
+      "url": "https://acme-v02.api.letsencrypt.org/acme/chall/3088320946/709909070226/AMfjbg",
+      "status": "valid",
+      "validated": "2026-05-24T16:06:54Z",
+      "token": "aeo6D_Z0Wfn2GX6GJrWt2P43Nrnwq35GIrcj6GlMpjI",
+      "validationRecord": [
+        {
+          "url": "http://www.kannarimusicacademy.com/.well-known/acme-challenge/aeo6D_Z0Wfn2GX6GJrWt2P43Nrnwq35GIrcj6GlMpjI",
+          "hostname": "www.kannarimusicacademy.com",
+          "port": "80",
+          "addressesResolved": [
+            "178.156.242.253"
+          ],
+          "addressUsed": "178.156.242.253"
+        },
+        {
+          "url": "https://www.kannarimusicacademy.com/.well-known/acme-challenge/aeo6D_Z0Wfn2GX6GJrWt2P43Nrnwq35GIrcj6GlMpjI",
+          "hostname": "www.kannarimusicacademy.com",
+          "port": "443",
+          "addressesResolved": [
+            "178.156.242.253"
+          ],
+          "addressUsed": "178.156.242.253"
+        }
+      ]
+    }
+  ]
+}
+2026-05-24 16:06:58,955:DEBUG:acme.client:Storing nonce: YXn3IxfDPUtMQWgAYtVyIInsW2hTxXXpNbz1ADt58HTWBt2fzCo
+2026-05-24 16:06:58,955:DEBUG:certbot._internal.error_handler:Calling registered functions
+2026-05-24 16:06:58,955:INFO:certbot._internal.auth_handler:Cleaning up challenges
+2026-05-24 16:06:58,955:DEBUG:certbot._internal.plugins.webroot:Removing /var/www/certbot/.well-known/acme-challenge/Q5SnPfO_lPLDa6Dsp6MUu_qi1lLT5etU685Ni3zk6Mw
+2026-05-24 16:06:58,956:DEBUG:certbot._internal.plugins.webroot:Removing /var/www/certbot/.well-known/acme-challenge/X1vAyTJwRU8K7-IEWlPg5WqN4_7_mbaPswW3M1VZVFI
+2026-05-24 16:06:58,956:DEBUG:certbot._internal.plugins.webroot:Removing /var/www/certbot/.well-known/acme-challenge/aeo6D_Z0Wfn2GX6GJrWt2P43Nrnwq35GIrcj6GlMpjI
+2026-05-24 16:06:58,956:DEBUG:certbot._internal.plugins.webroot:All challenges cleaned up
+2026-05-24 16:06:58,956:DEBUG:certbot._internal.client:CSR: CSR(file=None, data=b'-----BEGIN CERTIFICATE REQUEST-----\nMIIBKzCB0gIBADAAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEjzL+dkrp3sQu\nTFUppnxWBAEGZpZKSkXYROO6hpHHfNN2jZxDYvsxvwhiAPFTgzzZ1ps9ec/Qv7O0\npAQxLyENa6BwMG4GCSqGSIb3DQEJDjFhMF8wXQYDVR0RBFYwVIIXa2FubmFyaW11\nc2ljYWNhZGVteS5jb22CG3d3dy5rYW5uYXJpbXVzaWNhY2FkZW15LmNvbYIcbWVl\ndC5rYW5uYXJpbXVzaWNhY2FkZW15LmNvbTAKBggqhkjOPQQDAgNIADBFAiEA0MCn\nhSsOFZxm93QydYUebgHfRPVH0bxYYY1DqiSqQaYCIDNxrwXgylTU6xEZwVo8HMSp\nGYqQopzV4VvI7S2TS+V1\n-----END CERTIFICATE REQUEST-----\n', form='pem')
+2026-05-24 16:06:58,957:DEBUG:certbot._internal.client:Will poll for certificate issuance until 2026-05-24 16:08:28.957194
+2026-05-24 16:06:58,957:DEBUG:acme.client:JWS payload:
+b'{\n  "csr": "MIIBKzCB0gIBADAAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEjzL-dkrp3sQuTFUppnxWBAEGZpZKSkXYROO6hpHHfNN2jZxDYvsxvwhiAPFTgzzZ1ps9ec_Qv7O0pAQxLyENa6BwMG4GCSqGSIb3DQEJDjFhMF8wXQYDVR0RBFYwVIIXa2FubmFyaW11c2ljYWNhZGVteS5jb22CG3d3dy5rYW5uYXJpbXVzaWNhY2FkZW15LmNvbYIcbWVldC5rYW5uYXJpbXVzaWNhY2FkZW15LmNvbTAKBggqhkjOPQQDAgNIADBFAiEA0MCnhSsOFZxm93QydYUebgHfRPVH0bxYYY1DqiSqQaYCIDNxrwXgylTU6xEZwVo8HMSpGYqQopzV4VvI7S2TS-V1"\n}'
+2026-05-24 16:06:58,958:DEBUG:acme.client:Sending POST request to https://acme-v02.api.letsencrypt.org/acme/finalize/3088320946/514324132906:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2FjY3QvMzA4ODMyMDk0NiIsICJub25jZSI6ICJZWG4zSXhmRFBVdE1RV2dBWXRWeUlJbnNXMmhUeFhYcE5iejFBRHQ1OEhUV0J0MmZ6Q28iLCAidXJsIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2ZpbmFsaXplLzMwODgzMjA5NDYvNTE0MzI0MTMyOTA2In0",
+  "signature": "DbQ44T8LMx2sldgqjUV45cmCtNZok6g-FVcRrrliDIAJIStd-FLOGOXuaOKnm1TsLAIqtvXG6Ob0fYiXXFnQKxky1BqnbmgCX_JismAd27yCpV_Vyn48_f5ysXvRiaVMiumiQFJwBzInm7FjANAqOPsXfmt2_3LW-zZ171_TYpSoz6TcIueKAI_rlJfs9QdtgmTdCkDNb8SrkWynbpoypdmbwsOHYmZv4UDkrYWY-1jr5GjCOwx1CKCjNoJWV08VxQG-TLrxP4xEBT7EEfvtX49OoGSBDEGZX3oNN7t8KRgUDB6ej_g6TtSmIC_RZqeHpKxmBn514cmM8C_9gk8HdQ",
+  "payload": "ewogICJjc3IiOiAiTUlJQkt6Q0IwZ0lCQURBQU1Ga3dFd1lIS29aSXpqMENBUVlJS29aSXpqMERBUWNEUWdBRWp6TC1ka3JwM3NRdVRGVXBwbnhXQkFFR1pwWktTa1hZUk9PNmhwSEhmTk4yalp4RFl2c3h2d2hpQVBGVGd6eloxcHM5ZWNfUXY3TzBwQVF4THlFTmE2QndNRzRHQ1NxR1NJYjNEUUVKRGpGaE1GOHdYUVlEVlIwUkJGWXdWSUlYYTJGdWJtRnlhVzExYzJsallXTmhaR1Z0ZVM1amIyMkNHM2QzZHk1cllXNXVZWEpwYlhWemFXTmhZMkZrWlcxNUxtTnZiWUljYldWbGRDNXJZVzV1WVhKcGJYVnphV05oWTJGa1pXMTVMbU52YlRBS0JnZ3Foa2pPUFFRREFnTklBREJGQWlFQTBNQ25oU3NPRlp4bTkzUXlkWVVlYmdIZlJQVkgwYnhZWVkxRHFpU3FRYVlDSUROeHJ3WGd5bFRVNnhFWndWbzhITVNwR1lxUW9welY0VnZJN1MyVFMtVjEiCn0"
+}
+2026-05-24 16:07:00,633:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "POST /acme/finalize/3088320946/514324132906 HTTP/1.1" 200 776
+2026-05-24 16:07:00,633:DEBUG:acme.client:Received response:
+HTTP 200
+Server: nginx
+Date: Sun, 24 May 2026 16:07:00 GMT
+Content-Type: application/json
+Content-Length: 776
+Connection: keep-alive
+Boulder-Requester: 3088320946
+Cache-Control: public, max-age=0, no-cache
+Link: <https://acme-v02.api.letsencrypt.org/directory>;rel="index"
+Location: https://acme-v02.api.letsencrypt.org/acme/order/3088320946/514324132906
+Replay-Nonce: YXn3IxfDE5yFsfVfhV-pTbwcFKQ1ZX9QOh-vj0aaf1Qgv8zcqjE
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+{
+  "status": "valid",
+  "expires": "2026-05-31T16:06:54Z",
+  "identifiers": [
+    {
+      "type": "dns",
+      "value": "kannarimusicacademy.com"
+    },
+    {
+      "type": "dns",
+      "value": "meet.kannarimusicacademy.com"
+    },
+    {
+      "type": "dns",
+      "value": "www.kannarimusicacademy.com"
+    }
+  ],
+  "authorizations": [
+    "https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909069986",
+    "https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909070096",
+    "https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909070226"
+  ],
+  "finalize": "https://acme-v02.api.letsencrypt.org/acme/finalize/3088320946/514324132906",
+  "certificate": "https://acme-v02.api.letsencrypt.org/acme/cert/067bea82af2efd338373e2abfde6b7931a54"
+}
+2026-05-24 16:07:00,634:DEBUG:acme.client:Storing nonce: YXn3IxfDE5yFsfVfhV-pTbwcFKQ1ZX9QOh-vj0aaf1Qgv8zcqjE
+2026-05-24 16:07:01,634:DEBUG:acme.client:JWS payload:
+b''
+2026-05-24 16:07:01,636:DEBUG:acme.client:Sending POST request to https://acme-v02.api.letsencrypt.org/acme/order/3088320946/514324132906:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2FjY3QvMzA4ODMyMDk0NiIsICJub25jZSI6ICJZWG4zSXhmREU1eUZzZlZmaFYtcFRid2NGS1ExWlg5UU9oLXZqMGFhZjFRZ3Y4emNxakUiLCAidXJsIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL29yZGVyLzMwODgzMjA5NDYvNTE0MzI0MTMyOTA2In0",
+  "signature": "SS-zLRU-syclyeFFWLvbGzAyvYodO9A45rHaHXjO7emb62WQBkhWVkibt3_v2DzWdBkNryn29liFXCjpIc7jndUJO_11EHpL55YZh_w0c_xK0Aj8UFfIcDOTC7RGTzjfZfrXxvcY-st8Xvqx3D4qRQkCF9w07gqxzTwZZJkJZOoFKlgKMfAhnCau2Br51nbbpKcTB0Bknfn1_iVtlLXPCgyaZX1WFNA6UEQorka9LDezqckxbfHMg30Q2opNOA-7pzJcEhj1JDNsQWzmCVsGqVqIz38qjTlkYfSP5QWQJXksWixr6IxB_WZuvpL2__HkrJZRaxspm89JYz2zyyrg5g",
+  "payload": ""
+}
+2026-05-24 16:07:01,742:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "POST /acme/order/3088320946/514324132906 HTTP/1.1" 200 776
+2026-05-24 16:07:01,742:DEBUG:acme.client:Received response:
+HTTP 200
+Server: nginx
+Date: Sun, 24 May 2026 16:07:01 GMT
+Content-Type: application/json
+Content-Length: 776
+Connection: keep-alive
+Cache-Control: public, max-age=0, no-cache
+Link: <https://acme-v02.api.letsencrypt.org/directory>;rel="index"
+Location: https://acme-v02.api.letsencrypt.org/acme/order/3088320946/514324132906
+Replay-Nonce: YXn3IxfDQyg5_sC5TQTA6jaQA4Byvn_pP7GnL5bGqwdj6hR2pJw
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+{
+  "status": "valid",
+  "expires": "2026-05-31T16:06:54Z",
+  "identifiers": [
+    {
+      "type": "dns",
+      "value": "kannarimusicacademy.com"
+    },
+    {
+      "type": "dns",
+      "value": "meet.kannarimusicacademy.com"
+    },
+    {
+      "type": "dns",
+      "value": "www.kannarimusicacademy.com"
+    }
+  ],
+  "authorizations": [
+    "https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909069986",
+    "https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909070096",
+    "https://acme-v02.api.letsencrypt.org/acme/authz/3088320946/709909070226"
+  ],
+  "finalize": "https://acme-v02.api.letsencrypt.org/acme/finalize/3088320946/514324132906",
+  "certificate": "https://acme-v02.api.letsencrypt.org/acme/cert/067bea82af2efd338373e2abfde6b7931a54"
+}
+2026-05-24 16:07:01,743:DEBUG:acme.client:Storing nonce: YXn3IxfDQyg5_sC5TQTA6jaQA4Byvn_pP7GnL5bGqwdj6hR2pJw
+2026-05-24 16:07:01,743:DEBUG:acme.client:JWS payload:
+b''
+2026-05-24 16:07:01,745:DEBUG:acme.client:Sending POST request to https://acme-v02.api.letsencrypt.org/acme/cert/067bea82af2efd338373e2abfde6b7931a54:
+{
+  "protected": "eyJhbGciOiAiUlMyNTYiLCAia2lkIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2FjY3QvMzA4ODMyMDk0NiIsICJub25jZSI6ICJZWG4zSXhmRFF5ZzVfc0M1VFFUQTZqYVFBNEJ5dm5fcFA3R25MNWJHcXdkajZoUjJwSnciLCAidXJsIjogImh0dHBzOi8vYWNtZS12MDIuYXBpLmxldHNlbmNyeXB0Lm9yZy9hY21lL2NlcnQvMDY3YmVhODJhZjJlZmQzMzgzNzNlMmFiZmRlNmI3OTMxYTU0In0",
+  "signature": "pTqYqumW9r9GtxLrkAWtkRvWxwiis_XB5pz-72YEis-aqQCwwGui7FhF1W3AZg6T7358yFqdGEARHjtgNKVTNkpVHolXyHxSY42CelnrRiClDV9clBiZr6XfPhW8AyrNE4eVIR08lM_Rt3xJQPw63KLThzVzbcla0MtwYoyY1VEgqVnP_0sBn7WI-WlUUPmCKBxVngM3wGCOuFLKyKN7Nj5pS-RPD9gIJgJk0T6TcSdKWDeq9D-avLJ7MtT64XxYEbwOJoGTSxRjfgIOmz0ntUwIKg7I2d0p22Osi5I0jVIAwMrjxjKqAc8gkzGyA3TOoXJ8Qf2Hg4-4MbtlcNnK1g",
+  "payload": ""
+}
+2026-05-24 16:07:01,802:DEBUG:urllib3.connectionpool:https://acme-v02.api.letsencrypt.org:443 "POST /acme/cert/067bea82af2efd338373e2abfde6b7931a54 HTTP/1.1" 200 2954
+2026-05-24 16:07:01,803:DEBUG:acme.client:Received response:
+HTTP 200
+Server: nginx
+Date: Sun, 24 May 2026 16:07:01 GMT
+Content-Type: application/pem-certificate-chain
+Content-Length: 2954
+Connection: keep-alive
+Cache-Control: public, max-age=0, no-cache
+Link: <https://acme-v02.api.letsencrypt.org/directory>;rel="index", <https://acme-v02.api.letsencrypt.org/acme/cert/067bea82af2efd338373e2abfde6b7931a54/1>;rel="alternate"
+Replay-Nonce: I78CA660sFJjKSUnxl6GL-ycKp8ruZFS3Xjcq_nPWh_iUK54OI0
+X-Frame-Options: DENY
+Strict-Transport-Security: max-age=604800
+
+-----BEGIN CERTIFICATE-----
+MIID0zCCA1mgAwIBAgISBnvqgq8u/TODc+Kr/ea3kxpUMAoGCCqGSM49BAMDMDIx
+CzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQswCQYDVQQDEwJF
+NzAeFw0yNjA1MjQxNTA4MjlaFw0yNjA4MjIxNTA4MjhaMCIxIDAeBgNVBAMTF2th
+bm5hcmltdXNpY2FjYWRlbXkuY29tMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE
+jzL+dkrp3sQuTFUppnxWBAEGZpZKSkXYROO6hpHHfNN2jZxDYvsxvwhiAPFTgzzZ
+1ps9ec/Qv7O0pAQxLyENa6OCAl0wggJZMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUE
+DDAKBggrBgEFBQcDATAMBgNVHRMBAf8EAjAAMB0GA1UdDgQWBBR+mHeid9NEh7fi
+0SLzShC63vrNRDAfBgNVHSMEGDAWgBSuSJ7chx1EoG/aouVgdAR4wpwAgDAyBggr
+BgEFBQcBAQQmMCQwIgYIKwYBBQUHMAKGFmh0dHA6Ly9lNy5pLmxlbmNyLm9yZy8w
+XQYDVR0RBFYwVIIXa2FubmFyaW11c2ljYWNhZGVteS5jb22CHG1lZXQua2FubmFy
+aW11c2ljYWNhZGVteS5jb22CG3d3dy5rYW5uYXJpbXVzaWNhY2FkZW15LmNvbTAT
+BgNVHSAEDDAKMAgGBmeBDAECATAtBgNVHR8EJjAkMCKgIKAehhxodHRwOi8vZTcu
+Yy5sZW5jci5vcmcvODUuY3JsMIIBCwYKKwYBBAHWeQIEAgSB/ASB+QD3AHYAr2eI
+O1ewTt2Pptl+9i6o64EKx3Fg8CReVdYML+eFhzoAAAGeWr1bRAAABAMARzBFAiBM
+VwiUem4NFp7pRJL7m9zdrnWcJhOEKGtYcbeYYPfygwIhAOuRU7LkBb+fvbqkxnIh
+OoVQG4uE015oG8+fLCmbJB6JAH0AbP5QGUOoXqkWvFLRM+TcyR7xQRx9JYQg0XOA
+nhgY6zoAAAGeWr1dagAIAAAFAA0b1WUEAwBGMEQCIA3ykJ9FjELJT5EiMPjw65jN
+ESeI/YAxgzYPE0rlJtJtAiBV68jZvSXvAMkCPccrGKg6AXJlAvbdcG8hR/im53jK
+ADAKBggqhkjOPQQDAwNoADBlAjEAp/gL+4sPFZB8vQkRu6T5dllpaz9Wzab2AosM
+6+dIMvxCgN1oDGMlVZLzaiNid4kfAjAOaJi7xtggsGjwpIRX1iU4y0EATk3n3PzR
+V5bWuJfXNQoVbRxh3Tsp5CNNaA3MfnQ=
+-----END CERTIFICATE-----
+
+-----BEGIN CERTIFICATE-----
+MIIEVzCCAj+gAwIBAgIRAKp18eYrjwoiCWbTi7/UuqEwDQYJKoZIhvcNAQELBQAw
+TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
+cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMjQwMzEzMDAwMDAw
+WhcNMjcwMzEyMjM1OTU5WjAyMQswCQYDVQQGEwJVUzEWMBQGA1UEChMNTGV0J3Mg
+RW5jcnlwdDELMAkGA1UEAxMCRTcwdjAQBgcqhkjOPQIBBgUrgQQAIgNiAARB6AST
+CFh/vjcwDMCgQer+VtqEkz7JANurZxLP+U9TCeioL6sp5Z8VRvRbYk4P1INBmbef
+QHJFHCxcSjKmwtvGBWpl/9ra8HW0QDsUaJW2qOJqceJ0ZVFT3hbUHifBM/2jgfgw
+gfUwDgYDVR0PAQH/BAQDAgGGMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcD
+ATASBgNVHRMBAf8ECDAGAQH/AgEAMB0GA1UdDgQWBBSuSJ7chx1EoG/aouVgdAR4
+wpwAgDAfBgNVHSMEGDAWgBR5tFnme7bl5AFzgAiIyBpY9umbbjAyBggrBgEFBQcB
+AQQmMCQwIgYIKwYBBQUHMAKGFmh0dHA6Ly94MS5pLmxlbmNyLm9yZy8wEwYDVR0g
+BAwwCjAIBgZngQwBAgEwJwYDVR0fBCAwHjAcoBqgGIYWaHR0cDovL3gxLmMubGVu
+Y3Iub3JnLzANBgkqhkiG9w0BAQsFAAOCAgEAjx66fDdLk5ywFn3CzA1w1qfylHUD
+aEf0QZpXcJseddJGSfbUUOvbNR9N/QQ16K1lXl4VFyhmGXDT5Kdfcr0RvIIVrNxF
+h4lqHtRRCP6RBRstqbZ2zURgqakn/Xip0iaQL0IdfHBZr396FgknniRYFckKORPG
+yM3QKnd66gtMst8I5nkRQlAg/Jb+Gc3egIvuGKWboE1G89NTsN9LTDD3PLj0dUMr
+OIuqVjLB8pEC6yk9enrlrqjXQgkLEYhXzq7dLafv5Vkig6Gl0nuuqjqfp0Q1bi1o
+yVNAlXe6aUXw92CcghC9bNsKEO1+M52YY5+ofIXlS/SEQbvVYYBLZ5yeiglV6t3S
+M6H+vTG0aP9YHzLn/KVOHzGQfXDP7qM5tkf+7diZe7o2fw6O7IvN6fsQXEQQj8TJ
+UXJxv2/uJhcuy/tSDgXwHM8Uk34WNbRT7zGTGkQRX0gsbjAea/jYAoWv0ZvQRwpq
+Pe79D/i7Cep8qWnA+7AE/3B3S/3dEEYmc0lpe1366A/6GEgk3ktr9PEoQrLChs6I
+tu3wnNLB2euC8IKGLQFpGtOO/2/hiAKjyajaBP25w1jF0Wl8Bbqne3uZ2q1GyPFJ
+YRmT7/OXpmOH/FVLtwS+8ng1cAmpCujPwteJZNcDG0sF2n/sc0+SQf49fdyUK0ty
++VUwFj9tmWxyR/M=
+-----END CERTIFICATE-----
+
+2026-05-24 16:07:01,803:DEBUG:acme.client:Storing nonce: I78CA660sFJjKSUnxl6GL-ycKp8ruZFS3Xjcq_nPWh_iUK54OI0
+2026-05-24 16:07:01,805:DEBUG:certbot._internal.storage:Writing new private key to /etc/letsencrypt/archive/kannarimusicacademy.com/privkey3.pem.
+2026-05-24 16:07:01,805:DEBUG:certbot._internal.storage:Writing certificate to /etc/letsencrypt/archive/kannarimusicacademy.com/cert3.pem.
+2026-05-24 16:07:01,805:DEBUG:certbot._internal.storage:Writing chain to /etc/letsencrypt/archive/kannarimusicacademy.com/chain3.pem.
+2026-05-24 16:07:01,805:DEBUG:certbot._internal.storage:Writing full chain to /etc/letsencrypt/archive/kannarimusicacademy.com/fullchain3.pem.
+2026-05-24 16:07:01,815:DEBUG:certbot.configuration:Var account=09d8afe4d878caf5e13eb81733a809b2 (set by user).
+2026-05-24 16:07:01,815:DEBUG:certbot._internal.plugins.selection:Requested authenticator webroot and installer None
+2026-05-24 16:07:01,816:DEBUG:certbot._internal.plugins.selection:Requested authenticator webroot and installer None
+2026-05-24 16:07:01,816:DEBUG:certbot.configuration:Var webroot_path=['/var/www/certbot'] (set by user).
+2026-05-24 16:07:01,816:DEBUG:certbot.configuration:Var webroot_map={'kannarimusicacademy.com': '/var/www/certbot', 'meet.kannarimusicacademy.com': '/var/www/certbot', 'www.kannarimusicacademy.com': '/var/www/certbot'} (set by user).
+2026-05-24 16:07:01,819:DEBUG:certbot._internal.display.obj:Notifying user: 
+Successfully received certificate.
+Certificate is saved at: /etc/letsencrypt/live/kannarimusicacademy.com/fullchain.pem
+Key is saved at:         /etc/letsencrypt/live/kannarimusicacademy.com/privkey.pem
+This certificate expires on 2026-08-22.
+These files will be updated when the certificate renews.
+2026-05-24 16:07:01,820:DEBUG:certbot._internal.display.obj:Notifying user: NEXT STEPS:
+2026-05-24 16:07:01,820:DEBUG:certbot._internal.display.obj:Notifying user: - The certificate will need to be renewed before it expires. Certbot can automatically renew the certificate in the background, but you may need to take steps to enable that functionality. See https://certbot.org/renewal-setup for instructions.
+2026-05-24 16:07:01,823:DEBUG:certbot._internal.display.obj:Notifying user: If you like Certbot, please consider supporting our work by:
+ * Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
+ * Donating to EFF:                    https://eff.org/donate-le

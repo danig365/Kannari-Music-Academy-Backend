@@ -87,6 +87,9 @@ const AdminLessonManagement = ({
         youtube_url: '',
         duration_seconds: 0,
         objectives: '',
+        repeat_after_me_enabled: false,
+        repeat_after_me_prompt: '',
+        repeat_after_me_audio: null,
         is_preview: false,
         is_locked: false,
         is_premium: false,
@@ -94,6 +97,7 @@ const AdminLessonManagement = ({
     });
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef(null);
+    const repeatAudioInputRef = useRef(null);
     
     // Downloadables Modal States
     const [showDownloadablesModal, setShowDownloadablesModal] = useState(false);
@@ -575,6 +579,9 @@ const AdminLessonManagement = ({
             youtube_url: '',
             duration_seconds: 0,
             objectives: '',
+            repeat_after_me_enabled: false,
+            repeat_after_me_prompt: '',
+            repeat_after_me_audio: null,
             is_preview: false,
             is_locked: false,
             is_premium: false,
@@ -615,6 +622,9 @@ const AdminLessonManagement = ({
             youtube_url: lesson.youtube_url || '',
             duration_seconds: lesson.duration_seconds,
             objectives: lesson.objectives || '',
+            repeat_after_me_enabled: !!lesson.repeat_after_me_enabled,
+            repeat_after_me_prompt: lesson.repeat_after_me_prompt || '',
+            repeat_after_me_audio: null,
             is_preview: lesson.is_preview || false,
             is_locked: lesson.is_locked || false,
             is_premium: lesson.is_premium || false,
@@ -746,10 +756,15 @@ const AdminLessonManagement = ({
             formData.append('content_type', lessonFormData.content_type);
             formData.append('module', currentModuleId);
             formData.append('objectives', lessonFormData.objectives);
+            formData.append('repeat_after_me_enabled', lessonFormData.repeat_after_me_enabled);
+            formData.append('repeat_after_me_prompt', lessonFormData.repeat_after_me_prompt || '');
             formData.append('is_preview', lessonFormData.is_preview);
             formData.append('is_locked', lessonFormData.is_locked);
             formData.append('is_premium', lessonFormData.is_premium);
             formData.append('required_access_level', lessonFormData.required_access_level || 'free');
+            if (lessonFormData.repeat_after_me_audio) {
+                formData.append('repeat_after_me_audio', lessonFormData.repeat_after_me_audio);
+            }
             if (lessonFormData.youtube_url) {
                 formData.append('youtube_url', lessonFormData.youtube_url);
             }
@@ -2044,6 +2059,81 @@ const AdminLessonManagement = ({
                                             ></textarea>
                                             <small className="text-muted">Each line will be shown as a separate learning objective to students</small>
                                         </div>
+
+                                        {/* Repeat After Me */}
+                                        <div className="col-12">
+                                            <div className="form-check form-switch" style={{ padding: '12px 16px', backgroundColor: '#eef2ff', borderRadius: '8px', border: '1px solid #c7d2fe' }}>
+                                                <input
+                                                    className="form-check-input"
+                                                    type="checkbox"
+                                                    id="repeatAfterMeSwitch"
+                                                    checked={lessonFormData.repeat_after_me_enabled}
+                                                    onChange={(e) => setLessonFormData({ ...lessonFormData, repeat_after_me_enabled: e.target.checked })}
+                                                    style={{ width: '40px', height: '20px', cursor: 'pointer' }}
+                                                />
+                                                <label className="form-check-label ms-2" htmlFor="repeatAfterMeSwitch" style={{ fontWeight: 500, color: '#4338ca', cursor: 'pointer' }}>
+                                                    <i className="bi bi-mic-fill me-1"></i>
+                                                    Repeat After Me
+                                                </label>
+                                                <small className="d-block text-muted mt-1">Enable a practice prompt with a short audio example</small>
+                                            </div>
+                                        </div>
+                                        {lessonFormData.repeat_after_me_enabled && (
+                                            <>
+                                                <div className="col-12">
+                                                    <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>
+                                                        Practice Prompt
+                                                    </label>
+                                                    <textarea
+                                                        className="form-control"
+                                                        value={lessonFormData.repeat_after_me_prompt}
+                                                        onChange={(e) => setLessonFormData({ ...lessonFormData, repeat_after_me_prompt: e.target.value })}
+                                                        placeholder="e.g., Listen to the pattern and repeat it three times."
+                                                        rows="2"
+                                                        style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '10px 14px' }}
+                                                    ></textarea>
+                                                </div>
+                                                <div className="col-12">
+                                                    <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>
+                                                        Example Audio
+                                                    </label>
+                                                    <input
+                                                        type="file"
+                                                        ref={repeatAudioInputRef}
+                                                        className="form-control"
+                                                        accept="audio/*"
+                                                        onChange={(e) => setLessonFormData({ ...lessonFormData, repeat_after_me_audio: e.target.files?.[0] || null })}
+                                                        style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '10px 14px' }}
+                                                    />
+                                                    {lessonFormData.repeat_after_me_audio && (
+                                                        <div className="mt-2">
+                                                            <small className="text-muted">
+                                                                Selected: <strong>{lessonFormData.repeat_after_me_audio.name}</strong>
+                                                            </small>
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-sm ms-2"
+                                                                onClick={() => {
+                                                                    setLessonFormData({ ...lessonFormData, repeat_after_me_audio: null });
+                                                                    if (repeatAudioInputRef.current) repeatAudioInputRef.current.value = '';
+                                                                }}
+                                                                style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '6px', fontSize: '12px' }}
+                                                            >
+                                                                <i className="bi bi-x-circle me-1"></i>Remove
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                    {editingLesson && editingLesson.repeat_after_me_audio && !lessonFormData.repeat_after_me_audio && (
+                                                        <div className="mt-2 p-2" style={{ background: '#f3f4f6', borderRadius: '8px' }}>
+                                                            <small className="text-muted">
+                                                                <i className="bi bi-file-earmark-music me-1"></i>
+                                                                Current example: <strong>{editingLesson.repeat_after_me_audio.split('/').pop()}</strong>
+                                                            </small>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </>
+                                        )}
                                         
                                         {/* Preview & Lock Toggles */}
                                         <div className="col-md-6">

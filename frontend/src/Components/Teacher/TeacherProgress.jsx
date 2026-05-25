@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import axios from 'axios'
 import LoadingSpinner from '../LoadingSpinner'
 
-import { API_BASE_URL } from '../../config';
+import { API_BASE_URL, SITE_URL } from '../../config';
 
 const baseUrl = API_BASE_URL;
 
@@ -867,6 +867,101 @@ const TeacherProgress = () => {
             </div>
           </div>
 
+          {/* Repeat After Me Activity */}
+          <div style={{
+            background: '#fff',
+            borderRadius: '16px',
+            padding: '24px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+            marginBottom: '24px'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '16px',
+              paddingBottom: '12px',
+              borderBottom: '1px solid #f5f7fa'
+            }}>
+              <h2 style={{
+                fontSize: '16px',
+                fontWeight: 600,
+                color: '#1a1a1a',
+                margin: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <i className="bi bi-mic" style={{ color: '#4f46e5', fontSize: '18px' }}></i>
+                Repeat After Me Activity
+              </h2>
+              <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                Total: {progressData.repeat_after_me_counts?.total || 0}
+              </span>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+              gap: '12px',
+              marginBottom: '16px'
+            }}>
+              <div style={{ background: '#ecfdf3', borderRadius: '12px', padding: '12px' }}>
+                <div style={{ fontSize: '12px', color: '#16a34a', fontWeight: 600 }}>Done</div>
+                <div style={{ fontSize: '20px', fontWeight: 700, color: '#166534' }}>
+                  {progressData.repeat_after_me_counts?.done || 0}
+                </div>
+              </div>
+              <div style={{ background: '#fff7ed', borderRadius: '12px', padding: '12px' }}>
+                <div style={{ fontSize: '12px', color: '#d97706', fontWeight: 600 }}>Practice Again</div>
+                <div style={{ fontSize: '20px', fontWeight: 700, color: '#92400e' }}>
+                  {progressData.repeat_after_me_counts?.again || 0}
+                </div>
+              </div>
+              <div style={{ background: '#eff6ff', borderRadius: '12px', padding: '12px' }}>
+                <div style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600 }}>I Got It</div>
+                <div style={{ fontSize: '20px', fontWeight: 700, color: '#1e3a8a' }}>
+                  {progressData.repeat_after_me_counts?.got_it || 0}
+                </div>
+              </div>
+            </div>
+
+            {progressData.repeat_after_me_recent?.length > 0 ? (
+              <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
+                <table style={{ width: '100%', fontSize: '13px' }}>
+                  <thead>
+                    <tr style={{ color: '#64748b', textAlign: 'left' }}>
+                      <th style={{ padding: '8px 4px' }}>Student</th>
+                      <th style={{ padding: '8px 4px' }}>Lesson</th>
+                      <th style={{ padding: '8px 4px' }}>Action</th>
+                      <th style={{ padding: '8px 4px' }}>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {progressData.repeat_after_me_recent.map((item, idx) => (
+                      <tr key={`${item.student_id}-${item.lesson_id}-${idx}`} style={{ borderTop: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '8px 4px', color: '#1f2937' }}>{item.student_name}</td>
+                        <td style={{ padding: '8px 4px', color: '#475569' }}>{item.lesson_title}</td>
+                        <td style={{ padding: '8px 4px' }}>
+                          {item.action === 'done' && 'Done'}
+                          {item.action === 'again' && 'Practice Again'}
+                          {item.action === 'got_it' && 'I Got It'}
+                        </td>
+                        <td style={{ padding: '8px 4px', color: '#94a3b8' }}>
+                          {item.created_at ? new Date(item.created_at).toLocaleString() : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', color: '#94a3b8', padding: '16px 0' }}>
+                No Repeat After Me activity yet.
+              </div>
+            )}
+          </div>
+
           {/* Two Column Layout */}
           <div className='row g-4 mb-4'>
             {/* Top Performing Students */}
@@ -905,7 +1000,9 @@ const TeacherProgress = () => {
                         </div>
                         {student.student_profile_img ? (
                           <img
-                            src={`${baseUrl}${student.student_profile_img}`}
+                            src={student.student_profile_img.startsWith('http')
+                              ? student.student_profile_img
+                              : `${SITE_URL}${student.student_profile_img.startsWith('/') ? '' : '/'}${student.student_profile_img}`}
                             alt={student.student_name}
                             style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', marginRight: 12 }}
                           />
