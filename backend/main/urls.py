@@ -172,6 +172,8 @@ urlpatterns =[
         path('student/<int:student_id>/lesson/<int:lesson_id>/unlock-status/', views.check_lesson_unlock_status),
         path('lesson/<int:lesson_id>/detail/', views.LessonDetailWithDownloadables.as_view()),
         path('lesson/<int:lesson_id>/detail/<int:student_id>/', views.LessonDetailWithDownloadables.as_view()),
+        path('student/<int:student_id>/lesson/<int:lesson_id>/submit-media/', views.student_submit_lesson_media),
+        path('student/<int:student_id>/lesson/<int:lesson_id>/submission/', views.student_lesson_submission_detail),
 
       # Minor safety & parental consent
       path('student/<int:student_id>/parent/request-link/', views.student_request_parent_link),

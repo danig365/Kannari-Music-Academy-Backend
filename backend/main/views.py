@@ -9135,6 +9135,151 @@ def student_submit_lesson_assignment(request, student_id, assignment_id):
     return JsonResponse({'bool': True, 'submission': data}, status=201 if created else 200)
 
 
+def _get_or_create_lesson_submission_assignment(lesson, student, submission_type):
+    """Find or create a per-lesson assignment shell for direct lesson submissions."""
+    assignment = models.LessonAssignment.objects.filter(
+        lesson=lesson,
+        assignment_type='individual',
+        student=student,
+        submission_type=submission_type,
+    ).select_related('teacher', 'school').first()
+
+    if assignment:
+        return assignment
+
+    teacher = lesson.module.course.teacher if lesson.module and lesson.module.course else None
+    return models.LessonAssignment.objects.create(
+        teacher=teacher,
+        lesson=lesson,
+        title=f"Lesson Submission: {lesson.title}",
+        description=lesson.description or '',
+        submission_type=submission_type,
+        assignment_type='individual',
+        student=student,
+        audio_required=(submission_type == 'audio'),
+    )
+
+
+@csrf_exempt
+def student_submit_lesson_media(request, student_id, lesson_id):
+    """Direct lesson submission endpoint for in-lesson audio/video recording."""
+    if request.method != 'POST':
+        return JsonResponse({'bool': False, 'message': 'POST required'}, status=405)
+
+    try:
+        student = models.Student.objects.get(pk=student_id)
+        lesson = models.ModuleLesson.objects.select_related('module__course').get(pk=lesson_id)
+    except models.Student.DoesNotExist:
+        return JsonResponse({'bool': False, 'message': 'Student not found'}, status=404)
+    except models.ModuleLesson.DoesNotExist:
+        return JsonResponse({'bool': False, 'message': 'Lesson not found'}, status=404)
+
+    from .access_control import SubscriptionAccessControl
+    can_access, access_msg, _ = SubscriptionAccessControl.can_access_lesson(student_id, lesson_id)
+    if not can_access:
+        return JsonResponse({'bool': False, 'message': access_msg}, status=403)
+
+    submission_type = (request.POST.get('submission_type') or 'audio').strip().lower()
+    if submission_type not in {'audio', 'video'}:
+        return JsonResponse({'bool': False, 'message': 'submission_type must be audio or video'}, status=400)
+
+    size_limits = {
+        'audio': 50 * 1024 * 1024,
+        'video': 200 * 1024 * 1024,
+    }
+    allowed_exts = {
+        'audio': {'.mp3', '.wav', '.ogg', '.m4a', '.aac', '.webm'},
+        'video': {'.mp4', '.webm', '.mov', '.mkv'},
+    }
+
+    audio_file = request.FILES.get('audio_file')
+    video_file = request.FILES.get('video_file')
+
+    if submission_type == 'audio' and not audio_file:
+        return JsonResponse({'bool': False, 'message': 'Audio file is required'}, status=400)
+    if submission_type == 'video' and not video_file:
+        return JsonResponse({'bool': False, 'message': 'Video file is required'}, status=400)
+
+    file_obj = audio_file if submission_type == 'audio' else video_file
+    if file_obj:
+        import os
+        ext = os.path.splitext(file_obj.name)[1].lower()
+        if ext not in allowed_exts.get(submission_type, set()):
+            return JsonResponse({'bool': False, 'message': f'Invalid file type for {submission_type} submission'}, status=400)
+        max_size = size_limits.get(submission_type, 50 * 1024 * 1024)
+        if file_obj.size > max_size:
+            max_mb = max_size / (1024 * 1024)
+            file_mb = file_obj.size / (1024 * 1024)
+            return JsonResponse({
+                'bool': False,
+                'message': f'{submission_type.title()} file too large. Max {max_mb:.0f} MB, got {file_mb:.1f} MB.'
+            }, status=400)
+
+    assignment = _get_or_create_lesson_submission_assignment(lesson, student, submission_type)
+
+    defaults = {
+        'submission_notes': request.POST.get('submission_notes', ''),
+    }
+    if audio_file:
+        defaults['audio_file'] = audio_file
+    if video_file:
+        defaults['video_file'] = video_file
+
+    submission, created = models.LessonAssignmentSubmission.objects.get_or_create(
+        assignment=assignment,
+        student=student,
+        defaults=defaults,
+    )
+
+    if not created:
+        if audio_file:
+            submission.audio_file = audio_file
+        if video_file:
+            submission.video_file = video_file
+        submission.submission_notes = request.POST.get('submission_notes', submission.submission_notes)
+        submission.points_awarded = None
+        submission.teacher_feedback = None
+        submission.graded_by = None
+        submission.graded_at = None
+        submission.save()
+
+    action_detail = 'submitted' if created else 'resubmitted'
+    log_activity(
+        request,
+        'submission',
+        f'Student {student.fullname} {action_detail} lesson submission "{lesson.title}" (type:{submission_type})',
+        model_name='LessonAssignmentSubmission',
+        object_id=submission.id,
+        student=student,
+    )
+
+    data = LessonAssignmentSubmissionSerializer(submission, context={'request': request}).data
+    return JsonResponse({'bool': True, 'submission': data}, status=201 if created else 200)
+
+
+def student_lesson_submission_detail(request, student_id, lesson_id):
+    """Return the student's latest submission for a lesson (audio/video)."""
+    if request.method != 'GET':
+        return JsonResponse({'bool': False, 'message': 'GET required'}, status=405)
+
+    try:
+        lesson = models.ModuleLesson.objects.get(pk=lesson_id)
+    except models.ModuleLesson.DoesNotExist:
+        return JsonResponse({'bool': False, 'message': 'Lesson not found'}, status=404)
+
+    submission = models.LessonAssignmentSubmission.objects.filter(
+        student_id=student_id,
+        assignment__lesson=lesson,
+        assignment__submission_type__in=['audio', 'video'],
+    ).select_related('assignment', 'student', 'graded_by').order_by('-updated_at', '-submitted_at').first()
+
+    if not submission:
+        return JsonResponse({'bool': True, 'submission': None})
+
+    data = LessonAssignmentSubmissionSerializer(submission, context={'request': request}).data
+    return JsonResponse({'bool': True, 'submission': data})
+
+
 class TeacherLessonAssignmentSubmissionList(generics.ListAPIView):
     serializer_class = LessonAssignmentSubmissionSerializer
 
@@ -9220,6 +9365,60 @@ def teacher_grade_lesson_assignment_submission(request, teacher_id, submission_i
     submission.graded_by = teacher
     submission.graded_at = timezone.now()
     submission.save()
+
+    if points_awarded > 0 and submission.assignment.lesson_id:
+        lesson = submission.assignment.lesson
+        student = submission.student
+        course = lesson.module.course
+
+        log_access(
+            request=request, access_type='lesson_complete', was_allowed=True,
+            student=student, course=course, lesson=lesson
+        )
+
+        progress, _ = models.ModuleLessonProgress.objects.get_or_create(
+            student=student, lesson=lesson
+        )
+        if not progress.is_completed:
+            progress.is_completed = True
+            progress.completed_at = timezone.now()
+            progress.save()
+
+        module_progress, _ = models.ModuleProgress.objects.get_or_create(
+            student=student, module=lesson.module
+        )
+        module_progress.check_completion()
+
+        course_progress, _ = models.CourseProgress.objects.get_or_create(
+            student=student,
+            course=course,
+            defaults={'total_chapters': 0, 'completed_chapters': 0}
+        )
+
+        total_lessons = 0
+        for chapter in course.course_chapters.all():
+            total_lessons += chapter.module_lessons.count()
+
+        completed_lessons = models.ModuleLessonProgress.objects.filter(
+            student=student,
+            lesson__module__course=course,
+            is_completed=True
+        ).count()
+
+        course_progress.total_chapters = total_lessons
+        course_progress.completed_chapters = completed_lessons
+        course_progress.progress_percentage = int((completed_lessons / total_lessons) * 100) if total_lessons > 0 else 0
+
+        if course_progress.progress_percentage >= 100 and not course_progress.is_completed:
+            course_progress.is_completed = True
+            course_progress.completed_at = timezone.now()
+
+        course_progress.save()
+
+        try:
+            check_and_award_achievements(student)
+        except Exception as e:
+            print(f"[Achievements] Failed to check achievements on teacher approval: {e}")
 
     data = LessonAssignmentSubmissionSerializer(submission, context={'request': request}).data
     return JsonResponse({'bool': True, 'submission': data})

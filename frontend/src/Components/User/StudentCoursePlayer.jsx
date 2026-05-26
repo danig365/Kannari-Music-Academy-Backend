@@ -40,6 +40,20 @@ const StudentCoursePlayer = () => {
     const metronomeIntervalRef = useRef(null);
     const metronomeAudioRef = useRef(null);
     const METRONOME_BPM = 60;
+    const recorderRef = useRef(null);
+    const recorderStreamRef = useRef(null);
+    const recorderTimerRef = useRef(null);
+    const recorderChunksRef = useRef([]);
+    const [recordingType, setRecordingType] = useState('audio');
+    const [isRecording, setIsRecording] = useState(false);
+    const [recordingDuration, setRecordingDuration] = useState(0);
+    const [recordedBlob, setRecordedBlob] = useState(null);
+    const [recordedUrl, setRecordedUrl] = useState(null);
+    const [sendingSubmission, setSendingSubmission] = useState(false);
+    const [lessonSubmission, setLessonSubmission] = useState(null);
+    const [recorderSupported, setRecorderSupported] = useState(true);
+    const [showUploadFallback, setShowUploadFallback] = useState(false);
+    const [uploadFile, setUploadFile] = useState(null);
 
     const milestoneMessages = {
         25: { emoji: '🚀', title: 'Great Start!', text: "You're 25% through! Keep up the momentum!" },
@@ -150,6 +164,7 @@ const StudentCoursePlayer = () => {
                 const response = await axios.get(url);
 
                 setPageData(response.data);
+                await fetchLessonSubmission(lesson_id);
 
                 if (response.data.current_lesson?.last_position && 
                     response.data.current_lesson.last_position > 10 && 
@@ -178,6 +193,17 @@ const StudentCoursePlayer = () => {
         loadLessonData();
     }, [lesson_id, course_id, studentId]);
 
+    const fetchLessonSubmission = async (targetLessonId) => {
+        if (!studentId || !targetLessonId) return;
+        try {
+            const res = await axios.get(`${baseUrl}/student/${studentId}/lesson/${targetLessonId}/submission/`);
+            setLessonSubmission(res.data?.submission || null);
+        } catch (err) {
+            console.error('Error fetching lesson submission:', err);
+            setLessonSubmission(null);
+        }
+    };
+
     useEffect(() => {
         let resizeTimeout;
         const handleResize = () => {
@@ -193,6 +219,14 @@ const StudentCoursePlayer = () => {
             window.removeEventListener('resize', handleResize);
             clearTimeout(resizeTimeout);
         };
+    }, []);
+
+    useEffect(() => {
+        const supported = !!(navigator.mediaDevices && window.MediaRecorder);
+        setRecorderSupported(supported);
+        if (!supported) {
+            setShowUploadFallback(true);
+        }
     }, []);
 
 
@@ -544,9 +578,170 @@ const StudentCoursePlayer = () => {
         setLoopStart(0);
         setLoopEnd(0);
         stopMetronome();
+        stopRecording();
+        clearRecording();
     }, [lesson_id]);
 
     useEffect(() => () => stopMetronome(), []);
+    useEffect(() => () => stopRecording(), []);
+
+    const startRecording = async (type) => {
+        try {
+            const constraints = type === 'video'
+                ? { audio: true, video: true }
+                : { audio: true };
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            recorderStreamRef.current = stream;
+
+            const mimeType = type === 'video'
+                ? 'video/webm;codecs=vp8,opus'
+                : 'audio/webm;codecs=opus';
+            const recorder = new MediaRecorder(stream, { mimeType });
+            recorderRef.current = recorder;
+            recorderChunksRef.current = [];
+
+            recorder.ondataavailable = (event) => {
+                if (event.data && event.data.size > 0) {
+                    recorderChunksRef.current.push(event.data);
+                }
+            };
+
+            recorder.onstop = () => {
+                const blobType = type === 'video' ? 'video/webm' : 'audio/webm';
+                const blob = new Blob(recorderChunksRef.current, { type: blobType });
+                setRecordedBlob(blob);
+                const url = URL.createObjectURL(blob);
+                setRecordedUrl(url);
+                if (recorderStreamRef.current) {
+                    recorderStreamRef.current.getTracks().forEach((track) => track.stop());
+                }
+            };
+
+            recorder.start(100);
+            setRecordingType(type);
+            setIsRecording(true);
+            setRecordingDuration(0);
+            setRecordedBlob(null);
+            if (recordedUrl) URL.revokeObjectURL(recordedUrl);
+            setRecordedUrl(null);
+
+            recorderTimerRef.current = setInterval(() => {
+                setRecordingDuration((prev) => prev + 1);
+            }, 1000);
+        } catch (err) {
+            console.error('Recording error:', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Recording unavailable',
+                text: 'Please allow microphone/camera access to record.',
+                confirmButtonColor: '#3b82f6'
+            });
+        }
+    };
+
+    const stopRecording = () => {
+        if (recorderRef.current && isRecording) {
+            recorderRef.current.stop();
+        }
+        if (recorderTimerRef.current) {
+            clearInterval(recorderTimerRef.current);
+            recorderTimerRef.current = null;
+        }
+        setIsRecording(false);
+    };
+
+    const clearRecording = () => {
+        if (recordedUrl) URL.revokeObjectURL(recordedUrl);
+        setRecordedBlob(null);
+        setRecordedUrl(null);
+        setRecordingDuration(0);
+    };
+
+    const submitRecording = async () => {
+        if (!recordedBlob || !currentLesson || !studentId) return;
+        setSendingSubmission(true);
+        try {
+            const payload = new FormData();
+            payload.append('submission_type', recordingType);
+            if (recordingType === 'video') {
+                payload.append('video_file', recordedBlob, `lesson_${lesson_id}_video.webm`);
+            } else {
+                payload.append('audio_file', recordedBlob, `lesson_${lesson_id}_audio.webm`);
+            }
+
+            await axios.post(
+                `${baseUrl}/student/${studentId}/lesson/${lesson_id}/submit-media/`,
+                payload,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
+            );
+
+            await fetchLessonSubmission(lesson_id);
+            clearRecording();
+            Swal.fire({
+                icon: 'success',
+                title: 'Submitted!',
+                text: 'Your recording was submitted to your teacher.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } catch (err) {
+            console.error('Submit error:', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Submission failed',
+                text: err?.response?.data?.message || 'Please try again.',
+                confirmButtonColor: '#3b82f6'
+            });
+        } finally {
+            setSendingSubmission(false);
+        }
+    };
+
+    const submitUploadFile = async () => {
+        if (!uploadFile || !currentLesson || !studentId) return;
+        setSendingSubmission(true);
+        try {
+            const payload = new FormData();
+            payload.append('submission_type', recordingType);
+            if (recordingType === 'video') {
+                payload.append('video_file', uploadFile);
+            } else {
+                payload.append('audio_file', uploadFile);
+            }
+
+            await axios.post(
+                `${baseUrl}/student/${studentId}/lesson/${lesson_id}/submit-media/`,
+                payload,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
+            );
+
+            await fetchLessonSubmission(lesson_id);
+            setUploadFile(null);
+            Swal.fire({
+                icon: 'success',
+                title: 'Submitted!',
+                text: 'Your upload was submitted to your teacher.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } catch (err) {
+            console.error('Upload submit error:', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Submission failed',
+                text: err?.response?.data?.message || 'Please try again.',
+                confirmButtonColor: '#3b82f6'
+            });
+        } finally {
+            setSendingSubmission(false);
+        }
+    };
+
+    const formatRecordingTime = (secs) => {
+        const mins = Math.floor(secs / 60);
+        const rem = (secs % 60).toString().padStart(2, '0');
+        return `${mins}:${rem}`;
+    };
 
     const getContentTypeIcon = (type) => {
         const icons = {
@@ -1268,6 +1463,145 @@ const StudentCoursePlayer = () => {
                                     ⭐ I Got It
                                 </button>
                             </div>
+                        </div>
+                    )}
+
+                    {/* Lesson Submission */}
+                    {currentLesson && !currentLesson.is_locked && (
+                        <div className="lesson-submission-card">
+                            <div className="lesson-submission-header">
+                                <div className="lesson-submission-title">
+                                    <i className="bi bi-record-circle"></i>
+                                    <div>
+                                        <h6>Submit your recording</h6>
+                                        <p>Record audio or video right here and send to your teacher.</p>
+                                    </div>
+                                </div>
+                                {lessonSubmission && (
+                                    <span className={`lesson-submission-status ${lessonSubmission.points_awarded !== null && lessonSubmission.points_awarded !== undefined
+                                        ? (lessonSubmission.points_awarded > 0 ? 'approved' : 'rejected')
+                                        : 'submitted'}`}>
+                                        {lessonSubmission.points_awarded !== null && lessonSubmission.points_awarded !== undefined
+                                            ? (lessonSubmission.points_awarded > 0 ? 'Approved' : 'Rejected')
+                                            : 'Submitted'}
+                                    </span>
+                                )}
+                            </div>
+
+                            {lessonSubmission && (
+                                <div className="lesson-submission-meta">
+                                    <span>
+                                        Last submission: {new Date(lessonSubmission.submitted_at).toLocaleString()}
+                                    </span>
+                                    {lessonSubmission.points_awarded !== null && lessonSubmission.points_awarded !== undefined && (
+                                        <span className="lesson-submission-score">
+                                            Score: {lessonSubmission.points_awarded} / {lessonSubmission.assignment_max_points || 100}
+                                        </span>
+                                    )}
+                                    {lessonSubmission.teacher_feedback && (
+                                        <span className="lesson-submission-feedback">
+                                            Feedback: {lessonSubmission.teacher_feedback}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="lesson-submission-controls">
+                                <div className="lesson-submission-toggle">
+                                    <button
+                                        type="button"
+                                        className={recordingType === 'audio' ? 'active' : ''}
+                                        onClick={() => setRecordingType('audio')}
+                                        disabled={isRecording}
+                                    >
+                                        <i className="bi bi-mic"></i> Audio
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={recordingType === 'video' ? 'active' : ''}
+                                        onClick={() => setRecordingType('video')}
+                                        disabled={isRecording}
+                                    >
+                                        <i className="bi bi-camera-video"></i> Video
+                                    </button>
+                                </div>
+
+                                <div className="lesson-submission-actions">
+                                    {recorderSupported && !isRecording && !recordedBlob && !showUploadFallback && (
+                                        <button
+                                            type="button"
+                                            className="record-btn"
+                                            onClick={() => startRecording(recordingType)}
+                                        >
+                                            <i className="bi bi-record-circle"></i> Start Recording
+                                        </button>
+                                    )}
+                                    {recorderSupported && isRecording && (
+                                        <button
+                                            type="button"
+                                            className="stop-btn"
+                                            onClick={stopRecording}
+                                        >
+                                            <i className="bi bi-stop-circle"></i> Stop ({formatRecordingTime(recordingDuration)})
+                                        </button>
+                                    )}
+                                    {recorderSupported && recordedBlob && !isRecording && (
+                                        <>
+                                            <button
+                                                type="button"
+                                                className="discard-btn"
+                                                onClick={clearRecording}
+                                            >
+                                                Discard
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="submit-btn"
+                                                onClick={submitRecording}
+                                                disabled={sendingSubmission}
+                                            >
+                                                {sendingSubmission ? 'Submitting...' : 'Submit'}
+                                            </button>
+                                        </>
+                                    )}
+                                    <button
+                                        type="button"
+                                        className="upload-toggle-btn"
+                                        onClick={() => setShowUploadFallback((prev) => !prev)}
+                                        disabled={isRecording}
+                                    >
+                                        {showUploadFallback ? 'Hide Upload' : 'Upload Instead'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {showUploadFallback && (
+                                <div className="lesson-submission-upload">
+                                    <label className="upload-input">
+                                        <input
+                                            type="file"
+                                            accept={recordingType === 'video' ? 'video/*' : 'audio/*'}
+                                            onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                                        />
+                                        <span>{uploadFile ? uploadFile.name : 'Choose file'}</span>
+                                    </label>
+                                    <button
+                                        type="button"
+                                        className="submit-btn"
+                                        onClick={submitUploadFile}
+                                        disabled={sendingSubmission || !uploadFile}
+                                    >
+                                        {sendingSubmission ? 'Submitting...' : 'Submit Upload'}
+                                    </button>
+                                </div>
+                            )}
+
+                            {recordedUrl && recordingType === 'audio' && (
+                                <audio className="lesson-submission-preview" controls src={recordedUrl} />
+                            )}
+                            {recordedUrl && recordingType === 'video' && (
+                                <video className="lesson-submission-preview" controls src={recordedUrl} />
+                            )}
                         </div>
                     )}
 

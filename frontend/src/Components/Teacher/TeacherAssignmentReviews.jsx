@@ -80,6 +80,29 @@ const TeacherAssignmentReviews = () => {
     setSavingId(null);
   };
 
+  const handleQuickDecision = async (submission, approved) => {
+    const maxPoints = submission.assignment_max_points || 100;
+    const payload = {
+      points_awarded: approved ? maxPoints : 0,
+      teacher_feedback: approved ? 'Approved' : 'Rejected'
+    };
+
+    setSavingId(submission.id);
+    try {
+      await axios.patch(
+        `${baseUrl}/teacher/${teacherId}/lesson-assignment-submission/${submission.id}/grade/`,
+        payload,
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+      setMessage(approved ? 'Submission approved.' : 'Submission rejected.');
+      setTimeout(() => setMessage(''), 3000);
+      await fetchSubmissions();
+    } catch (error) {
+      setMessage(error?.response?.data?.message || 'Failed to update submission.');
+    }
+    setSavingId(null);
+  };
+
   const getStatus = (s) => {
     if (s.points_awarded !== null && s.points_awarded !== undefined) return 'graded';
     return 'submitted';
@@ -304,6 +327,29 @@ const TeacherAssignmentReviews = () => {
                         <div style={{ fontSize: '12px', fontWeight: '600', color: '#64748b', marginBottom: '8px' }}>
                           {status === 'graded' ? 'Update Grade' : 'Grade Submission'}
                         </div>
+                        {(subType === 'audio' || subType === 'video') && (
+                          <div style={{ display: 'flex', gap: '10px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              className="btn btn-success btn-sm"
+                              disabled={savingId === submission.id}
+                              onClick={() => handleQuickDecision(submission, true)}
+                            >
+                              <i className="bi bi-check-circle me-1"></i>Approve
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-outline-danger btn-sm"
+                              disabled={savingId === submission.id}
+                              onClick={() => handleQuickDecision(submission, false)}
+                            >
+                              <i className="bi bi-x-circle me-1"></i>Reject
+                            </button>
+                            <span style={{ fontSize: '11px', color: '#94a3b8', alignSelf: 'center' }}>
+                              Quick action for lesson recordings
+                            </span>
+                          </div>
+                        )}
                         <div className="row g-2 align-items-center">
                           <div className="col-md-2">
                             <input
