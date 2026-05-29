@@ -4976,6 +4976,64 @@ class TeacherProgressDashboard(APIView):
         progress_distribution = progress_counts
         
         # Student progress list with course enrollment data
+        student_ids = list(students.values_list('student_id', flat=True))
+
+        # --- Batch pre-fetches for tracking fields ---
+        from collections import defaultdict
+
+        # Lesson activity dates per student (for practice streak)
+        _lesson_activity_dates = defaultdict(set)
+        for _rec in models.ModuleLessonProgress.objects.filter(
+            lesson__module__course__teacher=teacher,
+            student_id__in=student_ids
+        ).values('student_id', 'viewed_at'):
+            _lesson_activity_dates[_rec['student_id']].add(_rec['viewed_at'].date())
+
+        # Practical assignment lesson count per course
+        _practical_by_course = defaultdict(int)
+        for _rec in models.ModuleLesson.objects.filter(
+            module__course__teacher=teacher,
+            interaction_type='practical_assignment'
+        ).values('module__course_id'):
+            _practical_by_course[_rec['module__course_id']] += 1
+
+        # Enrolled course IDs per student (teacher's courses only)
+        _enrolled_by_student = defaultdict(set)
+        for _rec in models.StudentCourseEnrollment.objects.filter(
+            course__teacher=teacher,
+            student_id__in=student_ids
+        ).values('student_id', 'course_id'):
+            _enrolled_by_student[_rec['student_id']].add(_rec['course_id'])
+
+        # Submitted practical-assignment count per student
+        _submitted_by_student = defaultdict(int)
+        for _rec in models.LessonAssignmentSubmission.objects.filter(
+            assignment__lesson__module__course__teacher=teacher,
+            assignment__lesson__interaction_type='practical_assignment',
+            student_id__in=student_ids
+        ).values('student_id'):
+            _submitted_by_student[_rec['student_id']] += 1
+
+        # Pending (submitted but ungraded) count per student
+        _pending_by_student = defaultdict(int)
+        for _rec in models.LessonAssignmentSubmission.objects.filter(
+            assignment__lesson__module__course__teacher=teacher,
+            graded_at__isnull=True,
+            student_id__in=student_ids
+        ).values('student_id'):
+            _pending_by_student[_rec['student_id']] += 1
+
+        # Last login per student from ActivityLog (most recent login entry)
+        _last_login_by_student = {}
+        for _sid in student_ids:
+            _entry = models.ActivityLog.objects.filter(
+                student_id=_sid, action='login'
+            ).order_by('-created_at').values('created_at').first()
+            if _entry:
+                _last_login_by_student[_sid] = _entry['created_at'].strftime('%Y-%m-%d')
+
+        _today = date.today()
+
         student_progress = []
         for s in students:
             # Get total enrolled courses for this student under this teacher
@@ -4998,7 +5056,21 @@ class TeacherProgressDashboard(APIView):
             real_progress = models.CourseProgress.objects.filter(
                 student=s.student, course__teacher=teacher
             ).aggregate(avg=Avg('progress_percentage'))['avg'] or 0
-            
+
+            # Practice streak: consecutive calendar days with at least one lesson view
+            _activity_dates = _lesson_activity_dates.get(s.student.id, set())
+            _streak = 0
+            _check = _today if _today in _activity_dates else _today - timedelta(days=1)
+            while _check in _activity_dates:
+                _streak += 1
+                _check -= timedelta(days=1)
+
+            # Assignment counts (practical_assignment lessons in enrolled courses)
+            _assignments_total = sum(
+                _practical_by_course[cid]
+                for cid in _enrolled_by_student.get(s.student.id, set())
+            )
+
             student_progress.append({
                 'id': s.id,
                 'student_id': s.student.id,
@@ -5014,6 +5086,11 @@ class TeacherProgressDashboard(APIView):
                 'completed_courses': completed_courses,
                 'time_spent_minutes': round(time_spent / 60),
                 'notes': s.notes or '',
+                'practice_streak': _streak,
+                'assignments_total': _assignments_total,
+                'assignments_submitted': _submitted_by_student.get(s.student.id, 0),
+                'pending_submissions': _pending_by_student.get(s.student.id, 0),
+                'last_login': _last_login_by_student.get(s.student.id, None),
             })
         
         # Lesson and course completion stats
@@ -5039,9 +5116,8 @@ class TeacherProgressDashboard(APIView):
         )
         
         # Weekly activity (last 7 days) — combine all real activity sources
-        today = date.today()
+        today = _today
         weekly_activity = []
-        student_ids = list(students.values_list('student_id', flat=True))
         for i in range(6, -1, -1):
             day = today - timedelta(days=i)
             

@@ -149,6 +149,25 @@ const TeacherProgress = () => {
     }
   }
 
+  const getStreakStyle = (days) => {
+    if (days >= 4) return { color: '#16a34a', icon: 'bi-fire' }
+    if (days >= 1) return { color: '#d97706', icon: 'bi-fire' }
+    return { color: '#94a3b8', icon: 'bi-dash-circle' }
+  }
+
+  const getDaysAgo = (dateStr) => {
+    if (!dateStr) return null
+    return Math.floor((new Date() - new Date(dateStr)) / (1000 * 60 * 60 * 24))
+  }
+
+  const getLastActiveColor = (dateStr) => {
+    const days = getDaysAgo(dateStr)
+    if (days === null) return '#94a3b8'
+    if (days <= 3) return '#16a34a'
+    if (days <= 7) return '#d97706'
+    return '#dc2626'
+  }
+
   // Loading state
   if (loading) {
     return <LoadingSpinner size="lg" text="Loading progress analytics..." />
@@ -1120,6 +1139,34 @@ const TeacherProgress = () => {
       {/* =================== STUDENTS TAB =================== */}
       {activeTab === 'students' && (
         <>
+          {/* Tracking Summary Bar */}
+          <div className='row g-3 mb-4'>
+            <div className='col-4'>
+              <div className='content-card text-center py-3'>
+                <div style={{ fontSize: 28, fontWeight: 700, color: '#3b82f6' }}>
+                  {progressData.student_progress.length}
+                </div>
+                <div className='text-muted small mt-1'>Total Students</div>
+              </div>
+            </div>
+            <div className='col-4'>
+              <div className='content-card text-center py-3'>
+                <div style={{ fontSize: 28, fontWeight: 700, color: '#16a34a' }}>
+                  {progressData.student_progress.filter(s => getDaysAgo(s.last_active) !== null && getDaysAgo(s.last_active) <= 7).length}
+                </div>
+                <div className='text-muted small mt-1'>Active This Week</div>
+              </div>
+            </div>
+            <div className='col-4'>
+              <div className='content-card text-center py-3'>
+                <div style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>
+                  {progressData.student_progress.reduce((sum, s) => sum + (s.pending_submissions || 0), 0)}
+                </div>
+                <div className='text-muted small mt-1'>Pending Reviews</div>
+              </div>
+            </div>
+          </div>
+
           {/* Search & Filters */}
           <div className='content-card mb-4'>
             <div className='d-flex flex-wrap gap-3 align-items-center'>
@@ -1260,11 +1307,18 @@ const TeacherProgress = () => {
                       Progress <i className={`bi ${getSortIcon('progress_percentage')} ms-1`}></i>
                     </th>
                     <th>Courses</th>
+                    <th onClick={() => handleSort('practice_streak')} style={{ cursor: 'pointer', userSelect: 'none' }}>
+                      Streak <i className={`bi ${getSortIcon('practice_streak')} ms-1`}></i>
+                    </th>
+                    <th>Assignments</th>
+                    <th onClick={() => handleSort('time_spent_minutes')} style={{ cursor: 'pointer', userSelect: 'none' }}>
+                      Time <i className={`bi ${getSortIcon('time_spent_minutes')} ms-1`}></i>
+                    </th>
                     <th onClick={() => handleSort('status')} style={{ cursor: 'pointer', userSelect: 'none' }}>
                       Status <i className={`bi ${getSortIcon('status')} ms-1`}></i>
                     </th>
-                    <th onClick={() => handleSort('last_active')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                      Last Active <i className={`bi ${getSortIcon('last_active')} ms-1`}></i>
+                    <th onClick={() => handleSort('last_login')} style={{ cursor: 'pointer', userSelect: 'none' }}>
+                      Last Login <i className={`bi ${getSortIcon('last_login')} ms-1`}></i>
                     </th>
                   </tr>
                 </thead>
@@ -1278,7 +1332,9 @@ const TeacherProgress = () => {
                             <div className='d-flex align-items-center'>
                               {student.student_profile_img ? (
                                 <img
-                                  src={`${baseUrl}${student.student_profile_img}`}
+                                  src={student.student_profile_img.startsWith('http')
+                                    ? student.student_profile_img
+                                    : `${SITE_URL}${student.student_profile_img.startsWith('/') ? '' : '/'}${student.student_profile_img}`}
                                   alt={student.student_name}
                                   style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', marginRight: 10 }}
                                 />
@@ -1325,6 +1381,35 @@ const TeacherProgress = () => {
                             </span>
                           </td>
                           <td>
+                            {(() => {
+                              const { color, icon } = getStreakStyle(student.practice_streak || 0)
+                              return (
+                                <span style={{ color, fontSize: 13, fontWeight: 600 }}>
+                                  <i className={`bi ${icon} me-1`}></i>
+                                  {student.practice_streak || 0}d
+                                </span>
+                              )
+                            })()}
+                          </td>
+                          <td>
+                            <span style={{ fontSize: 13 }}>
+                              {student.assignments_submitted || 0}/{student.assignments_total || 0}
+                              {(student.pending_submissions || 0) > 0 && (
+                                <span style={{
+                                  marginLeft: 6,
+                                  background: '#fef3c7',
+                                  color: '#d97706',
+                                  borderRadius: 10,
+                                  padding: '1px 7px',
+                                  fontSize: 11,
+                                  fontWeight: 600
+                                }}>
+                                  {student.pending_submissions} pending
+                                </span>
+                              )}
+                            </span>
+                          </td>
+                          <td>
                             <span
                               style={{
                                 padding: '3px 10px',
@@ -1339,8 +1424,15 @@ const TeacherProgress = () => {
                             </span>
                           </td>
                           <td>
-                            <span className='text-muted' style={{ fontSize: 13 }}>
-                              {formatDate(student.last_active)}
+                            <span style={{ fontSize: 13, color: '#475569' }}>
+                              {student.time_spent_minutes >= 60
+                                ? `${Math.floor(student.time_spent_minutes / 60)}h ${student.time_spent_minutes % 60}m`
+                                : `${student.time_spent_minutes || 0}m`}
+                            </span>
+                          </td>
+                          <td>
+                            <span style={{ fontSize: 13, color: getLastActiveColor(student.last_login) }}>
+                              {formatDate(student.last_login)}
                             </span>
                           </td>
                         </tr>
@@ -1348,7 +1440,7 @@ const TeacherProgress = () => {
                     })
                   ) : (
                     <tr>
-                      <td colSpan={7} className='text-center py-4'>
+                      <td colSpan={10} className='text-center py-4'>
                         <i className="bi bi-search display-6 text-muted d-block mb-2"></i>
                         <span className='text-muted'>No students match your filters</span>
                       </td>
