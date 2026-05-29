@@ -164,7 +164,12 @@ const StudentCoursePlayer = () => {
                 const response = await axios.get(url);
 
                 setPageData(response.data);
-                await fetchLessonSubmission(lesson_id);
+                // Use submission embedded in page data (Phase 1 backend), fall back to separate call
+                if (response.data.current_lesson_submission !== undefined) {
+                    setLessonSubmission(response.data.current_lesson_submission);
+                } else {
+                    await fetchLessonSubmission(lesson_id);
+                }
 
                 if (response.data.current_lesson?.last_position && 
                     response.data.current_lesson.last_position > 10 && 
@@ -855,7 +860,7 @@ const StudentCoursePlayer = () => {
             fileUrl = `${mediaUrl}${file.startsWith('/') ? '' : '/'}${file}`;
         }
         
-        if (!fileUrl && !youtubeEmbedUrl) {
+        if (!fileUrl && !youtubeEmbedUrl && currentLesson.interaction_type !== 'practical_assignment') {
             return (
                 <div className="error-state-container">
                     <div className="error-state-icon">
@@ -981,6 +986,256 @@ const StudentCoursePlayer = () => {
 
             case 'audio':
                 const playAlongConfig = getPlayAlongConfig(currentLesson);
+
+                if (currentLesson.interaction_type === 'practice_with_teacher') {
+                    return (
+                        <div className="content-section-wrapper">
+                            {/* Headphones banner */}
+                            <div style={{
+                                display: 'flex', alignItems: 'center', gap: '12px',
+                                padding: '14px 20px',
+                                background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
+                                border: '1px solid #fed7aa', borderRadius: '12px', marginBottom: '20px'
+                            }}>
+                                <i className="bi bi-headphones" style={{ fontSize: '28px', color: '#f97316' }}></i>
+                                <div>
+                                    <div style={{ fontWeight: 700, color: '#c2410c', fontSize: '15px' }}>Put on your headphones</div>
+                                    <div style={{ color: '#92400e', fontSize: '13px' }}>Practice along with your teacher — feels like a real lesson</div>
+                                </div>
+                            </div>
+
+                            {/* Step 1: Teacher voice */}
+                            <div style={{
+                                padding: '18px', border: '1px solid #e2e8f0',
+                                borderRadius: '12px', background: '#f8fafc', marginBottom: '16px'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                                    <div style={{
+                                        width: '32px', height: '32px', borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        color: '#fff', fontWeight: 700, fontSize: '14px', flexShrink: 0
+                                    }}>1</div>
+                                    <div>
+                                        <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '14px' }}>Listen to your teacher</div>
+                                        <div style={{ color: '#64748b', fontSize: '12px' }}>Teacher explains the exercise — listen carefully before playing</div>
+                                    </div>
+                                </div>
+                                {currentLesson.teacher_voice_audio ? (
+                                    <audio controls style={{ width: '100%', borderRadius: '8px' }}>
+                                        <source src={currentLesson.teacher_voice_audio} type="audio/mpeg" />
+                                        Your browser does not support the audio tag.
+                                    </audio>
+                                ) : (
+                                    <div style={{ color: '#94a3b8', fontSize: '13px', padding: '10px', background: '#f1f5f9', borderRadius: '8px', textAlign: 'center' }}>
+                                        No teacher audio uploaded yet
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Step 2: Play along */}
+                            <div style={{
+                                padding: '18px', border: '1px solid #e2e8f0',
+                                borderRadius: '12px', background: '#f8fafc'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                                    <div style={{
+                                        width: '32px', height: '32px', borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        color: '#fff', fontWeight: 700, fontSize: '14px', flexShrink: 0
+                                    }}>2</div>
+                                    <div>
+                                        <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '14px' }}>Play along with the track</div>
+                                        <div style={{ color: '#64748b', fontSize: '12px' }}>Now play along — use speed &amp; loop controls to practice</div>
+                                    </div>
+                                </div>
+                                <div className="audio-player-container">
+                                    <div className="audio-player-icon">
+                                        <i className="bi bi-music-note-beamed"></i>
+                                    </div>
+                                    <audio
+                                        ref={audioRef}
+                                        className="audio-player"
+                                        controls
+                                        onPause={saveVideoPosition}
+                                        onEnded={saveVideoPosition}
+                                        onTimeUpdate={handleAudioTimeUpdate}
+                                        playbackRate={playbackRate}
+                                    >
+                                        <source src={fileUrl} type="audio/mpeg" />
+                                        Your browser does not support the audio tag.
+                                    </audio>
+                                </div>
+                                <div style={{ marginTop: '14px' }}>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Speed</span>
+                                            {[0.75, 1, 1.25, 1.5].map(rate => (
+                                                <button key={rate} type="button" onClick={() => handlePlaybackRateChange(rate)} style={{ border: '1px solid #e2e8f0', background: playbackRate === rate ? '#dbeafe' : '#fff', color: playbackRate === rate ? '#1d4ed8' : '#334155', padding: '6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
+                                                    {rate}x
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Loop</span>
+                                            <button type="button" onClick={handleSetLoopStart} style={{ border: '1px solid #e2e8f0', background: '#fff', color: '#334155', padding: '6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Set A</button>
+                                            <button type="button" onClick={handleSetLoopEnd} style={{ border: '1px solid #e2e8f0', background: '#fff', color: '#334155', padding: '6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Set B</button>
+                                            <button type="button" onClick={handleLoopToggle} style={{ border: '1px solid #e2e8f0', background: loopEnabled ? '#dcfce7' : '#fff', color: loopEnabled ? '#15803d' : '#334155', padding: '6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
+                                                {loopEnabled ? 'Loop On' : 'Loop Off'}
+                                            </button>
+                                            <span style={{ fontSize: '12px', color: '#94a3b8' }}>{loopStart}s - {loopEnd}s</span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <button type="button" onClick={handleReplay} style={{ border: '1px solid #e2e8f0', background: '#fff', color: '#334155', padding: '6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Replay</button>
+                                            <button type="button" onClick={handleMetronomeToggle} style={{ border: '1px solid #e2e8f0', background: metronomeEnabled ? '#fee2e2' : '#fff', color: metronomeEnabled ? '#b91c1c' : '#334155', padding: '6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
+                                                {metronomeEnabled ? 'Metronome On' : 'Metronome Off'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }
+
+                if (currentLesson.interaction_type === 'practical_assignment') {
+                    const config = currentLesson.interaction_config || {};
+                    const practicalType = config.practical_type || 'custom';
+                    const assignmentPrompt = config.assignment_prompt || '';
+                    const submissionType = config.submission_type || 'audio';
+                    const typeLabels = {
+                        record_rhythm:        { label: 'Record Rhythm',         icon: 'bi-music-note-list',    color: '#16a34a' },
+                        record_melody:        { label: 'Record Melody',         icon: 'bi-music-note-beamed',  color: '#7c3aed' },
+                        record_embouchure:    { label: 'Record Embouchure',     icon: 'bi-camera-video',       color: '#db2777' },
+                        practice_backing_track: { label: 'Practice Backing Track', icon: 'bi-vinyl',           color: '#2563eb' },
+                        submit_warmup:        { label: 'Submit Warmup',         icon: 'bi-sunrise',            color: '#ea580c' },
+                        clap_rhythm:          { label: 'Clap Rhythm',           icon: 'bi-hand-thumbs-up',     color: '#0891b2' },
+                        custom:               { label: 'Practical Assignment',  icon: 'bi-pencil',             color: '#64748b' },
+                    };
+                    const meta = typeLabels[practicalType] || typeLabels.custom;
+
+                    return (
+                        <div className="content-section-wrapper">
+                            {/* Assignment prompt header */}
+                            <div style={{ padding: '20px', background: `linear-gradient(135deg, ${meta.color}22 0%, ${meta.color}0a 100%)`, border: `1px solid ${meta.color}40`, borderRadius: '14px', marginBottom: '20px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: assignmentPrompt ? '12px' : '0' }}>
+                                    <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: meta.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                        <i className={`bi ${meta.icon}`} style={{ fontSize: '20px', color: '#fff' }}></i>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '15px' }}>{meta.label}</div>
+                                        <div style={{ color: '#64748b', fontSize: '12px' }}>Record and submit your performance to your teacher</div>
+                                    </div>
+                                </div>
+                                {assignmentPrompt && (
+                                    <div style={{ padding: '12px 14px', background: '#fff', borderRadius: '10px', border: `1px solid ${meta.color}30`, color: '#334155', fontSize: '14px', lineHeight: '1.65', whiteSpace: 'pre-line' }}>
+                                        {assignmentPrompt}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Backing track */}
+                            {currentLesson.file && (
+                                <div style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '12px', background: '#f8fafc', marginBottom: '16px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                                        <i className="bi bi-vinyl" style={{ color: '#3b82f6', fontSize: '16px' }}></i>
+                                        <span style={{ fontWeight: 600, color: '#1e293b', fontSize: '13px' }}>Backing Track</span>
+                                        <span style={{ color: '#94a3b8', fontSize: '12px' }}>— play along while you record</span>
+                                    </div>
+                                    <audio
+                                        ref={audioRef}
+                                        controls
+                                        style={{ width: '100%', borderRadius: '8px' }}
+                                        onPause={saveVideoPosition}
+                                        onEnded={saveVideoPosition}
+                                        onTimeUpdate={handleAudioTimeUpdate}
+                                    >
+                                        <source src={currentLesson.file} type="audio/mpeg" />
+                                    </audio>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center', marginTop: '10px' }}>
+                                        {[0.75, 1, 1.25, 1.5].map(rate => (
+                                            <button key={rate} type="button" onClick={() => handlePlaybackRateChange(rate)} style={{ border: '1px solid #e2e8f0', background: playbackRate === rate ? '#dbeafe' : '#fff', color: playbackRate === rate ? '#1d4ed8' : '#334155', padding: '5px 9px', borderRadius: '7px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>{rate}x</button>
+                                        ))}
+                                        <button type="button" onClick={handleSetLoopStart} style={{ border: '1px solid #e2e8f0', background: '#fff', color: '#334155', padding: '5px 9px', borderRadius: '7px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Set A</button>
+                                        <button type="button" onClick={handleSetLoopEnd} style={{ border: '1px solid #e2e8f0', background: '#fff', color: '#334155', padding: '5px 9px', borderRadius: '7px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Set B</button>
+                                        <button type="button" onClick={handleLoopToggle} style={{ border: '1px solid #e2e8f0', background: loopEnabled ? '#dcfce7' : '#fff', color: loopEnabled ? '#15803d' : '#334155', padding: '5px 9px', borderRadius: '7px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>{loopEnabled ? 'Loop On' : 'Loop Off'}</button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Inline submission panel */}
+                            <div style={{ padding: '18px', border: '2px solid #e2e8f0', borderRadius: '12px', background: '#fff' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <i className="bi bi-record-circle" style={{ color: '#ef4444', fontSize: '18px' }}></i>
+                                        <div>
+                                            <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '14px' }}>Your Submission</div>
+                                            <div style={{ color: '#64748b', fontSize: '12px' }}>Submit your {submissionType} recording to your teacher</div>
+                                        </div>
+                                    </div>
+                                    {lessonSubmission && (
+                                        <span style={{ padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700,
+                                            background: lessonSubmission.points_awarded !== null && lessonSubmission.points_awarded !== undefined ? (lessonSubmission.points_awarded > 0 ? '#dcfce7' : '#fee2e2') : '#fef3c7',
+                                            color: lessonSubmission.points_awarded !== null && lessonSubmission.points_awarded !== undefined ? (lessonSubmission.points_awarded > 0 ? '#15803d' : '#991b1b') : '#92400e' }}>
+                                            {lessonSubmission.points_awarded !== null && lessonSubmission.points_awarded !== undefined ? (lessonSubmission.points_awarded > 0 ? 'Approved' : 'Rejected') : 'Submitted'}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {lessonSubmission && (
+                                    <div style={{ padding: '10px 12px', background: '#f8fafc', borderRadius: '8px', marginBottom: '14px', fontSize: '13px', color: '#475569' }}>
+                                        <div>Last submitted: {new Date(lessonSubmission.submitted_at).toLocaleString()}</div>
+                                        {lessonSubmission.points_awarded !== null && lessonSubmission.points_awarded !== undefined && (
+                                            <div style={{ marginTop: '4px', fontWeight: 600 }}>Score: {lessonSubmission.points_awarded} / {lessonSubmission.assignment_max_points || 100}</div>
+                                        )}
+                                        {lessonSubmission.teacher_feedback && (
+                                            <div style={{ marginTop: '6px', padding: '8px 10px', background: '#eff6ff', borderRadius: '6px', color: '#1d4ed8', borderLeft: '3px solid #3b82f6' }}>
+                                                Teacher: {lessonSubmission.teacher_feedback}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div className="lesson-submission-controls">
+                                    <div className="lesson-submission-actions">
+                                        {recorderSupported && !isRecording && !recordedBlob && !showUploadFallback && (
+                                            <button type="button" className="record-btn" onClick={() => startRecording(submissionType)}>
+                                                <i className={`bi ${submissionType === 'video' ? 'bi-camera-video' : 'bi-record-circle'}`}></i> Start Recording
+                                            </button>
+                                        )}
+                                        {recorderSupported && isRecording && (
+                                            <button type="button" className="stop-btn" onClick={stopRecording}>
+                                                <i className="bi bi-stop-circle"></i> Stop ({formatRecordingTime(recordingDuration)})
+                                            </button>
+                                        )}
+                                        {recorderSupported && recordedBlob && !isRecording && (
+                                            <>
+                                                <button type="button" className="discard-btn" onClick={clearRecording}>Discard</button>
+                                                <button type="button" className="submit-btn" onClick={submitRecording} disabled={sendingSubmission}>{sendingSubmission ? 'Submitting...' : 'Submit'}</button>
+                                            </>
+                                        )}
+                                        <button type="button" className="upload-toggle-btn" onClick={() => setShowUploadFallback(prev => !prev)} disabled={isRecording}>{showUploadFallback ? 'Hide Upload' : 'Upload Instead'}</button>
+                                    </div>
+                                </div>
+
+                                {showUploadFallback && (
+                                    <div className="lesson-submission-upload" style={{ marginTop: '12px' }}>
+                                        <label className="upload-input">
+                                            <input type="file" accept={submissionType === 'video' ? 'video/*' : 'audio/*'} onChange={(e) => setUploadFile(e.target.files?.[0] || null)} />
+                                            <span>{uploadFile ? uploadFile.name : 'Choose file'}</span>
+                                        </label>
+                                        <button type="button" className="submit-btn" onClick={submitUploadFile} disabled={sendingSubmission || !uploadFile}>{sendingSubmission ? 'Submitting...' : 'Submit Upload'}</button>
+                                    </div>
+                                )}
+
+                                {recordedUrl && submissionType === 'audio' && <audio className="lesson-submission-preview" controls src={recordedUrl} />}
+                                {recordedUrl && submissionType === 'video' && <video className="lesson-submission-preview" controls src={recordedUrl} />}
+                            </div>
+                        </div>
+                    );
+                }
+
                 return (
                     <div className="content-section-wrapper">
                         <div className="content-player-wrapper audio-wrapper">
@@ -1467,7 +1722,7 @@ const StudentCoursePlayer = () => {
                     )}
 
                     {/* Lesson Submission */}
-                    {currentLesson && !currentLesson.is_locked && (
+                    {currentLesson && !currentLesson.is_locked && currentLesson.interaction_type !== 'practical_assignment' && (
                         <div className="lesson-submission-card">
                             <div className="lesson-submission-header">
                                 <div className="lesson-submission-title">

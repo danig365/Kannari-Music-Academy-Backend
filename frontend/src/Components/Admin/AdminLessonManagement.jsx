@@ -85,6 +85,9 @@ const AdminLessonManagement = ({
         content_type: 'video',
         interaction_type: 'content',
         play_along_track_type: 'backing_track',
+        practical_type: 'record_rhythm',
+        assignment_prompt: '',
+        practical_submission_type: 'audio',
         file: null,
         youtube_url: '',
         duration_seconds: 0,
@@ -92,6 +95,7 @@ const AdminLessonManagement = ({
         repeat_after_me_enabled: false,
         repeat_after_me_prompt: '',
         repeat_after_me_audio: null,
+        teacher_voice_audio: null,
         is_preview: false,
         is_locked: false,
         is_premium: false,
@@ -100,6 +104,7 @@ const AdminLessonManagement = ({
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef(null);
     const repeatAudioInputRef = useRef(null);
+    const teacherVoiceAudioInputRef = useRef(null);
     
     // Downloadables Modal States
     const [showDownloadablesModal, setShowDownloadablesModal] = useState(false);
@@ -194,6 +199,36 @@ const AdminLessonManagement = ({
                 interaction_type: 'play_along',
                 play_along_track_type: 'backing_track',
                 objectives: '• Put on headphones\n• Press play\n• Practice along with the track',
+                is_preview: false,
+                is_locked: false
+            }
+        },
+        {
+            id: 'practice_with_teacher',
+            name: 'Practice with Teacher',
+            icon: 'bi-person-video3',
+            color: '#f97316',
+            description: 'Teacher-guided session — student plays along with teacher voice',
+            defaults: {
+                content_type: 'audio',
+                interaction_type: 'practice_with_teacher',
+                objectives: '• Put on headphones\n• Listen to your teacher explain the exercise\n• Play along with the track\n• Practice until it feels natural',
+                is_preview: false,
+                is_locked: false
+            }
+        },
+        {
+            id: 'practical_assignment',
+            name: 'Practical Assignment',
+            icon: 'bi-music-note-list',
+            color: '#16a34a',
+            description: 'Student records & submits — play rhythm, record embouchure, practice backing track',
+            defaults: {
+                content_type: 'audio',
+                interaction_type: 'practical_assignment',
+                practical_type: 'record_rhythm',
+                practical_submission_type: 'audio',
+                objectives: '• Read the assignment prompt carefully\n• Practice before recording\n• Record your best attempt\n• Submit to your teacher',
                 is_preview: false,
                 is_locked: false
             }
@@ -599,6 +634,9 @@ const AdminLessonManagement = ({
             content_type: 'video',
             interaction_type: 'content',
             play_along_track_type: 'backing_track',
+            practical_type: 'record_rhythm',
+            assignment_prompt: '',
+            practical_submission_type: 'audio',
             file: null,
             youtube_url: '',
             duration_seconds: 0,
@@ -606,6 +644,7 @@ const AdminLessonManagement = ({
             repeat_after_me_enabled: false,
             repeat_after_me_prompt: '',
             repeat_after_me_audio: null,
+            teacher_voice_audio: null,
             is_preview: false,
             is_locked: false,
             is_premium: false,
@@ -622,6 +661,9 @@ const AdminLessonManagement = ({
             content_type: template.defaults.content_type,
             interaction_type: template.defaults.interaction_type || 'content',
             play_along_track_type: template.defaults.play_along_track_type || 'backing_track',
+            practical_type: template.defaults.practical_type || 'record_rhythm',
+            practical_submission_type: template.defaults.practical_submission_type || 'audio',
+            assignment_prompt: '',
             objectives: template.defaults.objectives,
             is_preview: template.defaults.is_preview,
             is_locked: template.defaults.is_locked
@@ -658,6 +700,9 @@ const AdminLessonManagement = ({
             content_type: lesson.content_type,
             interaction_type: lesson.interaction_type || 'content',
             play_along_track_type: parsedConfig.track_type || 'backing_track',
+            practical_type: parsedConfig.practical_type || 'record_rhythm',
+            assignment_prompt: parsedConfig.assignment_prompt || '',
+            practical_submission_type: parsedConfig.submission_type || 'audio',
             file: null,
             youtube_url: lesson.youtube_url || '',
             duration_seconds: lesson.duration_seconds,
@@ -665,6 +710,7 @@ const AdminLessonManagement = ({
             repeat_after_me_enabled: !!lesson.repeat_after_me_enabled,
             repeat_after_me_prompt: lesson.repeat_after_me_prompt || '',
             repeat_after_me_audio: null,
+            teacher_voice_audio: null,
             is_preview: lesson.is_preview || false,
             is_locked: lesson.is_locked || false,
             is_premium: lesson.is_premium || false,
@@ -799,6 +845,12 @@ const AdminLessonManagement = ({
             formData.append('interaction_type', lessonFormData.interaction_type || 'content');
             const interactionConfig = lessonFormData.interaction_type === 'play_along'
                 ? { track_type: lessonFormData.play_along_track_type || 'backing_track' }
+                : lessonFormData.interaction_type === 'practical_assignment'
+                ? {
+                    practical_type: lessonFormData.practical_type || 'record_rhythm',
+                    assignment_prompt: lessonFormData.assignment_prompt || '',
+                    submission_type: lessonFormData.practical_submission_type || 'audio',
+                  }
                 : {};
             formData.append('interaction_config', JSON.stringify(interactionConfig));
             formData.append('repeat_after_me_enabled', lessonFormData.repeat_after_me_enabled);
@@ -809,6 +861,9 @@ const AdminLessonManagement = ({
             formData.append('required_access_level', lessonFormData.required_access_level || 'free');
             if (lessonFormData.repeat_after_me_audio) {
                 formData.append('repeat_after_me_audio', lessonFormData.repeat_after_me_audio);
+            }
+            if (lessonFormData.teacher_voice_audio) {
+                formData.append('teacher_voice_audio', lessonFormData.teacher_voice_audio);
             }
             if (lessonFormData.youtube_url) {
                 formData.append('youtube_url', lessonFormData.youtube_url);
@@ -2092,15 +2147,124 @@ const AdminLessonManagement = ({
                                                     setLessonFormData(prev => ({
                                                         ...prev,
                                                         interaction_type: nextType,
-                                                        content_type: nextType === 'play_along' ? 'audio' : prev.content_type
+                                                        content_type: (nextType === 'play_along' || nextType === 'practice_with_teacher' || nextType === 'practical_assignment') ? 'audio' : prev.content_type
                                                     }));
                                                 }}
                                                 style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '10px 14px' }}
                                             >
                                                 <option value="content">Standard</option>
                                                 <option value="play_along">Play Along</option>
+                                                <option value="practice_with_teacher">Practice with Teacher</option>
+                                                <option value="practical_assignment">Practical Assignment</option>
                                             </select>
                                         </div>
+                                        {lessonFormData.interaction_type === 'practical_assignment' && (
+                                            <div className="col-12">
+                                                <div style={{ padding: '16px 18px', backgroundColor: '#f0fdf4', borderRadius: '8px', border: '1px solid #bbf7d0', marginBottom: '4px' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                                                        <i className="bi bi-music-note-list" style={{ color: '#16a34a', fontSize: '18px' }}></i>
+                                                        <span style={{ fontWeight: 600, color: '#14532d' }}>Practical Assignment Setup</span>
+                                                    </div>
+                                                    <div className="row g-3">
+                                                        <div className="col-md-6">
+                                                            <label className="form-label" style={{ fontWeight: 500, color: '#374151', fontSize: '13px' }}>Task Type</label>
+                                                            <select
+                                                                className="form-select"
+                                                                value={lessonFormData.practical_type}
+                                                                onChange={(e) => setLessonFormData({ ...lessonFormData, practical_type: e.target.value })}
+                                                                style={{ border: '1px solid #bbf7d0', borderRadius: '8px', padding: '10px 14px', fontSize: '13px' }}
+                                                            >
+                                                                <option value="record_rhythm">🥁 Play this rhythm</option>
+                                                                <option value="record_melody">🎵 Repeat this melody</option>
+                                                                <option value="record_embouchure">🎺 Record your embouchure</option>
+                                                                <option value="practice_backing_track">🎸 Practice with backing track</option>
+                                                                <option value="submit_warmup">🔥 Submit your warmup</option>
+                                                                <option value="clap_rhythm">👏 Clap this rhythm</option>
+                                                                <option value="custom">✏️ Custom task</option>
+                                                            </select>
+                                                        </div>
+                                                        <div className="col-md-6">
+                                                            <label className="form-label" style={{ fontWeight: 500, color: '#374151', fontSize: '13px' }}>Student Submits</label>
+                                                            <select
+                                                                className="form-select"
+                                                                value={lessonFormData.practical_submission_type}
+                                                                onChange={(e) => setLessonFormData({ ...lessonFormData, practical_submission_type: e.target.value })}
+                                                                style={{ border: '1px solid #bbf7d0', borderRadius: '8px', padding: '10px 14px', fontSize: '13px' }}
+                                                            >
+                                                                <option value="audio">🎙️ Audio recording</option>
+                                                                <option value="video">🎥 Video recording</option>
+                                                            </select>
+                                                        </div>
+                                                        <div className="col-12">
+                                                            <label className="form-label" style={{ fontWeight: 500, color: '#374151', fontSize: '13px' }}>Assignment Prompt <span style={{ color: '#16a34a' }}>*</span></label>
+                                                            <textarea
+                                                                className="form-control"
+                                                                value={lessonFormData.assignment_prompt}
+                                                                onChange={(e) => setLessonFormData({ ...lessonFormData, assignment_prompt: e.target.value })}
+                                                                placeholder="e.g. Play this C major scale at 60 BPM. Focus on even timing between notes."
+                                                                rows="3"
+                                                                style={{ border: '1px solid #bbf7d0', borderRadius: '8px', padding: '10px 14px', fontSize: '13px' }}
+                                                            />
+                                                            <small style={{ color: '#6b7280' }}>This is shown prominently to the student. Be specific about what you want them to do.</small>
+                                                        </div>
+                                                        <div className="col-12">
+                                                            <div style={{ padding: '10px 12px', background: '#dcfce7', borderRadius: '6px', fontSize: '12px', color: '#166534' }}>
+                                                                <i className="bi bi-info-circle me-1"></i>
+                                                                Upload the backing track / reference audio as the lesson file below (optional). Students will play along with it before recording.
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {lessonFormData.interaction_type === 'practice_with_teacher' && (
+                                            <div className="col-12">
+                                                <div style={{ padding: '14px 16px', backgroundColor: '#fff7ed', borderRadius: '8px', border: '1px solid #fed7aa', marginBottom: '4px' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                                                        <i className="bi bi-person-video3" style={{ color: '#f97316', fontSize: '18px' }}></i>
+                                                        <span style={{ fontWeight: 600, color: '#9a3412' }}>Teacher Voice Audio</span>
+                                                        <span style={{ fontSize: '12px', color: '#f97316', background: '#ffedd5', padding: '2px 8px', borderRadius: '999px', fontWeight: 500 }}>Required</span>
+                                                    </div>
+                                                    <p style={{ fontSize: '13px', color: '#78350f', margin: '0 0 10px' }}>
+                                                        Upload your narration / explanation audio. Students will hear your voice guiding them through the exercise before playing along.
+                                                    </p>
+                                                    <input
+                                                        type="file"
+                                                        ref={teacherVoiceAudioInputRef}
+                                                        className="form-control"
+                                                        accept="audio/*"
+                                                        onChange={(e) => setLessonFormData({ ...lessonFormData, teacher_voice_audio: e.target.files?.[0] || null })}
+                                                        style={{ border: '1px solid #fed7aa', borderRadius: '8px', padding: '10px 14px' }}
+                                                    />
+                                                    {lessonFormData.teacher_voice_audio && (
+                                                        <div className="mt-2">
+                                                            <small className="text-muted">
+                                                                Selected: <strong>{lessonFormData.teacher_voice_audio.name}</strong>
+                                                            </small>
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-sm ms-2"
+                                                                onClick={() => {
+                                                                    setLessonFormData({ ...lessonFormData, teacher_voice_audio: null });
+                                                                    if (teacherVoiceAudioInputRef.current) teacherVoiceAudioInputRef.current.value = '';
+                                                                }}
+                                                                style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '6px', fontSize: '12px' }}
+                                                            >
+                                                                <i className="bi bi-x-circle me-1"></i>Remove
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                    {editingLesson && editingLesson.teacher_voice_audio && !lessonFormData.teacher_voice_audio && (
+                                                        <div className="mt-2 p-2" style={{ background: '#f3f4f6', borderRadius: '8px' }}>
+                                                            <small className="text-muted">
+                                                                <i className="bi bi-file-earmark-music me-1"></i>
+                                                                Current file: <strong>{editingLesson.teacher_voice_audio.split('/').pop()}</strong> — upload a new file to replace it
+                                                            </small>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                         {lessonFormData.interaction_type === 'play_along' && (
                                             <div className="col-md-6">
                                                 <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>

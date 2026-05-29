@@ -6460,13 +6460,14 @@ class StudentLessonPageData(APIView):
                     'subscription_required': True
                 }, status=403)
 
+            # Check lesson access — store result but do NOT return 403.
+            # The player handles restricted access inline; blocking here breaks
+            # page refreshes that happen after marking a lesson complete.
+            lesson_access_denied_msg = None
             if lesson_id:
                 can_access_lesson, lesson_msg, _ = SubscriptionAccessControl.can_access_lesson(student_id, lesson_id)
                 if not can_access_lesson:
-                    return Response({
-                        'error': lesson_msg,
-                        'subscription_required': True
-                    }, status=403)
+                    lesson_access_denied_msg = lesson_msg
             
             # Check enrollment
             enrollment = models.StudentCourseEnrollment.objects.filter(
@@ -6577,6 +6578,7 @@ class StudentLessonPageData(APIView):
                         'repeat_after_me_enabled': lesson.repeat_after_me_enabled,
                         'repeat_after_me_prompt': lesson.repeat_after_me_prompt,
                         'repeat_after_me_audio': request.build_absolute_uri(lesson.repeat_after_me_audio.url) if lesson.repeat_after_me_audio else None,
+                        'teacher_voice_audio': request.build_absolute_uri(lesson.teacher_voice_audio.url) if lesson.teacher_voice_audio else None,
                         'repeat_after_me_status': {
                             'action': repeat_action.action,
                             'created_at': repeat_action.created_at
@@ -6620,6 +6622,28 @@ class StudentLessonPageData(APIView):
                     current_lesson_data = all_lessons[0]
                     current_lesson_index = 0
             
+            # Embed current lesson submission for practical/recording lessons
+            current_lesson_submission = None
+            if current_lesson_data:
+                cl_sub = models.LessonAssignmentSubmission.objects.filter(
+                    student=student,
+                    assignment__lesson_id=current_lesson_data['id'],
+                ).select_related('assignment', 'graded_by').order_by('-updated_at').first()
+                if cl_sub:
+                    current_lesson_submission = {
+                        'id': cl_sub.id,
+                        'submission_type': cl_sub.assignment.submission_type,
+                        'audio_file': request.build_absolute_uri(cl_sub.audio_file.url) if cl_sub.audio_file else None,
+                        'video_file': request.build_absolute_uri(cl_sub.video_file.url) if cl_sub.video_file else None,
+                        'text_content': cl_sub.text_content,
+                        'submission_notes': cl_sub.submission_notes,
+                        'points_awarded': cl_sub.points_awarded,
+                        'assignment_max_points': cl_sub.assignment.max_points,
+                        'teacher_feedback': cl_sub.teacher_feedback,
+                        'submitted_at': cl_sub.submitted_at.isoformat(),
+                        'graded_at': cl_sub.graded_at.isoformat() if cl_sub.graded_at else None,
+                    }
+
             # Compute navigation from all_lessons list
             previous_lesson = None
             next_lesson = None
@@ -6654,6 +6678,7 @@ class StudentLessonPageData(APIView):
                 },
                 'modules': modules_data,
                 'current_lesson': current_lesson_data,
+                'current_lesson_submission': current_lesson_submission,
                 'navigation': {
                     'previous': previous_lesson,
                     'next': next_lesson,
@@ -9174,10 +9199,14 @@ def student_submit_lesson_media(request, student_id, lesson_id):
     except models.ModuleLesson.DoesNotExist:
         return JsonResponse({'bool': False, 'message': 'Lesson not found'}, status=404)
 
-    from .access_control import SubscriptionAccessControl
-    can_access, access_msg, _ = SubscriptionAccessControl.can_access_lesson(student_id, lesson_id)
-    if not can_access:
-        return JsonResponse({'bool': False, 'message': access_msg}, status=403)
+    # Only verify enrollment — do NOT block submissions on weekly/monthly lesson limits.
+    # A student who can see the lesson must always be able to submit their recording.
+    is_enrolled = models.StudentCourseEnrollment.objects.filter(
+        student_id=student_id,
+        course=lesson.module.course,
+    ).exists()
+    if not is_enrolled:
+        return JsonResponse({'bool': False, 'message': 'You are not enrolled in this course'}, status=403)
 
     submission_type = (request.POST.get('submission_type') or 'audio').strip().lower()
     if submission_type not in {'audio', 'video'}:

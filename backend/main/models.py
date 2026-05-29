@@ -161,6 +161,7 @@ class ModuleLesson(models.Model):
     repeat_after_me_enabled = models.BooleanField(default=False)
     repeat_after_me_prompt = models.TextField(blank=True, null=True)
     repeat_after_me_audio = models.FileField(upload_to='lesson_interactions/repeat_after_me/', blank=True, null=True, max_length=500)
+    teacher_voice_audio = models.FileField(upload_to='lesson_interactions/practice_with_teacher/', blank=True, null=True, max_length=500, help_text="Teacher narration/explanation audio for Practice with Teacher mode")
     required_access_level = models.CharField(max_length=20, choices=[
         ('free', 'Free'),
         ('basic', 'Basic'),
