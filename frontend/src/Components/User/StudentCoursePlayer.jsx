@@ -54,6 +54,7 @@ const StudentCoursePlayer = () => {
     const [recorderSupported, setRecorderSupported] = useState(true);
     const [showUploadFallback, setShowUploadFallback] = useState(false);
     const [uploadFile, setUploadFile] = useState(null);
+    const [cohortData, setCohortData] = useState(null);
 
     const milestoneMessages = {
         25: { emoji: '🚀', title: 'Great Start!', text: "You're 25% through! Keep up the momentum!" },
@@ -209,6 +210,14 @@ const StudentCoursePlayer = () => {
         }
     };
 
+    // Fetch cohort rank for the current course
+    useEffect(() => {
+        if (!studentId || !course_id) return;
+        axios.get(`${baseUrl}/student/${studentId}/course/${course_id}/cohort-rank/`)
+            .then(res => setCohortData(res.data))
+            .catch(() => setCohortData(null));
+    }, [course_id, studentId]);
+
     useEffect(() => {
         let resizeTimeout;
         const handleResize = () => {
@@ -304,7 +313,11 @@ const StudentCoursePlayer = () => {
                     currentProgress,
                     newProgress
                 );
-                
+
+                if (response.data.new_achievements?.length > 0) {
+                    showAchievementToasts(response.data.new_achievements);
+                }
+
                 const url = `${baseUrl}/student/${studentId}/course/${course_id}/lesson/${lesson_id}/full-page-data/`;
                 const refreshResponse = await axios.get(url);
                 setPageData(refreshResponse.data);
@@ -361,6 +374,27 @@ const StudentCoursePlayer = () => {
             }
         }
         return null;
+    };
+
+    const showAchievementToasts = (achievements) => {
+        if (!achievements || achievements.length === 0) return;
+        achievements.forEach((ach, i) => {
+            setTimeout(() => {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    iconHtml: '🏆',
+                    title: `Achievement Unlocked!`,
+                    html: `<div style="font-weight:600;font-size:14px;margin-bottom:2px">${ach.name}</div><div style="font-size:13px;color:#fbbf24">+${ach.points} XP</div><div style="font-size:11px;color:#94a3b8;margin-top:2px">${ach.description}</div>`,
+                    showConfirmButton: false,
+                    timer: 4000,
+                    timerProgressBar: true,
+                    background: '#1e1b4b',
+                    color: '#fff',
+                    customClass: { popup: 'achievement-toast' },
+                });
+            }, 2800 + i * 4200);
+        });
     };
 
     const triggerCelebration = (moduleCompleted, courseCompleted, oldProgress = 0, newProgress = 0) => {
@@ -1896,9 +1930,63 @@ const StudentCoursePlayer = () => {
                         </div>
                     </div>
 
+                    {/* Class Standing — Cohort Progress Card */}
+                    {cohortData && cohortData.total_students > 1 && (
+                        <div style={{
+                            marginTop: 24,
+                            background: '#fff',
+                            border: '1.5px solid #e2e8f0',
+                            borderRadius: 14,
+                            padding: '16px 20px',
+                        }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                                <span style={{ fontWeight: 700, fontSize: 14, color: '#1e293b' }}>
+                                    <i className="bi bi-people-fill me-2" style={{ color: '#3b82f6' }}></i>Class Standing
+                                </span>
+                                <span style={{ fontSize: 13, color: '#64748b' }}>
+                                    #{cohortData.student_rank} of {cohortData.total_students}
+                                </span>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                {cohortData.top_entries.map((entry, idx) => (
+                                    <div key={idx}>
+                                        {entry.is_you && entry.rank > 3 && (
+                                            <div style={{ textAlign: 'center', color: '#cbd5e1', fontSize: 11, marginBottom: 6 }}>• • •</div>
+                                        )}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <span style={{
+                                                fontSize: 11,
+                                                fontWeight: entry.is_you ? 700 : 500,
+                                                color: entry.is_you ? '#3b82f6' : '#64748b',
+                                                minWidth: 72,
+                                                whiteSpace: 'nowrap',
+                                            }}>
+                                                {entry.rank === 1 ? '🥇 ' : entry.rank === 2 ? '🥈 ' : entry.rank === 3 ? '🥉 ' : `#${entry.rank} `}
+                                                {entry.label}
+                                            </span>
+                                            <div style={{ flex: 1, background: '#f1f5f9', borderRadius: 6, height: 8, overflow: 'hidden' }}>
+                                                <div style={{
+                                                    width: `${entry.progress}%`,
+                                                    height: '100%',
+                                                    background: entry.is_you
+                                                        ? 'linear-gradient(90deg, #3b82f6, #2563eb)'
+                                                        : '#cbd5e1',
+                                                    borderRadius: 6,
+                                                    transition: 'width 0.5s ease',
+                                                }} />
+                                            </div>
+                                            <span style={{ fontSize: 11, color: entry.is_you ? '#2563eb' : '#94a3b8', minWidth: 32, textAlign: 'right' }}>
+                                                {entry.progress}%
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Floating Objectives Panel */}
-                    {currentLesson && currentLesson.objectives_list?.length > 0 && (
-                        <>
+                    {currentLesson && currentLesson.objectives_list?.length > 0 && (                        <>
                             {floatingObjectivesOpen && (
                                 <div className="floating-overlay" onClick={() => setFloatingObjectivesOpen(false)}></div>
                             )}

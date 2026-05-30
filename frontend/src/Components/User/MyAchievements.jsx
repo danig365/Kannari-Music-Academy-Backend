@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Sidebar from './Sidebar';
 import LoadingSpinner from '../LoadingSpinner';
+import StreakCalendar from './StreakCalendar';
 import './MyAchievements.css';
 
 import { API_BASE_URL } from '../../config';
@@ -13,6 +14,7 @@ const MyAchievements = () => {
     const navigate = useNavigate();
     const [achievements, setAchievements] = useState([]);
     const [allAchievements, setAllAchievements] = useState([]);
+    const [dashboardData, setDashboardData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -48,12 +50,14 @@ const MyAchievements = () => {
 
     const fetchAchievements = async () => {
         try {
-            const [earned, all] = await Promise.all([
+            const [earned, all, dashboard] = await Promise.all([
                 axios.get(`${baseUrl}/student/achievements/${studentId}/`),
-                axios.get(`${baseUrl}/achievements/`)
+                axios.get(`${baseUrl}/achievements/`),
+                axios.get(`${baseUrl}/student/enhanced-dashboard/${studentId}/`),
             ]);
             setAchievements(earned.data);
             setAllAchievements(all.data);
+            setDashboardData(dashboard.data);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching achievements:', error);
@@ -69,7 +73,8 @@ const MyAchievements = () => {
             'quiz_master': 'bi-patch-question',
             'time_spent': 'bi-clock-history',
             'first_steps': 'bi-footprints',
-            'social': 'bi-people'
+            'social': 'bi-people',
+            'streak': 'bi-fire',
         };
         return icons[type] || 'bi-award';
     };
@@ -80,9 +85,18 @@ const MyAchievements = () => {
             'quiz_master': '#69db7c',
             'time_spent': '#4dabf7',
             'first_steps': '#da77f2',
-            'social': '#ffa94d'
+            'social': '#ffa94d',
+            'streak': '#ff6b35',
         };
         return colors[type] || '#868e96';
+    };
+
+    const getXpTier = (xp) => {
+        if (xp >= 1000) return { label: 'Music Master',   color: '#7c3aed', next: null,  nextXp: 0    };
+        if (xp >= 600)  return { label: 'Rhythm Master',  color: '#dc2626', next: 1000, nextXp: 1000 };
+        if (xp >= 300)  return { label: 'Music Maker',    color: '#d97706', next: 600,  nextXp: 600  };
+        if (xp >= 100)  return { label: 'Rising Star',    color: '#2563eb', next: 300,  nextXp: 300  };
+        return                 { label: 'Beginner',        color: '#16a34a', next: 100,  nextXp: 100  };
     };
 
     return (
@@ -128,6 +142,79 @@ const MyAchievements = () => {
                         </span>
                     </div>
 
+                    {/* XP Level Bar */}
+                    {dashboardData && (() => {
+                        const xp = dashboardData.total_xp || 0;
+                        const streak = dashboardData.practice_streak || 0;
+                        const tier = getXpTier(xp);
+                        const prevXp = tier.label === 'Beginner' ? 0
+                            : tier.label === 'Rising Star' ? 100
+                            : tier.label === 'Music Maker' ? 300
+                            : tier.label === 'Rhythm Master' ? 600 : 1000;
+                        const pct = tier.next
+                            ? Math.round(((xp - prevXp) / (tier.nextXp - prevXp)) * 100)
+                            : 100;
+                        return (
+                            <div style={{
+                                background: '#fff',
+                                border: '1.5px solid #e2e8f0',
+                                borderRadius: 14,
+                                padding: '20px 24px',
+                                marginBottom: 20,
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: 20,
+                                alignItems: 'center',
+                            }}>
+                                {/* XP block */}
+                                <div style={{ flex: 1, minWidth: 200 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                                        <span style={{ fontWeight: 700, color: tier.color, fontSize: 15 }}>
+                                            <i className="bi bi-lightning-charge-fill me-1"></i>{tier.label}
+                                        </span>
+                                        <span style={{ fontSize: 13, color: '#64748b' }}>
+                                            {xp} XP{tier.next ? ` / ${tier.nextXp} XP` : ' (Max)'}
+                                        </span>
+                                    </div>
+                                    <div style={{ background: '#e2e8f0', borderRadius: 8, height: 10, overflow: 'hidden' }}>
+                                        <div style={{
+                                            width: `${pct}%`,
+                                            height: '100%',
+                                            background: tier.color,
+                                            borderRadius: 8,
+                                            transition: 'width 0.6s ease'
+                                        }} />
+                                    </div>
+                                    {tier.next && (
+                                        <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>
+                                            {tier.nextXp - xp} XP to next tier
+                                        </div>
+                                    )}
+                                </div>
+                                {/* Streak block */}
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    background: streak >= 4 ? '#fff7ed' : streak >= 1 ? '#fefce8' : '#f8fafc',
+                                    border: `1.5px solid ${streak >= 4 ? '#fed7aa' : streak >= 1 ? '#fef08a' : '#e2e8f0'}`,
+                                    borderRadius: 12,
+                                    padding: '10px 20px',
+                                    minWidth: 100,
+                                }}>
+                                    <span style={{ fontSize: 26 }}>{streak >= 1 ? '🔥' : '💤'}</span>
+                                    <span style={{
+                                        fontSize: 22,
+                                        fontWeight: 800,
+                                        color: streak >= 4 ? '#ea580c' : streak >= 1 ? '#ca8a04' : '#94a3b8',
+                                        lineHeight: 1.1
+                                    }}>{streak}d</span>
+                                    <span style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Streak</span>
+                                </div>
+                            </div>
+                        );
+                    })()}
+
                     {/* Summary Card */}
                     <div className="summary-card">
                         <div className="summary-item">
@@ -136,9 +223,9 @@ const MyAchievements = () => {
                         </div>
                         <div className="summary-item">
                             <h3 style={{ color: '#f59e0b' }}>
-                                {achievements.reduce((sum, a) => sum + (a.achievement?.points || 0), 0)}
+                                {dashboardData?.total_xp ?? achievements.reduce((sum, a) => sum + (a.achievement?.points || 0), 0)}
                             </h3>
-                            <p>Total Points</p>
+                            <p>Total XP</p>
                         </div>
                         <div className="summary-item">
                             <h3 style={{ color: '#10b981' }}>
@@ -220,6 +307,9 @@ const MyAchievements = () => {
                                 </div>
                             ))}
                     </div>
+
+                    {/* Learning Streak Calendar */}
+                    <StreakCalendar studentId={studentId} />
                 </div>
             </div>
         </div>

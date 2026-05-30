@@ -208,6 +208,7 @@ urlpatterns =[
         # Streak Calendar & Gamification
         path('student/streak-calendar/<int:student_id>/', views.StudentStreakCalendar.as_view()),
         path('student/all-achievements/<int:student_id>/', views.StudentAllAchievements.as_view()),
+        path('student/<int:student_id>/course/<int:course_id>/cohort-rank/', views.StudentCohortRank.as_view()),
         
         # Weekly Goals
         path('student/weekly-goals/<int:student_id>/', views.WeeklyGoalList.as_view()),

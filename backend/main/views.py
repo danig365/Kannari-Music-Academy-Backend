@@ -3114,6 +3114,13 @@ class EnhancedStudentDashboard(APIView):
             'earned_at': sa.earned_at.strftime('%Y-%m-%d')
         } for sa in recent_achievements]
         
+        # XP total and current practice streak
+        total_xp = models.StudentAchievement.objects.filter(
+            student=student
+        ).aggregate(total=Sum('achievement__points'))['total'] or 0
+
+        practice_streak = compute_practice_streak(student)
+
         return JsonResponse({
             'enrolled_courses': enrolled_courses,
             'favorite_courses': favorite_courses,
@@ -3124,7 +3131,9 @@ class EnhancedStudentDashboard(APIView):
             'overall_progress_percentage': int(total_progress),
             'weekly_goal': weekly_goal_data,
             'recent_courses': recent_courses,
-            'recent_achievements': achievements_data
+            'recent_achievements': achievements_data,
+            'total_xp': total_xp,
+            'practice_streak': practice_streak,
         })
 
 
@@ -3226,6 +3235,71 @@ class StudentStreakCalendar(APIView):
             'this_week_active': this_week_active,
             'today': today.strftime('%Y-%m-%d'),
             'start_date': start_date.strftime('%Y-%m-%d')
+        })
+
+
+class StudentCohortRank(APIView):
+    """Return a student's rank within a course cohort plus a top-3 anonymous leaderboard."""
+
+    def get(self, request, student_id, course_id):
+        try:
+            student = models.Student.objects.get(pk=student_id)
+        except models.Student.DoesNotExist:
+            return JsonResponse({'error': 'Student not found'}, status=404)
+
+        try:
+            course = models.Course.objects.get(pk=course_id)
+        except models.Course.DoesNotExist:
+            return JsonResponse({'error': 'Course not found'}, status=404)
+
+        # All active enrollments for this course, ordered best-first
+        enrollments = list(
+            models.StudentCourseEnrollment.objects.filter(
+                course=course,
+                is_active=True
+            ).order_by('-progress_percent', 'enrolled_time')
+            .values('student_id', 'progress_percent')
+        )
+
+        total_students = len(enrollments)
+        student_id_int = int(student_id)
+
+        student_rank = None
+        student_progress = 0
+        for idx, e in enumerate(enrollments):
+            if e['student_id'] == student_id_int:
+                student_rank = idx + 1
+                student_progress = e['progress_percent']
+                break
+
+        if student_rank is None:
+            return JsonResponse({'error': 'Student not enrolled in this course'}, status=404)
+
+        # Build anonymous top-3 list; always include the requesting student
+        top_entries = []
+        for i, e in enumerate(enrollments[:3]):
+            is_you = (e['student_id'] == student_id_int)
+            top_entries.append({
+                'rank': i + 1,
+                'label': 'You' if is_you else f'Student {i + 1}',
+                'progress': e['progress_percent'],
+                'is_you': is_you,
+            })
+
+        # If student is not in top-3, append a separator row showing their position
+        if student_rank > 3:
+            top_entries.append({
+                'rank': student_rank,
+                'label': 'You',
+                'progress': student_progress,
+                'is_you': True,
+            })
+
+        return JsonResponse({
+            'student_rank': student_rank,
+            'total_students': total_students,
+            'student_progress': student_progress,
+            'top_entries': top_entries,
         })
 
 
@@ -3525,114 +3599,110 @@ class StudentAchievementList(generics.ListAPIView):
         return models.StudentAchievement.objects.filter(student_id=student_id)
 
 
+def compute_practice_streak(student):
+    """Return current practice streak (consecutive calendar days with any lesson activity)."""
+    from datetime import date, timedelta
+    activity_dates = set(
+        models.ModuleLessonProgress.objects.filter(
+            student=student
+        ).values_list('viewed_at__date', flat=True).distinct()
+    )
+    streak = 0
+    check = date.today()
+    if check not in activity_dates:
+        check -= timedelta(days=1)
+    while check in activity_dates:
+        streak += 1
+        check -= timedelta(days=1)
+    return streak
+
+
+def _ensure_achievement(name, description, achievement_type, points, requirement_value=1):
+    """Get or auto-create an Achievement record by name."""
+    obj, _ = models.Achievement.objects.get_or_create(
+        name=name,
+        defaults={
+            'description': description,
+            'achievement_type': achievement_type,
+            'points': points,
+            'requirement_value': requirement_value,
+            'is_active': True,
+        }
+    )
+    return obj
+
+
 def check_and_award_achievements(student):
-    """Helper function to check and award achievements for a student.
-    
-    Awards generic achievements based on:
-    - Lessons completed (total across all courses)
-    - Courses enrolled
-    - Courses completed at 100%
-    
+    """Check and award achievements for a student.
+
+    Awards achievements based on:
+    - Lessons completed
+    - Courses enrolled / completed
+    - Practice streaks (consecutive daily activity)
+
     Returns a list of newly awarded achievements (dict with name, description, points).
     Can be called from any view without request context.
     """
     try:
         new_achievements = []
-        
-        # LESSON ACHIEVEMENTS - Count total lessons completed
+
+        def _award(name, description, achievement_type, points, requirement_value, current_value):
+            if current_value < requirement_value:
+                return
+            achievement = _ensure_achievement(name, description, achievement_type, points, requirement_value)
+            _, created = models.StudentAchievement.objects.get_or_create(
+                student=student, achievement=achievement
+            )
+            if created:
+                new_achievements.append({
+                    'name': achievement.name,
+                    'description': achievement.description,
+                    'points': achievement.points,
+                })
+
+        # LESSON ACHIEVEMENTS
         lessons_completed = models.ModuleLessonProgress.objects.filter(
-            student=student,
-            is_completed=True
+            student=student, is_completed=True
         ).count()
-        
-        lesson_achievements = [
-            ('First Steps', 1),
-            ('Lesson Lover', 5),
-            ('Lesson Master', 10),
-            ('Lesson Legend', 25),
-            ('Lesson Warrior', 50),
-        ]
-        
-        for ach_name, required_lessons in lesson_achievements:
-            if lessons_completed >= required_lessons:
-                achievement = models.Achievement.objects.filter(
-                    name=ach_name,
-                    is_active=True
-                ).first()
-                
-                if achievement:
-                    earned, created = models.StudentAchievement.objects.get_or_create(
-                        student=student,
-                        achievement=achievement
-                    )
-                    if created:
-                        new_achievements.append({
-                            'name': achievement.name,
-                            'description': achievement.description,
-                            'points': achievement.points
-                        })
-        
-        # ENROLLMENT ACHIEVEMENTS - Count courses the student is enrolled in
-        courses_enrolled = models.StudentCourseEnrollment.objects.filter(
-            student=student
-        ).count()
-        
-        enrollment_achievements = [
-            ('Versatile Learner', 1),
-            ('Music Explorer', 3),
-            ('Course Collector', 5),
-        ]
-        
-        for ach_name, required_courses in enrollment_achievements:
-            if courses_enrolled >= required_courses:
-                achievement = models.Achievement.objects.filter(
-                    name=ach_name,
-                    is_active=True
-                ).first()
-                
-                if achievement:
-                    earned, created = models.StudentAchievement.objects.get_or_create(
-                        student=student,
-                        achievement=achievement
-                    )
-                    if created:
-                        new_achievements.append({
-                            'name': achievement.name,
-                            'description': achievement.description,
-                            'points': achievement.points
-                        })
-        
-        # COMPLETION ACHIEVEMENTS - Count courses completed at 100%
+        for name, req, pts in [
+            ('First Steps',    1,  10),
+            ('Lesson Lover',   5,  25),
+            ('Lesson Master',  10, 50),
+            ('Lesson Legend',  25, 100),
+            ('Lesson Warrior', 50, 200),
+        ]:
+            _award(name, f'Complete {req} lesson(s)', 'first_steps', pts, req, lessons_completed)
+
+        # ENROLLMENT ACHIEVEMENTS
+        courses_enrolled = models.StudentCourseEnrollment.objects.filter(student=student).count()
+        for name, req, pts in [
+            ('Versatile Learner', 1, 15),
+            ('Music Explorer',    3, 40),
+            ('Course Collector',  5, 75),
+        ]:
+            _award(name, f'Enroll in {req} course(s)', 'completion', pts, req, courses_enrolled)
+
+        # COMPLETION ACHIEVEMENTS
         courses_completed = models.CourseProgress.objects.filter(
-            student=student,
-            progress_percentage=100
+            student=student, progress_percentage=100
         ).count()
-        
-        completion_achievements = [
-            ('First Finish', 1),
-            ('Finisher', 3),
-            ('Completion Master', 5),
-        ]
-        
-        for ach_name, required_completions in completion_achievements:
-            if courses_completed >= required_completions:
-                achievement = models.Achievement.objects.filter(
-                    name=ach_name,
-                    is_active=True
-                ).first()
-                
-                if achievement:
-                    earned, created = models.StudentAchievement.objects.get_or_create(
-                        student=student,
-                        achievement=achievement
-                    )
-                    if created:
-                        new_achievements.append({
-                            'name': achievement.name,
-                            'description': achievement.description,
-                            'points': achievement.points
-                        })
-        
+        for name, req, pts in [
+            ('First Finish',      1, 50),
+            ('Finisher',          3, 120),
+            ('Completion Master', 5, 250),
+        ]:
+            _award(name, f'Complete {req} course(s) in full', 'completion', pts, req, courses_completed)
+
+        # STREAK ACHIEVEMENTS
+        streak = compute_practice_streak(student)
+        for name, req, pts, desc in [
+            ('3-Day Streak',  3,  30,  'Practice 3 days in a row'),
+            ('7-Day Streak',  7,  75,  '7 Day Practice Streak — one full week!'),
+            ('14-Day Streak', 14, 150, 'Practice 14 days in a row'),
+            ('30-Day Streak', 30, 400, '30 Day Practice Streak — incredible dedication!'),
+        ]:
+            _award(name, desc, 'streak', pts, req, streak)
+
         return new_achievements
     except Exception as e:
         print(f"[Achievements] Error checking achievements for student {student.id}: {e}")
@@ -5846,18 +5916,28 @@ def mark_lesson_complete(request, student_id, lesson_id):
             
             course_progress.save()
             
-            # Auto-award achievements now that progress has been updated
+            # Auto-award achievements and return results
+            xp_earned = 0
+            new_achievements = []
             try:
-                check_and_award_achievements(student)
+                new_achievements = check_and_award_achievements(student)
+                xp_earned = sum(a['points'] for a in new_achievements)
             except Exception as e:
                 print(f"[Achievements] Failed to check achievements on lesson complete: {e}")
-            
+
+            total_xp = models.StudentAchievement.objects.filter(
+                student=student
+            ).aggregate(total=Sum('achievement__points'))['total'] or 0
+
             return JsonResponse({
                 'bool': True,
                 'message': 'Lesson marked as complete',
                 'module_completed': module_progress.is_completed,
                 'course_completed': course_progress.is_completed,
-                'course_progress_percentage': course_progress.progress_percentage
+                'course_progress_percentage': course_progress.progress_percentage,
+                'new_achievements': new_achievements,
+                'xp_earned': xp_earned,
+                'total_xp': total_xp,
             })
         except (models.Student.DoesNotExist, models.ModuleLesson.DoesNotExist) as e:
             return JsonResponse({'bool': False, 'message': str(e)})
