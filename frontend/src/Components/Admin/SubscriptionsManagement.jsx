@@ -160,7 +160,7 @@ const SubscriptionsManagement = () => {
                 student: parseInt(formData.student),
                 plan: parseInt(formData.plan),
                 start_date: formData.start_date,
-                end_date: formData.end_date,
+                end_date: formData.end_date || null,
                 price_paid: parseFloat(formData.price_paid) || 0,
                 is_paid: formData.is_paid,
                 status: 'pending',

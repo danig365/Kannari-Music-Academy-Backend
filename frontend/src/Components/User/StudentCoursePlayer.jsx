@@ -54,7 +54,20 @@ const StudentCoursePlayer = () => {
     const [recorderSupported, setRecorderSupported] = useState(true);
     const [showUploadFallback, setShowUploadFallback] = useState(false);
     const [uploadFile, setUploadFile] = useState(null);
+    const [textInput, setTextInput] = useState('');
     const [cohortData, setCohortData] = useState(null);
+
+    // Lesson builder blocks (Phase 7)
+    const [lessonBlocks, setLessonBlocks] = useState([]);
+    const [blocksLoading, setBlocksLoading] = useState(false);
+    const [blockCheckedState, setBlockCheckedState] = useState({});
+    const [blockRamStatus, setBlockRamStatus] = useState({});
+    const [blockTimerState, setBlockTimerState] = useState({});
+    const blockTimerIntervalsRef = useRef({});
+    const [blockQuizState, setBlockQuizState] = useState({});
+    const [blockRecState, setBlockRecState] = useState({});
+    const blockRecRefs = useRef({});
+    const [blockCounterState, setBlockCounterState] = useState({});
 
     const milestoneMessages = {
         25: { emoji: '🚀', title: 'Great Start!', text: "You're 25% through! Keep up the momentum!" },
@@ -217,6 +230,599 @@ const StudentCoursePlayer = () => {
             .then(res => setCohortData(res.data))
             .catch(() => setCohortData(null));
     }, [course_id, studentId]);
+
+    // ── Phase 7: Fetch lesson blocks ──────────────────────────────────────────
+    const fetchLessonBlocks = async (lid) => {
+        setBlocksLoading(true);
+        try {
+            const res = await axios.get(`${baseUrl}/lesson/${lid}/blocks/`);
+            const blocks = res.data || [];
+            setLessonBlocks(blocks);
+
+            // Init checklist from localStorage
+            const checkState = {};
+            const ramState = {};
+            const quizState = {};
+            const counterState = {};
+            blocks.forEach(block => {
+                if (block.block_type === 'checklist') {
+                    const items = block.config?.items || [];
+                    const key = `blk_check_${lid}_${block.id}`;
+                    const stored = localStorage.getItem(key);
+                    checkState[block.id] = stored ? JSON.parse(stored) : items.map(() => false);
+                }
+                if (block.block_type === 'repeat_after_me') {
+                    const key = `blk_ram_${lid}_${block.id}`;
+                    ramState[block.id] = localStorage.getItem(key) || null;
+                }
+                if (block.block_type === 'quiz') {
+                    quizState[block.id] = { currentQ: 0, answers: {}, submitted: false, score: 0, totalPoints: 0 };
+                }
+                if (block.block_type === 'practice_counter') {
+                    const key = `blk_counter_${lid}_${block.id}`;
+                    const stored = localStorage.getItem(key);
+                    counterState[block.id] = stored ? parseInt(stored, 10) : 0;
+                }
+            });
+            setBlockCheckedState(checkState);
+            setBlockRamStatus(ramState);
+            setBlockQuizState(quizState);
+            setBlockCounterState(counterState);
+        } catch (err) {
+            console.error('Error fetching lesson blocks:', err);
+            setLessonBlocks([]);
+        } finally {
+            setBlocksLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (!lesson_id) return;
+        // Clear all block timer intervals from previous lesson
+        Object.values(blockTimerIntervalsRef.current).forEach(id => clearInterval(id));
+        blockTimerIntervalsRef.current = {};
+        setBlockTimerState({});
+        setBlockRecState({});
+        blockRecRefs.current = {};
+        fetchLessonBlocks(lesson_id);
+    }, [lesson_id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Cleanup on unmount
+    useEffect(() => () => {
+        Object.values(blockTimerIntervalsRef.current).forEach(id => clearInterval(id));
+        Object.values(blockRecRefs.current).forEach(r => {
+            if (r.timerInterval) clearInterval(r.timerInterval);
+            if (r.stream) r.stream.getTracks().forEach(t => t.stop());
+        });
+    }, []);
+
+    // ── Block helpers ─────────────────────────────────────────────────────────
+    const toggleBlockChecklistItem = (blockId, idx, totalItems) => {
+        setBlockCheckedState(prev => {
+            const cur = prev[blockId] || Array(totalItems).fill(false);
+            const next = [...cur];
+            next[idx] = !next[idx];
+            localStorage.setItem(`blk_check_${lesson_id}_${blockId}`, JSON.stringify(next));
+            return { ...prev, [blockId]: next };
+        });
+    };
+
+    const tapPracticeCounter = (blockId, target) => {
+        setBlockCounterState(prev => {
+            const current = prev[blockId] ?? 0;
+            if (current >= target) return prev;
+            const next = current + 1;
+            localStorage.setItem(`blk_counter_${lesson_id}_${blockId}`, String(next));
+            return { ...prev, [blockId]: next };
+        });
+    };
+
+    const setBlockRamAction = (blockId, action) => {
+        localStorage.setItem(`blk_ram_${lesson_id}_${blockId}`, action);
+        setBlockRamStatus(prev => ({ ...prev, [blockId]: action }));
+    };
+
+    const startBlockTimer = (blockId, totalSeconds) => {
+        if (blockTimerIntervalsRef.current[blockId]) return;
+        setBlockTimerState(prev => ({
+            ...prev,
+            [blockId]: { running: true, secondsLeft: prev[blockId]?.secondsLeft ?? totalSeconds }
+        }));
+        const id = setInterval(() => {
+            setBlockTimerState(prev => {
+                const cur = prev[blockId];
+                if (!cur || cur.secondsLeft <= 0) {
+                    clearInterval(blockTimerIntervalsRef.current[blockId]);
+                    delete blockTimerIntervalsRef.current[blockId];
+                    return { ...prev, [blockId]: { ...cur, running: false, secondsLeft: 0 } };
+                }
+                return { ...prev, [blockId]: { ...cur, running: true, secondsLeft: cur.secondsLeft - 1 } };
+            });
+        }, 1000);
+        blockTimerIntervalsRef.current[blockId] = id;
+    };
+
+    const pauseBlockTimer = (blockId) => {
+        clearInterval(blockTimerIntervalsRef.current[blockId]);
+        delete blockTimerIntervalsRef.current[blockId];
+        setBlockTimerState(prev => ({ ...prev, [blockId]: { ...prev[blockId], running: false } }));
+    };
+
+    const resetBlockTimer = (blockId, totalSeconds) => {
+        clearInterval(blockTimerIntervalsRef.current[blockId]);
+        delete blockTimerIntervalsRef.current[blockId];
+        setBlockTimerState(prev => ({ ...prev, [blockId]: { running: false, secondsLeft: totalSeconds } }));
+    };
+
+    const answerBlockQuiz = (blockId, qIdx, answerIdx) => {
+        setBlockQuizState(prev => ({
+            ...prev,
+            [blockId]: { ...prev[blockId], answers: { ...prev[blockId].answers, [qIdx]: answerIdx } }
+        }));
+    };
+
+    const advanceBlockQuiz = (blockId, questions) => {
+        const state = blockQuizState[blockId];
+        if (!state) return;
+        if (state.currentQ < questions.length - 1) {
+            setBlockQuizState(prev => ({ ...prev, [blockId]: { ...prev[blockId], currentQ: prev[blockId].currentQ + 1 } }));
+        } else {
+            let score = 0;
+            let totalPoints = 0;
+            questions.forEach((q, i) => {
+                totalPoints += (q.points || 1);
+                if (state.answers[i] === q.correct) score += (q.points || 1);
+            });
+            setBlockQuizState(prev => ({ ...prev, [blockId]: { ...prev[blockId], submitted: true, score, totalPoints } }));
+        }
+    };
+
+    const retryBlockQuiz = (blockId) => {
+        setBlockQuizState(prev => ({ ...prev, [blockId]: { currentQ: 0, answers: {}, submitted: false, score: 0, totalPoints: 0 } }));
+    };
+
+    const startBlockRecording = async (blockId, type) => {
+        try {
+            const constraints = type === 'video' ? { audio: true, video: true } : { audio: true };
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            const mimeType = type === 'video' ? 'video/webm;codecs=vp8,opus' : 'audio/webm;codecs=opus';
+            const recorder = new MediaRecorder(stream, { mimeType });
+            const chunks = [];
+            recorder.ondataavailable = e => { if (e.data?.size > 0) chunks.push(e.data); };
+            recorder.onstop = () => {
+                const blobType = type === 'video' ? 'video/webm' : 'audio/webm';
+                const blob = new Blob(chunks, { type: blobType });
+                const url = URL.createObjectURL(blob);
+                if (blockRecRefs.current[blockId]?.stream) {
+                    blockRecRefs.current[blockId].stream.getTracks().forEach(t => t.stop());
+                }
+                setBlockRecState(prev => ({ ...prev, [blockId]: { ...prev[blockId], isRecording: false, recordedBlob: blob, recordedUrl: url } }));
+            };
+            const timerInterval = setInterval(() => {
+                setBlockRecState(prev => ({ ...prev, [blockId]: { ...prev[blockId], duration: (prev[blockId]?.duration || 0) + 1 } }));
+            }, 1000);
+            blockRecRefs.current[blockId] = { recorder, stream, chunks, timerInterval };
+            recorder.start(100);
+            setBlockRecState(prev => ({ ...prev, [blockId]: { isRecording: true, duration: 0, recordedBlob: null, recordedUrl: null, sending: false, showUpload: prev[blockId]?.showUpload || false, uploadFile: null } }));
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Recording unavailable', text: 'Please allow microphone/camera access.', confirmButtonColor: '#3b82f6' });
+        }
+    };
+
+    const stopBlockRecording = (blockId) => {
+        const refs = blockRecRefs.current[blockId];
+        if (refs?.recorder && blockRecState[blockId]?.isRecording) refs.recorder.stop();
+        if (refs?.timerInterval) clearInterval(refs.timerInterval);
+    };
+
+    const clearBlockRecording = (blockId) => {
+        const prev = blockRecState[blockId];
+        if (prev?.recordedUrl) URL.revokeObjectURL(prev.recordedUrl);
+        setBlockRecState(prev2 => ({ ...prev2, [blockId]: { ...prev2[blockId], isRecording: false, recordedBlob: null, recordedUrl: null, duration: 0 } }));
+    };
+
+    const submitBlockRecording = async (blockId, submissionType) => {
+        const bState = blockRecState[blockId];
+        if (!bState?.recordedBlob) return;
+        setBlockRecState(prev => ({ ...prev, [blockId]: { ...prev[blockId], sending: true } }));
+        try {
+            const payload = new FormData();
+            payload.append('submission_type', submissionType);
+            if (submissionType === 'video') payload.append('video_file', bState.recordedBlob, `block_${blockId}_video.webm`);
+            else payload.append('audio_file', bState.recordedBlob, `block_${blockId}_audio.webm`);
+            await axios.post(`${baseUrl}/student/${studentId}/lesson/${lesson_id}/submit-media/`, payload, { headers: { 'Content-Type': 'multipart/form-data' } });
+            clearBlockRecording(blockId);
+            setBlockRecState(prev => ({ ...prev, [blockId]: { ...prev[blockId], submitted: true, sending: false } }));
+            Swal.fire({ icon: 'success', title: 'Submitted!', text: 'Your recording was sent to your teacher.', timer: 2000, showConfirmButton: false });
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Submission failed', text: err?.response?.data?.message || 'Please try again.', confirmButtonColor: '#3b82f6' });
+            setBlockRecState(prev => ({ ...prev, [blockId]: { ...prev[blockId], sending: false } }));
+        }
+    };
+
+    const submitBlockUpload = async (blockId, submissionType, file) => {
+        if (!file) return;
+        setBlockRecState(prev => ({ ...prev, [blockId]: { ...prev[blockId], sending: true } }));
+        try {
+            const payload = new FormData();
+            payload.append('submission_type', submissionType);
+            if (submissionType === 'video') payload.append('video_file', file);
+            else payload.append('audio_file', file);
+            await axios.post(`${baseUrl}/student/${studentId}/lesson/${lesson_id}/submit-media/`, payload, { headers: { 'Content-Type': 'multipart/form-data' } });
+            setBlockRecState(prev => ({ ...prev, [blockId]: { ...prev[blockId], sending: false, submitted: true, uploadFile: null } }));
+            Swal.fire({ icon: 'success', title: 'Submitted!', text: 'Your file was sent to your teacher.', timer: 2000, showConfirmButton: false });
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Submission failed', text: err?.response?.data?.message || 'Please try again.', confirmButtonColor: '#3b82f6' });
+            setBlockRecState(prev => ({ ...prev, [blockId]: { ...prev[blockId], sending: false } }));
+        }
+    };
+
+    // ── Block renderer ────────────────────────────────────────────────────────
+    const renderLessonBlock = (block) => {
+        const cfg = block.config || {};
+        const blockTitle = block.title;
+
+        const blockCard = (icon, color, content) => (
+            <div key={block.id} style={{ borderRadius: 14, border: `1.5px solid ${color}30`, background: '#fff', overflow: 'hidden' }}>
+                {blockTitle && (
+                    <div style={{ padding: '12px 16px', background: `${color}0d`, borderBottom: `1px solid ${color}25`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <i className={`bi ${icon}`} style={{ color, fontSize: 16 }}></i>
+                        <span style={{ fontWeight: 700, fontSize: 14, color: '#1e293b' }}>{blockTitle}</span>
+                    </div>
+                )}
+                <div style={{ padding: '16px' }}>{content}</div>
+            </div>
+        );
+
+        switch (block.block_type) {
+
+            case 'video': {
+                const ytMatch = (cfg.youtube_url || '').match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/);
+                const ytId = ytMatch?.[1];
+                return blockCard('bi-play-circle-fill', '#ef4444', <>
+                    {ytId ? (
+                        <div style={{ position: 'relative', paddingBottom: '56.25%', background: '#000', borderRadius: 10, overflow: 'hidden' }}>
+                            <iframe style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                                src={`https://www.youtube.com/embed/${ytId}`} title={blockTitle || 'Video'} allowFullScreen />
+                        </div>
+                    ) : block.file ? (
+                        <video controls style={{ width: '100%', borderRadius: 10, background: '#000', display: 'block' }}>
+                            <source src={block.file.startsWith('http') ? block.file : `${mediaUrl}${block.file.startsWith('/') ? '' : '/'}${block.file}`} />
+                        </video>
+                    ) : <p style={{ color: '#94a3b8', margin: 0 }}>No video source configured.</p>}
+                    {cfg.caption && <p style={{ margin: '10px 0 0', fontSize: 13, color: '#64748b' }}>{cfg.caption}</p>}
+                </>);
+            }
+
+            case 'audio': {
+                if (!block.file) return null;
+                const src = block.file.startsWith('http') ? block.file : `${mediaUrl}${block.file.startsWith('/') ? '' : '/'}${block.file}`;
+                return blockCard('bi-music-note-beamed', '#8b5cf6', <>
+                    <audio controls style={{ width: '100%', borderRadius: 8 }}>
+                        <source src={src} />
+                    </audio>
+                    {cfg.caption && <p style={{ margin: '10px 0 0', fontSize: 13, color: '#64748b' }}>{cfg.caption}</p>}
+                </>);
+            }
+
+            case 'image': {
+                if (!block.file) return null;
+                const src = block.file.startsWith('http') ? block.file : `${mediaUrl}${block.file.startsWith('/') ? '' : '/'}${block.file}`;
+                return blockCard('bi-image', '#06b6d4', <>
+                    <img src={src} alt={cfg.alt_text || blockTitle || 'Image'} style={{ width: '100%', borderRadius: 10, display: 'block' }} />
+                    {cfg.caption && <p style={{ margin: '10px 0 0', fontSize: 13, color: '#64748b' }}>{cfg.caption}</p>}
+                </>);
+            }
+
+            case 'repeat_after_me': {
+                const prompt = cfg.prompt || '';
+                const ramAction = blockRamStatus[block.id];
+                const audioSrc = block.file ? (block.file.startsWith('http') ? block.file : `${mediaUrl}${block.file.startsWith('/') ? '' : '/'}${block.file}`) : null;
+                const actionLabel = { done: '✅ Done', again: '🔁 Practicing', got_it: '⭐ Got It' }[ramAction] || null;
+                return blockCard('bi-mic-fill', '#4338ca', <>
+                    {actionLabel && <span style={{ display: 'inline-block', marginBottom: 10, background: '#dcfce7', color: '#166534', borderRadius: 999, padding: '3px 12px', fontSize: 12, fontWeight: 700 }}>{actionLabel}</span>}
+                    {prompt && <p style={{ margin: '0 0 12px', color: '#334155', fontSize: 14 }}>{prompt}</p>}
+                    {audioSrc && <audio controls style={{ width: '100%', marginBottom: 12 }}><source src={audioSrc} /></audio>}
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        <button onClick={() => setBlockRamAction(block.id, 'done')} style={{ background: '#16a34a', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>✅ Done</button>
+                        <button onClick={() => setBlockRamAction(block.id, 'again')} style={{ background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>🔁 Practice Again</button>
+                        <button onClick={() => setBlockRamAction(block.id, 'got_it')} style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>⭐ I Got It</button>
+                    </div>
+                </>);
+            }
+
+            case 'checklist': {
+                const items = cfg.items || [];
+                if (items.length === 0) return null;
+                const checked = blockCheckedState[block.id] || items.map(() => false);
+                const allDone = checked.every(Boolean);
+                const doneCount = checked.filter(Boolean).length;
+                return (
+                    <div key={block.id} style={{ borderRadius: 14, border: `1.5px solid ${allDone ? '#86efac' : '#e2e8f0'}`, background: allDone ? '#f0fdf4' : '#fff', overflow: 'hidden' }}>
+                        <div style={{ padding: '12px 16px', background: allDone ? '#dcfce7' : '#f8fafc', borderBottom: `1px solid ${allDone ? '#86efac' : '#e2e8f0'}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <i className="bi bi-check2-square" style={{ color: allDone ? '#16a34a' : '#64748b', fontSize: 16 }}></i>
+                            <span style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', flex: 1 }}>{blockTitle || 'Checklist'}</span>
+                            <span style={{ fontSize: 12, color: allDone ? '#166534' : '#64748b', fontWeight: 600 }}>{doneCount}/{items.length}</span>
+                            {allDone && <span style={{ background: '#16a34a', color: '#fff', borderRadius: 999, padding: '2px 10px', fontSize: 12, fontWeight: 700 }}>✓ Complete!</span>}
+                        </div>
+                        <div style={{ padding: '12px 16px' }}>
+                            {items.map((item, idx) => (
+                                <div key={idx} onClick={() => toggleBlockChecklistItem(block.id, idx, items.length)}
+                                    style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8, cursor: 'pointer', userSelect: 'none' }}>
+                                    <div style={{ width: 20, height: 20, borderRadius: 5, border: `2px solid ${checked[idx] ? '#16a34a' : '#d1d5db'}`, background: checked[idx] ? '#16a34a' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+                                        {checked[idx] && <i className="bi bi-check-lg" style={{ color: '#fff', fontSize: 11 }}></i>}
+                                    </div>
+                                    <span style={{ fontSize: 14, color: checked[idx] ? '#94a3b8' : '#334155', textDecoration: checked[idx] ? 'line-through' : 'none', lineHeight: 1.5 }}>{item}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            case 'timer': {
+                const totalSeconds = (cfg.minutes || 0) * 60 + (cfg.seconds || 0);
+                if (totalSeconds <= 0) return null;
+                const tState = blockTimerState[block.id] || { running: false, secondsLeft: totalSeconds };
+                const left = tState.secondsLeft;
+                const mins = Math.floor(left / 60).toString().padStart(2, '0');
+                const secs = (left % 60).toString().padStart(2, '0');
+                const pct = totalSeconds > 0 ? Math.round(((totalSeconds - left) / totalSeconds) * 100) : 0;
+                const done = left <= 0;
+                const label = cfg.label || blockTitle || '';
+                return (
+                    <div key={block.id} style={{ borderRadius: 14, border: `1.5px solid ${done ? '#86efac' : '#e2e8f0'}`, background: '#fff', overflow: 'hidden' }}>
+                        <div style={{ padding: '12px 16px', background: done ? '#f0fdf4' : '#f8fafc', borderBottom: `1px solid ${done ? '#86efac' : '#e2e8f0'}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <i className="bi bi-stopwatch-fill" style={{ color: done ? '#16a34a' : '#f59e0b', fontSize: 16 }}></i>
+                            <span style={{ fontWeight: 700, fontSize: 14, color: '#1e293b' }}>{label || 'Timer'}</span>
+                        </div>
+                        <div style={{ padding: '20px 16px', textAlign: 'center' }}>
+                            <div style={{ fontSize: 52, fontWeight: 800, fontFamily: 'monospace', color: done ? '#16a34a' : tState.running ? '#ef4444' : '#1e293b', letterSpacing: 2, marginBottom: 14 }}>{mins}:{secs}</div>
+                            <div style={{ height: 8, background: '#f1f5f9', borderRadius: 4, marginBottom: 18, overflow: 'hidden' }}>
+                                <div style={{ width: `${pct}%`, height: '100%', background: done ? '#16a34a' : '#3b82f6', borderRadius: 4, transition: 'width 0.9s linear' }} />
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
+                                {!done && !tState.running && <button type="button" onClick={() => startBlockTimer(block.id, totalSeconds)} style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 22px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>▶ Start</button>}
+                                {!done && tState.running && <button type="button" onClick={() => pauseBlockTimer(block.id)} style={{ background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 22px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>⏸ Pause</button>}
+                                <button type="button" onClick={() => resetBlockTimer(block.id, totalSeconds)} style={{ background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: 8, padding: '9px 22px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>↺ Reset</button>
+                            </div>
+                            {done && <div style={{ marginTop: 12, color: '#16a34a', fontWeight: 700, fontSize: 14 }}>✓ Timer complete!</div>}
+                        </div>
+                    </div>
+                );
+            }
+
+            case 'quiz': {
+                const questions = cfg.questions || [];
+                if (questions.length === 0) return null;
+                const qState = blockQuizState[block.id] || { currentQ: 0, answers: {}, submitted: false, score: 0, totalPoints: 0 };
+                const totalPts = questions.reduce((s, q) => s + (q.points || 1), 0);
+
+                if (qState.submitted) {
+                    const pct = Math.round((qState.score / (qState.totalPoints || 1)) * 100);
+                    const pass = pct >= 70;
+                    return blockCard('bi-patch-question-fill', '#4285f4', <>
+                        <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
+                            <div style={{ fontSize: 48 }}>{pct === 100 ? '🏆' : pass ? '🎉' : '📝'}</div>
+                            <div style={{ fontWeight: 800, fontSize: 22, color: pass ? '#16a34a' : '#ef4444', marginTop: 8 }}>{pct}%</div>
+                            <div style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{qState.score} / {qState.totalPoints} points</div>
+                            <div style={{ marginTop: 6, fontSize: 14, fontWeight: 600, color: pass ? '#16a34a' : '#dc2626' }}>{pass ? 'Well done!' : 'Keep practicing!'}</div>
+                        </div>
+                        <div style={{ marginBottom: 16 }}>
+                            {questions.map((q, qi) => {
+                                const chosen = qState.answers[qi];
+                                const isCorrect = chosen === q.correct;
+                                return (
+                                    <div key={qi} style={{ marginBottom: 10, padding: '10px 12px', borderRadius: 10, background: isCorrect ? '#f0fdf4' : '#fff5f5', border: `1px solid ${isCorrect ? '#86efac' : '#fca5a5'}` }}>
+                                        <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', marginBottom: 6 }}>Q{qi + 1}: {q.text}</div>
+                                        {(q.options || []).map((opt, oi) => (
+                                            <div key={oi} style={{ fontSize: 12, padding: '3px 8px', borderRadius: 6, marginBottom: 3,
+                                                background: oi === q.correct ? '#dcfce7' : (oi === chosen && !isCorrect ? '#fee2e2' : 'transparent'),
+                                                color: oi === q.correct ? '#166534' : (oi === chosen && !isCorrect ? '#991b1b' : '#475569'),
+                                                fontWeight: (oi === q.correct || oi === chosen) ? 700 : 400 }}>
+                                                {['A','B','C','D'][oi]}: {opt}
+                                                {oi === q.correct && ' ✓'}
+                                                {oi === chosen && !isCorrect && ' ✗'}
+                                            </div>
+                                        ))}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <button type="button" onClick={() => retryBlockQuiz(block.id)} style={{ width: '100%', background: '#4285f4', color: '#fff', border: 'none', borderRadius: 10, padding: '10px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>Try Again</button>
+                    </>);
+                }
+
+                const q = questions[qState.currentQ];
+                const chosen = qState.answers[qState.currentQ];
+                return blockCard('bi-patch-question-fill', '#4285f4', <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                        <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>Question {qState.currentQ + 1} of {questions.length}</span>
+                        <span style={{ fontSize: 12, color: '#4285f4', fontWeight: 700, background: '#eff6ff', borderRadius: 999, padding: '3px 10px' }}>{q.points || 1} pt{(q.points || 1) !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: '#1e293b', marginBottom: 16, lineHeight: 1.5 }}>{q.text}</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }}>
+                        {(q.options || []).map((opt, oi) => (
+                            <button key={oi} type="button" onClick={() => answerBlockQuiz(block.id, qState.currentQ, oi)}
+                                style={{ textAlign: 'left', padding: '10px 14px', borderRadius: 10, border: `2px solid ${chosen === oi ? '#4285f4' : '#e2e8f0'}`, background: chosen === oi ? '#eff6ff' : '#fff', color: chosen === oi ? '#1d4ed8' : '#334155', fontWeight: chosen === oi ? 700 : 400, cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <span style={{ width: 24, height: 24, borderRadius: 6, border: `2px solid ${chosen === oi ? '#4285f4' : '#d1d5db'}`, background: chosen === oi ? '#4285f4' : '#fff', color: chosen === oi ? '#fff' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 11, fontWeight: 800 }}>{['A','B','C','D'][oi]}</span>
+                                {opt}
+                            </button>
+                        ))}
+                    </div>
+                    <button type="button" disabled={chosen === undefined || chosen === null}
+                        onClick={() => advanceBlockQuiz(block.id, questions)}
+                        style={{ width: '100%', background: (chosen !== undefined && chosen !== null) ? '#4285f4' : '#e2e8f0', color: (chosen !== undefined && chosen !== null) ? '#fff' : '#94a3b8', border: 'none', borderRadius: 10, padding: '11px', fontWeight: 700, cursor: (chosen !== undefined && chosen !== null) ? 'pointer' : 'not-allowed', fontSize: 14 }}>
+                        {qState.currentQ < questions.length - 1 ? 'Next Question →' : 'Submit Quiz'}
+                    </button>
+                    <div style={{ marginTop: 10, display: 'flex', gap: 4, justifyContent: 'center' }}>
+                        {questions.map((_, qi) => (
+                            <div key={qi} style={{ width: 8, height: 8, borderRadius: '50%', background: qi === qState.currentQ ? '#4285f4' : (qState.answers[qi] !== undefined ? '#93c5fd' : '#e2e8f0') }} />
+                        ))}
+                    </div>
+                </>);
+            }
+
+            case 'submission': {
+                const subType = cfg.submission_type || 'audio';
+                const prompt = cfg.prompt || '';
+                const bRec = blockRecState[block.id] || {};
+                const { isRecording: bIsRec, duration: bDur, recordedBlob: bBlob, recordedUrl: bUrl, sending: bSending, submitted: bSubmitted, showUpload: bShowUpload, uploadFile: bUploadFile } = bRec;
+                const supportsRec = !!(navigator.mediaDevices && window.MediaRecorder);
+
+                return blockCard(subType === 'video' ? 'bi-camera-video-fill' : 'bi-mic-fill', '#8b5cf6', <>
+                    {prompt && <p style={{ fontSize: 14, color: '#334155', marginBottom: 14, lineHeight: 1.6 }}>{prompt}</p>}
+                    {bSubmitted ? (
+                        <div style={{ textAlign: 'center', padding: '16px', background: '#f0fdf4', borderRadius: 10, border: '1px solid #86efac' }}>
+                            <i className="bi bi-check-circle-fill" style={{ fontSize: 28, color: '#16a34a', display: 'block', marginBottom: 6 }}></i>
+                            <div style={{ fontWeight: 700, color: '#166534' }}>Submitted!</div>
+                            <button type="button" onClick={() => setBlockRecState(prev => ({ ...prev, [block.id]: { ...prev[block.id], submitted: false } }))} style={{ marginTop: 10, background: 'none', border: '1px solid #86efac', borderRadius: 8, padding: '6px 14px', color: '#166534', cursor: 'pointer', fontSize: 12 }}>Submit Another</button>
+                        </div>
+                    ) : (<>
+                        <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+                            {bIsRec && subType === 'video' && (
+                                <div style={{ width: '100%', marginBottom: 12, borderRadius: 10, overflow: 'hidden', background: '#000' }}>
+                                    <video
+                                        ref={el => {
+                                            if (!el) return;
+                                            const s = blockRecRefs.current[block.id]?.stream;
+                                            if (s && el.srcObject !== s) {
+                                                try {
+                                                    el.srcObject = s;
+                                                    el.muted = true;
+                                                    el.playsInline = true;
+                                                    el.autoplay = true;
+                                                    el.play().catch(() => {});
+                                                } catch (err) {
+                                                    // ignore
+                                                }
+                                            }
+                                        }}
+                                        autoPlay
+                                        muted
+                                        playsInline
+                                        style={{ width: '100%', display: 'block', borderRadius: 8, background: '#000' }}
+                                    />
+                                </div>
+                            )}
+                            {supportsRec && !bIsRec && !bBlob && (
+                                <button type="button" onClick={() => startBlockRecording(block.id, subType)} style={{ flex: 1, background: '#8b5cf6', color: '#fff', border: 'none', borderRadius: 8, padding: '9px', fontWeight: 700, cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                                    <i className={`bi ${subType === 'video' ? 'bi-camera-video' : 'bi-record-circle'}`}></i> Start Recording
+                                </button>
+                            )}
+                            {supportsRec && bIsRec && (
+                                <button type="button" onClick={() => stopBlockRecording(block.id)} style={{ flex: 1, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '9px', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
+                                    <i className="bi bi-stop-circle"></i> Stop ({formatRecordingTime(bDur || 0)})
+                                </button>
+                            )}
+                            {supportsRec && bBlob && !bIsRec && (<>
+                                <button type="button" onClick={() => clearBlockRecording(block.id)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 8, padding: '9px 14px', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>Discard</button>
+                                <button type="button" onClick={() => submitBlockRecording(block.id, subType)} disabled={bSending} style={{ flex: 1, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 8, padding: '9px', fontWeight: 700, cursor: bSending ? 'default' : 'pointer', fontSize: 13 }}>
+                                    {bSending ? 'Submitting...' : 'Submit'}
+                                </button>
+                            </>)}
+                            <button type="button" onClick={() => setBlockRecState(prev => ({ ...prev, [block.id]: { ...prev[block.id], showUpload: !prev[block.id]?.showUpload } }))} disabled={bIsRec} style={{ background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: 8, padding: '9px 12px', fontSize: 12, cursor: bIsRec ? 'not-allowed' : 'pointer' }}>
+                                {bShowUpload ? 'Hide Upload' : 'Upload'}
+                            </button>
+                        </div>
+                        {bShowUpload && (
+                            <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+                                <label style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px dashed #d1d5db', cursor: 'pointer', fontSize: 13, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    <input type="file" accept={subType === 'video' ? 'video/*' : 'audio/*'} style={{ display: 'none' }}
+                                        onChange={e => setBlockRecState(prev => ({ ...prev, [block.id]: { ...prev[block.id], uploadFile: e.target.files?.[0] || null } }))} />
+                                    {bUploadFile ? bUploadFile.name : 'Choose file…'}
+                                </label>
+                                <button type="button" onClick={() => submitBlockUpload(block.id, subType, bUploadFile)} disabled={!bUploadFile || bSending} style={{ background: '#16a34a', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontWeight: 700, cursor: (!bUploadFile || bSending) ? 'not-allowed' : 'pointer', fontSize: 13 }}>
+                                    {bSending ? 'Sending…' : 'Submit File'}
+                                </button>
+                            </div>
+                        )}
+                        {bUrl && subType === 'audio' && <audio controls src={bUrl} style={{ width: '100%', marginTop: 8, borderRadius: 8 }} />}
+                        {bUrl && subType === 'video' && <video controls src={bUrl} style={{ width: '100%', marginTop: 8, borderRadius: 8 }} />}
+                    </>)}
+                </>);
+            }
+
+            case 'badge': {
+                const achId = cfg.achievement_id;
+                const isCompleted = currentLesson?.is_completed;
+                return (
+                    <div key={block.id} style={{ borderRadius: 14, border: `1.5px solid ${isCompleted ? '#fbbf24' : '#e2e8f0'}`, background: isCompleted ? 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)' : '#f8fafc', padding: '20px 16px', textAlign: 'center' }}>
+                        <div style={{ fontSize: 48, marginBottom: 8 }}>{isCompleted ? '🏆' : '🔒'}</div>
+                        <div style={{ fontWeight: 800, fontSize: 16, color: isCompleted ? '#92400e' : '#94a3b8', marginBottom: 6 }}>{blockTitle || 'Achievement Badge'}</div>
+                        {isCompleted ? (
+                            <div style={{ color: '#78350f', fontSize: 13 }}>
+                                You've earned this badge for completing the lesson!
+                                <div style={{ marginTop: 10 }}>
+                                    <Link to="/student/my-achievements" style={{ background: '#f59e0b', color: '#fff', borderRadius: 8, padding: '8px 20px', fontWeight: 700, fontSize: 13, textDecoration: 'none', display: 'inline-block' }}>View My Achievements</Link>
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{ color: '#94a3b8', fontSize: 13 }}>Complete this lesson to earn the badge</div>
+                        )}
+                    </div>
+                );
+            }
+
+            case 'assignment': {
+                const templateId = cfg.template_id;
+                const assignPrompt = cfg.assignment_prompt || cfg.prompt || '';
+                return blockCard('bi-journal-text', '#16a34a', <>
+                    {assignPrompt && <p style={{ fontSize: 14, color: '#334155', lineHeight: 1.65, marginBottom: 14 }}>{assignPrompt}</p>}
+                    <div style={{ padding: '12px 14px', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 10, marginBottom: 12 }}>
+                        <div style={{ fontSize: 13, color: '#166534', fontWeight: 600 }}>
+                            <i className="bi bi-info-circle me-2"></i>
+                            {templateId ? 'Your teacher has set up an assignment for this lesson.' : 'Complete and submit your assignment to your teacher.'}
+                        </div>
+                    </div>
+                    <Link to="/student/my-assignments" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 10, padding: '10px', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+                        <i className="bi bi-journal-check"></i> Go to My Assignments
+                    </Link>
+                </>);
+            }
+
+            case 'practice_counter': {
+                const prompt = cfg.prompt || '';
+                const target = cfg.target || 5;
+                const count = blockCounterState[block.id] ?? 0;
+                const done = count >= target;
+                const pct = target > 0 ? Math.round((count / target) * 100) : 0;
+                return (
+                    <div key={block.id} style={{ borderRadius: 14, border: `1.5px solid ${done ? '#86efac' : '#e2e8f0'}`, background: done ? '#f0fdf4' : '#fff', overflow: 'hidden' }}>
+                        <div style={{ padding: '12px 16px', background: done ? '#dcfce7' : '#f8fafc', borderBottom: `1px solid ${done ? '#86efac' : '#e2e8f0'}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <i className="bi bi-hand-index-thumb-fill" style={{ color: done ? '#16a34a' : '#0e7490', fontSize: 16 }}></i>
+                            <span style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', flex: 1 }}>{blockTitle || 'Practice Counter'}</span>
+                            <span style={{ fontSize: 12, color: done ? '#166534' : '#64748b', fontWeight: 600 }}>{count}/{target}</span>
+                            {done && <span style={{ background: '#16a34a', color: '#fff', borderRadius: 999, padding: '2px 10px', fontSize: 12, fontWeight: 700 }}>✓ Complete!</span>}
+                        </div>
+                        <div style={{ padding: '16px', textAlign: 'center' }}>
+                            {prompt && <p style={{ fontSize: 14, color: '#334155', marginBottom: 16, lineHeight: 1.65 }}>{prompt}</p>}
+                            <button
+                                onClick={() => tapPracticeCounter(block.id, target)}
+                                disabled={done}
+                                style={{ background: done ? '#d1fae5' : '#0e7490', color: done ? '#16a34a' : '#fff', border: 'none', borderRadius: 12, padding: '12px 28px', fontWeight: 700, fontSize: 16, cursor: done ? 'default' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                                <i className={`bi ${done ? 'bi-check-circle-fill' : 'bi-hand-index-thumb-fill'}`}></i>
+                                {done ? '✓ Done!' : '✓ Done one!'}
+                            </button>
+                            <div style={{ background: '#e2e8f0', borderRadius: 999, height: 8, marginBottom: 8 }}>
+                                <div style={{ background: done ? '#16a34a' : '#0e7490', width: `${pct}%`, borderRadius: 999, height: '100%', transition: 'width 0.3s ease' }}></div>
+                            </div>
+                            <div style={{ fontSize: 13, color: '#64748b', marginBottom: 4 }}>{count} of {target} times</div>
+                            {count > 0 && !done && (
+                                <button onClick={() => {
+                                    localStorage.removeItem(`blk_counter_${lesson_id}_${block.id}`);
+                                    setBlockCounterState(prev => ({ ...prev, [block.id]: 0 }));
+                                }} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 12, cursor: 'pointer', marginTop: 4, textDecoration: 'underline' }}>Reset</button>
+                            )}
+                        </div>
+                    </div>
+                );
+            }
+
+            default:
+                return null;
+        }
+    };
 
     useEffect(() => {
         let resizeTimeout;
@@ -1231,40 +1837,82 @@ const StudentCoursePlayer = () => {
                                     </div>
                                 )}
 
-                                <div className="lesson-submission-controls">
-                                    <div className="lesson-submission-actions">
-                                        {recorderSupported && !isRecording && !recordedBlob && !showUploadFallback && (
-                                            <button type="button" className="record-btn" onClick={() => startRecording(submissionType)}>
-                                                <i className={`bi ${submissionType === 'video' ? 'bi-camera-video' : 'bi-record-circle'}`}></i> Start Recording
-                                            </button>
+                                {submissionType === 'text' ? (
+                                    <div>
+                                        <textarea
+                                            rows={5}
+                                            style={{ width: '100%', borderRadius: '8px', border: '1px solid #e2e8f0', padding: '10px 14px', fontSize: '14px', resize: 'vertical', fontFamily: 'inherit', outline: 'none', marginBottom: '10px' }}
+                                            placeholder="Type your response here…"
+                                            value={textInput}
+                                            onChange={e => setTextInput(e.target.value)}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="submit-btn"
+                                            disabled={sendingSubmission || !textInput.trim()}
+                                            onClick={async () => {
+                                                if (!textInput.trim()) return;
+                                                setSendingSubmission(true);
+                                                try {
+                                                    const payload = new FormData();
+                                                    payload.append('submission_type', 'text');
+                                                    payload.append('text_content', textInput.trim());
+                                                    await axios.post(`${baseUrl}/student/${studentId}/lesson/${lesson_id}/submit-media/`, payload, { headers: { 'Content-Type': 'multipart/form-data' } });
+                                                    await fetchLessonSubmission(lesson_id);
+                                                    setTextInput('');
+                                                    Swal.fire({ icon: 'success', title: 'Submitted!', text: 'Your response was sent to your teacher.', timer: 2000, showConfirmButton: false });
+                                                } catch (err) {
+                                                    Swal.fire({ icon: 'error', title: 'Submission failed', text: err?.response?.data?.message || 'Please try again.', confirmButtonColor: '#3b82f6' });
+                                                } finally {
+                                                    setSendingSubmission(false);
+                                                }
+                                            }}
+                                        >
+                                            {sendingSubmission ? 'Submitting…' : 'Submit Response'}
+                                        </button>
+                                        {lessonSubmission?.text_content && (
+                                            <div style={{ marginTop: '10px', padding: '10px 12px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #bbf7d0', fontSize: '13px', color: '#166534' }}>
+                                                <strong>Your last response:</strong>
+                                                <p style={{ marginTop: '4px', marginBottom: 0, whiteSpace: 'pre-line' }}>{lessonSubmission.text_content}</p>
+                                            </div>
                                         )}
-                                        {recorderSupported && isRecording && (
-                                            <button type="button" className="stop-btn" onClick={stopRecording}>
-                                                <i className="bi bi-stop-circle"></i> Stop ({formatRecordingTime(recordingDuration)})
-                                            </button>
-                                        )}
-                                        {recorderSupported && recordedBlob && !isRecording && (
-                                            <>
-                                                <button type="button" className="discard-btn" onClick={clearRecording}>Discard</button>
-                                                <button type="button" className="submit-btn" onClick={submitRecording} disabled={sendingSubmission}>{sendingSubmission ? 'Submitting...' : 'Submit'}</button>
-                                            </>
-                                        )}
-                                        <button type="button" className="upload-toggle-btn" onClick={() => setShowUploadFallback(prev => !prev)} disabled={isRecording}>{showUploadFallback ? 'Hide Upload' : 'Upload Instead'}</button>
                                     </div>
-                                </div>
-
-                                {showUploadFallback && (
-                                    <div className="lesson-submission-upload" style={{ marginTop: '12px' }}>
-                                        <label className="upload-input">
-                                            <input type="file" accept={submissionType === 'video' ? 'video/*' : 'audio/*'} onChange={(e) => setUploadFile(e.target.files?.[0] || null)} />
-                                            <span>{uploadFile ? uploadFile.name : 'Choose file'}</span>
-                                        </label>
-                                        <button type="button" className="submit-btn" onClick={submitUploadFile} disabled={sendingSubmission || !uploadFile}>{sendingSubmission ? 'Submitting...' : 'Submit Upload'}</button>
-                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="lesson-submission-controls">
+                                            <div className="lesson-submission-actions">
+                                                {recorderSupported && !isRecording && !recordedBlob && !showUploadFallback && (
+                                                    <button type="button" className="record-btn" onClick={() => startRecording(submissionType)}>
+                                                        <i className={`bi ${submissionType === 'video' ? 'bi-camera-video' : 'bi-record-circle'}`}></i> Start Recording
+                                                    </button>
+                                                )}
+                                                {recorderSupported && isRecording && (
+                                                    <button type="button" className="stop-btn" onClick={stopRecording}>
+                                                        <i className="bi bi-stop-circle"></i> Stop ({formatRecordingTime(recordingDuration)})
+                                                    </button>
+                                                )}
+                                                {recorderSupported && recordedBlob && !isRecording && (
+                                                    <>
+                                                        <button type="button" className="discard-btn" onClick={clearRecording}>Discard</button>
+                                                        <button type="button" className="submit-btn" onClick={submitRecording} disabled={sendingSubmission}>{sendingSubmission ? 'Submitting...' : 'Submit'}</button>
+                                                    </>
+                                                )}
+                                                <button type="button" className="upload-toggle-btn" onClick={() => setShowUploadFallback(prev => !prev)} disabled={isRecording}>{showUploadFallback ? 'Hide Upload' : 'Upload Instead'}</button>
+                                            </div>
+                                        </div>
+                                        {showUploadFallback && (
+                                            <div className="lesson-submission-upload" style={{ marginTop: '12px' }}>
+                                                <label className="upload-input">
+                                                    <input type="file" accept={submissionType === 'video' ? 'video/*' : 'audio/*'} onChange={(e) => setUploadFile(e.target.files?.[0] || null)} />
+                                                    <span>{uploadFile ? uploadFile.name : 'Choose file'}</span>
+                                                </label>
+                                                <button type="button" className="submit-btn" onClick={submitUploadFile} disabled={sendingSubmission || !uploadFile}>{sendingSubmission ? 'Submitting...' : 'Submit Upload'}</button>
+                                            </div>
+                                        )}
+                                        {recordedUrl && submissionType === 'audio' && <audio className="lesson-submission-preview" controls src={recordedUrl} />}
+                                        {recordedUrl && submissionType === 'video' && <video className="lesson-submission-preview" controls src={recordedUrl} />}
+                                    </>
                                 )}
-
-                                {recordedUrl && submissionType === 'audio' && <audio className="lesson-submission-preview" controls src={recordedUrl} />}
-                                {recordedUrl && submissionType === 'video' && <video className="lesson-submission-preview" controls src={recordedUrl} />}
                             </div>
                         </div>
                     );
@@ -1753,6 +2401,22 @@ const StudentCoursePlayer = () => {
                                 </button>
                             </div>
                         </div>
+                    )}
+
+                    {/* Lesson Builder Blocks (Phase 7) */}
+                    {currentLesson && !currentLesson.is_locked && (
+                        <>
+                            {blocksLoading && (
+                                <div style={{ textAlign: 'center', padding: '16px', color: '#94a3b8', fontSize: 13 }}>
+                                    <span className="spinner-border spinner-border-sm me-2"></span>Loading lesson blocks...
+                                </div>
+                            )}
+                            {!blocksLoading && lessonBlocks.length > 0 && (
+                                <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                    {lessonBlocks.map(block => renderLessonBlock(block))}
+                                </div>
+                            )}
+                        </>
                     )}
 
                     {/* Lesson Submission */}

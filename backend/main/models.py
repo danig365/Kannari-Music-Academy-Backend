@@ -290,6 +290,59 @@ class LessonDownloadable(models.Model):
         return icons.get(self.file_type, 'bi-file-earmark-fill')
 
 
+class LessonBlock(models.Model):
+    """
+    A single content block within a lesson.
+    A lesson is composed of an ordered sequence of these blocks.
+    """
+    BLOCK_TYPE_CHOICES = [
+        ('video',             'Teacher Video'),
+        ('audio',             'Practice Audio'),
+        ('image',             'Image / Diagram'),
+        ('repeat_after_me',   'Repeat After Me'),
+        ('checklist',         'Practice Checklist'),
+        ('timer',             'Practice Timer'),
+        ('quiz',              'Quiz'),
+        ('submission',        'Student Submission'),
+        ('badge',             'Reward Badge'),
+        ('assignment',        'Assignment'),
+        ('practice_counter',  'Practice Counter'),
+    ]
+
+    lesson = models.ForeignKey(
+        ModuleLesson,
+        on_delete=models.CASCADE,
+        related_name='blocks',
+    )
+    block_type = models.CharField(max_length=20, choices=BLOCK_TYPE_CHOICES)
+    order = models.PositiveIntegerField(default=0, help_text="Position within the lesson (0 = first)")
+    title = models.CharField(max_length=200, blank=True, default='', help_text="Optional display label shown to students")
+    file = models.FileField(
+        upload_to='lesson_blocks/',
+        blank=True, null=True, max_length=500,
+        help_text="Media file for video/audio/image/repeat_after_me blocks",
+    )
+    # Stores all block-specific settings as JSON.
+    # Shape depends on block_type — see plan for per-type structure.
+    config = models.JSONField(
+        default=dict, blank=True,
+        help_text="Block-type-specific configuration (captions, questions, timer duration, etc.)",
+    )
+    # Phase 8 — block library
+    is_library_item = models.BooleanField(default=False, help_text="Saved to the teacher's reusable block library")
+    library_name = models.CharField(max_length=200, blank=True, default='', help_text="Name shown in the block library")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "4c. Lesson Blocks"
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        label = self.title or self.get_block_type_display()
+        return f"{self.lesson.title} — {label} (#{self.order})"
+
+
 class ModuleLessonProgress(models.Model):
     """Tracks individual lesson progress within a module"""
     student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='module_lesson_progress')
@@ -1718,6 +1771,9 @@ class SubscriptionPlan(models.Model):
     max_live_sessions_per_month = models.IntegerField(default=0, help_text="Max live video sessions per month (0 = none)")
     max_audio_messages_per_month = models.IntegerField(default=0, help_text="Max audio messages teacher can send per month (0 = none)")
     priority_support = models.BooleanField(default=False, help_text="Has priority customer support")
+    # Module release control: how many modules are unlocked per week after enrollment
+    modules_per_week = models.IntegerField(null=True, blank=True, default=None,
+                                           help_text="Max modules unlocked per week (None = unlimited). When set, modules are unlocked progressively; all lessons inside an unlocked module are accessible.")
     
     features = models.TextField(null=True, blank=True, help_text="Comma-separated features")
     stripe_price_id = models.CharField(max_length=255, null=True, blank=True, help_text="Stripe Price ID (price_xxx) for recurring billing")
@@ -1937,6 +1993,15 @@ class Subscription(models.Model):
         if self.lessons_accessed >= self.plan.max_lessons:
             return False, f"Total lesson limit reached ({self.plan.max_lessons} lessons)"
         
+        # If the student has previously accessed this lesson, always allow re-viewing
+        if lesson and self.student_id:
+            already_accessed = ModuleLessonProgress.objects.filter(
+                student_id=self.student_id,
+                lesson=lesson
+            ).exists()
+            if already_accessed:
+                return True, "Access granted (previously accessed)"
+
         # Check daily limit if set
         if self.plan.lessons_per_day:
             if self.lessons_used_today >= self.plan.lessons_per_day:
@@ -2429,6 +2494,7 @@ class AssignmentTemplate(models.Model):
     SUBMISSION_TYPE_CHOICES = [
         ('audio', 'Audio Submission'),
         ('video', 'Video Submission'),
+        ('text', 'Text Response'),
         ('discussion', 'Discussion Thread'),
         ('multiple_choice', 'Multiple Choice (Auto-Graded)'),
         ('file_upload', 'File Upload'),
@@ -2485,6 +2551,7 @@ class LessonAssignment(models.Model):
     SUBMISSION_TYPE_CHOICES = [
         ('audio', 'Audio Submission'),
         ('video', 'Video Submission'),
+        ('text', 'Text Response'),
         ('discussion', 'Discussion Thread'),
         ('multiple_choice', 'Multiple Choice (Auto-Graded)'),
         ('file_upload', 'File Upload'),
@@ -3632,3 +3699,88 @@ class WeeklyGameLeaderboard(models.Model):
 
     def __str__(self):
         return f"{self.game.title} {self.week_start} - {self.student.fullname}"
+
+
+# ==================== LEARNING PATHS ====================
+
+class LearningPath(models.Model):
+    """A prebuilt structured learning program grouping multiple courses into a guided timeline (e.g. 6-month journey)."""
+    title = models.CharField(max_length=200)
+    subtitle = models.CharField(max_length=300, blank=True, default='', help_text="e.g. '6-Month Guitar Journey'")
+    description = models.TextField(blank=True, default='')
+    duration_months = models.PositiveIntegerField(default=6)
+    is_active = models.BooleanField(default=False, help_text="Published and visible to students")
+    created_by_teacher = models.ForeignKey(
+        Teacher, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_learning_paths'
+    )
+    created_by_admin = models.ForeignKey(
+        'Admin', on_delete=models.SET_NULL, null=True, blank=True, related_name='created_learning_paths'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "73. Learning Paths"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title
+
+    def total_courses(self):
+        return self.path_courses.count()
+
+    def total_enrollments(self):
+        return self.enrollments.filter(is_active=True).count()
+
+
+class LearningPathCourse(models.Model):
+    """An ordered course entry within a learning path."""
+    learning_path = models.ForeignKey(LearningPath, on_delete=models.CASCADE, related_name='path_courses')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='in_learning_paths')
+    month_number = models.PositiveIntegerField(default=1, help_text="Which month of the path this course belongs to (1 = first)")
+    order = models.PositiveIntegerField(default=0, help_text="Position within the path (0 = first)")
+    title_override = models.CharField(max_length=200, blank=True, default='', help_text="Optional display name for this course in the path context")
+
+    class Meta:
+        verbose_name_plural = "74. Learning Path Courses"
+        ordering = ['order', 'id']
+        unique_together = ['learning_path', 'course']
+
+    def __str__(self):
+        return f"{self.learning_path.title} — Month {self.month_number}: {self.course.title}"
+
+
+class LearningPathEnrollment(models.Model):
+    """Tracks a student's enrollment and progress position within a learning path."""
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='path_enrollments')
+    learning_path = models.ForeignKey(LearningPath, on_delete=models.CASCADE, related_name='enrollments')
+    current_course_index = models.PositiveIntegerField(
+        default=0, help_text="Zero-based index into path_courses order — which course the student is currently on"
+    )
+    is_active = models.BooleanField(default=True)
+    is_completed = models.BooleanField(default=False)
+    enrolled_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "75. Learning Path Enrollments"
+        unique_together = ['student', 'learning_path']
+        ordering = ['-enrolled_at']
+
+    def __str__(self):
+        return f"{self.student.fullname} → {self.learning_path.title}"
+
+    def current_path_course(self):
+        """Return the LearningPathCourse the student is currently on."""
+        try:
+            return self.learning_path.path_courses.order_by('order', 'id')[self.current_course_index]
+        except IndexError:
+            return None
+
+    def progress_percent(self):
+        """Overall path progress as a percentage based on course position."""
+        total = self.learning_path.path_courses.count()
+        if total == 0:
+            return 0
+        return int((self.current_course_index / total) * 100)

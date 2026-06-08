@@ -161,6 +161,12 @@ urlpatterns =[
         path('lesson/<int:lesson_id>/downloadables/', views.LessonDownloadableList.as_view()),
         path('downloadable/<int:pk>/', views.LessonDownloadableDetail.as_view()),
         path('downloadable/<int:downloadable_id>/increment/', views.increment_download_count),
+
+        # Lesson Blocks (Builder)
+        path('lesson/<int:lesson_id>/blocks/', views.LessonBlockList.as_view()),
+        path('lesson-block/<int:block_id>/', views.LessonBlockDetail.as_view()),
+        path('lesson/<int:lesson_id>/blocks/reorder/', views.LessonBlockReorder.as_view()),
+        path('teacher/<int:teacher_id>/library-blocks/', views.TeacherLibraryBlocks.as_view()),
         
         # Student Lesson Progress
         path('student/<int:student_id>/course/<int:course_id>/progress/', views.StudentModuleProgress.as_view()),
@@ -535,5 +541,14 @@ urlpatterns =[
         path('games/leaderboard/<str:game_type>/', views.game_weekly_leaderboard),
         path('teacher/<int:teacher_id>/games/students-performance/', views.teacher_students_game_performance),
         path('admin/games/analytics/', views.admin_games_analytics),
+
+        # ==================== LEARNING PATH URLS ====================
+        path('learning-paths/', views.LearningPathList.as_view()),
+        path('learning-path/<int:pk>/', views.LearningPathDetail.as_view()),
+        path('learning-path/<int:path_id>/add-course/', views.LearningPathCourseAdd.as_view()),
+        path('learning-path/<int:path_id>/reorder-courses/', views.LearningPathCourseReorder.as_view()),
+        path('learning-path-course/<int:pk>/', views.LearningPathCourseRemove.as_view()),
+        path('student/<int:student_id>/enroll-path/<int:path_id>/', views.StudentEnrollInPath.as_view()),
+        path('student/<int:student_id>/my-paths/', views.StudentMyPaths.as_view()),
 
 ]

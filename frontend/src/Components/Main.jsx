@@ -11,6 +11,7 @@ import ForgotPassword from './User/ForgotPassword'
 import Register from './User/Register'
 import EnhancedDashboard from './User/EnhancedDashboard'
 import MyCourses from './User/MyCourses'
+import MyLearningPath from './User/MyLearningPath'
 import ProfileSetting from './User/ProfileSetting'
 import ChangePassword from './User/ChangePassword'
 import TeacherLogin from './Teacher/TeacherLogin'
@@ -88,6 +89,7 @@ import AuditLogsDashboard from './Admin/AuditLogsDashboard'
 import AdminGamesAnalytics from './Admin/AdminGamesAnalytics'
 import AdminMessages from './Admin/AdminMessages'
 import AdminChatOversight from './Admin/AdminChatOversight'
+import AdminLearningPaths from './Admin/AdminLearningPaths'
 
 // School Components
 import SchoolLogin from './School/SchoolLogin'
@@ -184,6 +186,7 @@ const MainContent = () => {
           <Route path='/student/logout' element={<UserLogout />}/>
           <Route path='/student/dashboard' element={<EnhancedDashboard />}/>
           <Route path='/student/my-courses' element={<MyCourses />}/>
+          <Route path='/student/my-learning-path' element={<MyLearningPath />}/>
           <Route path='/student/profile-setting' element={<ProfileSetting/>}/>
           <Route path='/student/change-password' element={<ChangePassword/>}/>
           <Route path='/student/my-progress' element={<MyProgress />}/>
@@ -253,6 +256,7 @@ const MainContent = () => {
             <Route path='games-analytics' element={<AdminGamesAnalytics />}/>
             <Route path='messages' element={<AdminMessages />}/>
             <Route path='chat-oversight' element={<AdminChatOversight />}/>
+            <Route path='learning-paths' element={<AdminLearningPaths />}/>
           </Route>
 
           {/* ==================== SCHOOL ROUTES (/school/...) ==================== */}
@@ -278,6 +282,7 @@ const MainContent = () => {
           <Route path='/user-dashboard' element={<Navigate to='/student/dashboard' replace />}/>
           <Route path='/user-logout' element={<Navigate to='/student/logout' replace />}/>
           <Route path='/my-courses' element={<Navigate to='/student/my-courses' replace />}/>
+          <Route path='/my-learning-path' element={<Navigate to='/student/my-learning-path' replace />}/>
           <Route path='/my-progress' element={<Navigate to='/student/my-progress' replace />}/>
           <Route path='/my-achievements' element={<Navigate to='/student/my-achievements' replace />}/>
           <Route path='/my-sessions' element={<Navigate to='/student/my-sessions' replace />}/>

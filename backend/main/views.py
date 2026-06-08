@@ -19,6 +19,7 @@ from .serializers import (
     ParentPolicyAcceptanceSerializer, TeacherCommunityMessageSerializer,
     GameDefinitionSerializer, GameQuestionPublicSerializer, StudentGameProfileSerializer,
     GameSessionSerializer, WeeklyGameLeaderboardSerializer,
+    LearningPathSerializer, LearningPathCourseSerializer, LearningPathEnrollmentSerializer,
 )
 from rest_framework import permissions
 from django.db.models import Q, Avg, Sum
@@ -5520,6 +5521,9 @@ class AdminModuleLessonDetail(generics.RetrieveUpdateDestroyAPIView):
         import os
         file = request.FILES.get('file')
         content_type = request.data.get('content_type', 'video')
+        clear_file_flag = str(request.data.get('clear_file', '')).lower() in ('1', 'true', 'yes')
+        instance = self.get_object()
+        old_file = instance.file if instance.file else None
         
         if file:
             ext = os.path.splitext(file.name)[1].lower()
@@ -5538,7 +5542,26 @@ class AdminModuleLessonDetail(generics.RetrieveUpdateDestroyAPIView):
                     'error': f'File too large for {content_type} content. Maximum allowed: {label}. Your file: {file_mb:.1f} MB'
                 }, status=400)
         
-        return super().update(request, *args, **kwargs)
+        data = request.data.copy()
+        if clear_file_flag and not file:
+            data['file'] = None
+
+        serializer = self.get_serializer(instance, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if clear_file_flag and old_file and not file:
+            try:
+                old_file.delete(save=False)
+            except Exception:
+                pass
+        elif file and old_file and old_file.name != getattr(serializer.instance.file, 'name', ''):
+            try:
+                old_file.delete(save=False)
+            except Exception:
+                pass
+
+        return Response(serializer.data)
 
 
 @csrf_exempt
@@ -6390,6 +6413,293 @@ class LessonDownloadableDetail(generics.RetrieveUpdateDestroyAPIView):
         if blocked:
             return blocked
         return super().destroy(request, *args, **kwargs)
+
+
+class LessonBlockList(APIView):
+    """
+    GET  /lesson/{id}/blocks/          — list all blocks ordered by `order`
+    POST /lesson/{id}/blocks/          — create a new block (multipart OK)
+    """
+
+    def _get_lesson_and_check_access(self, lesson_id, request):
+        """Return (lesson, error_response).  Allows teacher who owns the course or admin."""
+        try:
+            lesson = models.ModuleLesson.objects.select_related('module__course__teacher').get(pk=lesson_id)
+        except models.ModuleLesson.DoesNotExist:
+            return None, JsonResponse({'error': 'Lesson not found'}, status=404)
+
+        requester_type = (request.GET.get('requester_type') or request.data.get('requester_type') or '').strip().lower()
+        requester_id   = request.GET.get('requester_id') or request.data.get('requester_id')
+
+        # Students can read blocks (no requester_type required on GET)
+        if request.method == 'GET' and not requester_type:
+            return lesson, None
+
+        if requester_type == 'admin':
+            return lesson, None
+
+        if requester_type == 'teacher':
+            if not requester_id:
+                return None, JsonResponse({'error': 'requester_id required'}, status=400)
+            teacher, blocked = _require_approved_teacher(requester_id)
+            if blocked:
+                return None, blocked
+            if lesson.module.course.teacher_id != teacher.id:
+                return None, JsonResponse({'error': 'Not authorized for this lesson'}, status=403)
+            return lesson, None
+
+        return None, JsonResponse({'error': 'requester_type must be admin or teacher'}, status=403)
+
+    def get(self, request, lesson_id):
+        lesson, err = self._get_lesson_and_check_access(lesson_id, request)
+        if err:
+            return err
+        blocks = models.LessonBlock.objects.filter(lesson=lesson).order_by('order', 'id')
+        data = []
+        for b in blocks:
+            data.append({
+                'id':              b.id,
+                'block_type':      b.block_type,
+                'order':           b.order,
+                'title':           b.title,
+                'file':            request.build_absolute_uri(b.file.url) if b.file else None,
+                'config':          b.config,
+                'is_library_item': b.is_library_item,
+                'library_name':    b.library_name,
+                'created_at':      b.created_at.isoformat(),
+            })
+        return JsonResponse({'blocks': data})
+
+    def post(self, request, lesson_id):
+        lesson, err = self._get_lesson_and_check_access(lesson_id, request)
+        if err:
+            return err
+
+        block_type = (request.data.get('block_type') or '').strip()
+        valid_types = [c[0] for c in models.LessonBlock.BLOCK_TYPE_CHOICES]
+        if block_type not in valid_types:
+            return JsonResponse({'error': f'block_type must be one of: {", ".join(valid_types)}'}, status=400)
+
+        # Determine next order value
+        last = models.LessonBlock.objects.filter(lesson=lesson).order_by('-order').first()
+        next_order = (last.order + 1) if last else 0
+
+        # Parse config — may arrive as JSON string in multipart
+        raw_config = request.data.get('config', '{}')
+        if isinstance(raw_config, str):
+            import json as _json
+            try:
+                raw_config = _json.loads(raw_config)
+            except ValueError:
+                raw_config = {}
+
+        block = models.LessonBlock.objects.create(
+            lesson=lesson,
+            block_type=block_type,
+            order=int(request.data.get('order', next_order)),
+            title=request.data.get('title', ''),
+            file=request.FILES.get('file'),
+            config=raw_config,
+        )
+        return JsonResponse({
+            'id':         block.id,
+            'block_type': block.block_type,
+            'order':      block.order,
+            'title':      block.title,
+            'file':       request.build_absolute_uri(block.file.url) if block.file else None,
+            'config':     block.config,
+        }, status=201)
+
+
+class LessonBlockDetail(APIView):
+    """
+    GET    /lesson-block/{id}/   — retrieve a single block
+    PUT    /lesson-block/{id}/   — full or partial update (multipart OK for file)
+    DELETE /lesson-block/{id}/   — remove the block
+    """
+
+    def _get_block_and_check_access(self, block_id, request):
+        try:
+            block = models.LessonBlock.objects.select_related('lesson__module__course__teacher').get(pk=block_id)
+        except models.LessonBlock.DoesNotExist:
+            return None, JsonResponse({'error': 'Block not found'}, status=404)
+
+        requester_type = (request.GET.get('requester_type') or request.data.get('requester_type') or '').strip().lower()
+        requester_id   = request.GET.get('requester_id') or request.data.get('requester_id')
+
+        if request.method == 'GET' and not requester_type:
+            return block, None
+
+        if requester_type == 'admin':
+            return block, None
+
+        if requester_type == 'teacher':
+            if not requester_id:
+                return None, JsonResponse({'error': 'requester_id required'}, status=400)
+            teacher, blocked = _require_approved_teacher(requester_id)
+            if blocked:
+                return None, blocked
+            if block.lesson.module.course.teacher_id != teacher.id:
+                return None, JsonResponse({'error': 'Not authorized for this block'}, status=403)
+            return block, None
+
+        return None, JsonResponse({'error': 'requester_type must be admin or teacher'}, status=403)
+
+    def _serialize(self, block, request):
+        return {
+            'id':              block.id,
+            'block_type':      block.block_type,
+            'order':           block.order,
+            'title':           block.title,
+            'file':            request.build_absolute_uri(block.file.url) if block.file else None,
+            'config':          block.config,
+            'is_library_item': block.is_library_item,
+            'library_name':    block.library_name,
+            'created_at':      block.created_at.isoformat(),
+            'updated_at':      block.updated_at.isoformat(),
+        }
+
+    def get(self, request, block_id):
+        block, err = self._get_block_and_check_access(block_id, request)
+        if err:
+            return err
+        return JsonResponse(self._serialize(block, request))
+
+    def put(self, request, block_id):
+        block, err = self._get_block_and_check_access(block_id, request)
+        if err:
+            return err
+
+        import json as _json
+
+        if 'block_type' in request.data:
+            valid_types = [c[0] for c in models.LessonBlock.BLOCK_TYPE_CHOICES]
+            if request.data['block_type'] not in valid_types:
+                return JsonResponse({'error': 'Invalid block_type'}, status=400)
+            block.block_type = request.data['block_type']
+
+        if 'title' in request.data:
+            block.title = request.data['title']
+
+        if 'order' in request.data:
+            block.order = int(request.data['order'])
+
+        if 'config' in request.data:
+            raw = request.data['config']
+            if isinstance(raw, str):
+                try:
+                    raw = _json.loads(raw)
+                except ValueError:
+                    raw = {}
+            block.config = raw
+
+        if 'is_library_item' in request.data:
+            block.is_library_item = str(request.data['is_library_item']).lower() in ('true', '1', 'yes')
+
+        if 'library_name' in request.data:
+            block.library_name = request.data['library_name']
+
+        # New file upload — replace existing
+        if 'file' in request.FILES:
+            block.file = request.FILES['file']
+
+        # Explicitly clear the file
+        if request.data.get('clear_file') in ('true', '1', 'yes'):
+            block.file = None
+
+        block.save()
+        return JsonResponse(self._serialize(block, request))
+
+    def delete(self, request, block_id):
+        block, err = self._get_block_and_check_access(block_id, request)
+        if err:
+            return err
+        block.delete()
+        return JsonResponse({'deleted': True})
+
+
+class LessonBlockReorder(APIView):
+    """
+    POST /lesson/{id}/blocks/reorder/
+    Body: { "order": [ {"id": 5, "order": 0}, {"id": 3, "order": 1}, ... ] }
+    """
+
+    def post(self, request, lesson_id):
+        try:
+            lesson = models.ModuleLesson.objects.select_related('module__course__teacher').get(pk=lesson_id)
+        except models.ModuleLesson.DoesNotExist:
+            return JsonResponse({'error': 'Lesson not found'}, status=404)
+
+        requester_type = (request.data.get('requester_type') or '').strip().lower()
+        requester_id   = request.data.get('requester_id')
+
+        if requester_type == 'teacher':
+            if not requester_id:
+                return JsonResponse({'error': 'requester_id required'}, status=400)
+            teacher, blocked = _require_approved_teacher(requester_id)
+            if blocked:
+                return blocked
+            if lesson.module.course.teacher_id != teacher.id:
+                return JsonResponse({'error': 'Not authorized for this lesson'}, status=403)
+        elif requester_type != 'admin':
+            return JsonResponse({'error': 'requester_type must be admin or teacher'}, status=403)
+
+        items = request.data.get('order', [])
+        if not isinstance(items, list):
+            return JsonResponse({'error': '"order" must be a list of {id, order} objects'}, status=400)
+
+        block_ids = [item['id'] for item in items if 'id' in item]
+        blocks_map = {b.id: b for b in models.LessonBlock.objects.filter(lesson=lesson, id__in=block_ids)}
+
+        updated = []
+        for item in items:
+            bid = item.get('id')
+            new_order = item.get('order')
+            if bid in blocks_map and new_order is not None:
+                blocks_map[bid].order = int(new_order)
+                updated.append(blocks_map[bid])
+
+        models.LessonBlock.objects.bulk_update(updated, ['order'])
+        return JsonResponse({'updated': len(updated)})
+
+
+class TeacherLibraryBlocks(APIView):
+    """
+    GET /teacher/{teacher_id}/library-blocks/
+    Returns all is_library_item=True blocks across lessons owned by this teacher.
+    """
+    def get(self, request, teacher_id):
+        requester_type = (request.GET.get('requester_type') or '').strip().lower()
+        requester_id   = request.GET.get('requester_id')
+
+        if requester_type == 'teacher':
+            if not requester_id:
+                return JsonResponse({'error': 'requester_id required'}, status=400)
+            teacher, blocked = _require_approved_teacher(requester_id)
+            if blocked:
+                return blocked
+            if teacher.id != int(teacher_id):
+                return JsonResponse({'error': 'Not authorized'}, status=403)
+        elif requester_type != 'admin':
+            return JsonResponse({'error': 'requester_type must be admin or teacher'}, status=403)
+
+        blocks = models.LessonBlock.objects.filter(
+            lesson__module__course__teacher_id=teacher_id,
+            is_library_item=True,
+        ).select_related('lesson').order_by('block_type', 'library_name')
+
+        data = []
+        for b in blocks:
+            data.append({
+                'id':           b.id,
+                'block_type':   b.block_type,
+                'title':        b.title,
+                'library_name': b.library_name,
+                'file':         request.build_absolute_uri(b.file.url) if b.file else None,
+                'config':       b.config,
+                'lesson_title': b.lesson.title,
+            })
+        return JsonResponse({'blocks': data})
 
 
 @csrf_exempt
@@ -9365,9 +9675,38 @@ def student_submit_lesson_media(request, student_id, lesson_id):
         return JsonResponse({'bool': False, 'message': 'You are not enrolled in this course'}, status=403)
 
     submission_type = (request.POST.get('submission_type') or 'audio').strip().lower()
-    if submission_type not in {'audio', 'video'}:
-        return JsonResponse({'bool': False, 'message': 'submission_type must be audio or video'}, status=400)
+    if submission_type not in {'audio', 'video', 'text'}:
+        return JsonResponse({'bool': False, 'message': 'submission_type must be audio, video, or text'}, status=400)
 
+    # ── Text submission ──────────────────────────────────────────────────────
+    if submission_type == 'text':
+        text_content = (request.POST.get('text_content') or '').strip()
+        if not text_content:
+            return JsonResponse({'bool': False, 'message': 'Text response cannot be empty'}, status=400)
+
+        assignment = _get_or_create_lesson_submission_assignment(lesson, student, submission_type)
+        submission, created = models.LessonAssignmentSubmission.objects.get_or_create(
+            assignment=assignment,
+            student=student,
+            defaults={'text_content': text_content, 'submission_notes': request.POST.get('submission_notes', '')},
+        )
+        if not created:
+            submission.text_content = text_content
+            submission.submission_notes = request.POST.get('submission_notes', submission.submission_notes)
+            submission.points_awarded = None
+            submission.teacher_feedback = None
+            submission.graded_by = None
+            submission.graded_at = None
+            submission.save()
+
+        return JsonResponse({
+            'bool': True,
+            'message': 'Text response submitted successfully.',
+            'submission_id': submission.id,
+            'created': created,
+        })
+
+    # ── Audio / Video submission ─────────────────────────────────────────────
     size_limits = {
         'audio': 50 * 1024 * 1024,
         'video': 200 * 1024 * 1024,
@@ -13072,3 +13411,219 @@ def admin_games_analytics(request):
             'total_coins_issued': total_coins_issued,
         },
     })
+
+
+# ==================== LEARNING PATH VIEWS ====================
+
+class LearningPathList(APIView):
+    """
+    GET  /learning-paths/          — list all active paths (students) or all paths (admin)
+    POST /learning-paths/          — admin creates a new path
+    """
+
+    def get(self, request):
+        # Admin sees all; everyone else sees only active paths
+        is_admin = request.GET.get('admin') == '1'
+        qs = models.LearningPath.objects.all() if is_admin else models.LearningPath.objects.filter(is_active=True)
+        qs = qs.order_by('-created_at')
+        serializer = LearningPathSerializer(qs, many=True, context={'request': request})
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = LearningPathSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+
+class LearningPathDetail(APIView):
+    """
+    GET    /learning-path/<id>/    — path detail with ordered courses
+    PUT    /learning-path/<id>/    — admin updates path metadata
+    DELETE /learning-path/<id>/    — admin deletes a path
+    """
+
+    def _get_path(self, pk):
+        try:
+            return models.LearningPath.objects.get(pk=pk)
+        except models.LearningPath.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        path = self._get_path(pk)
+        if path is None:
+            return Response({'detail': 'Not found'}, status=404)
+        serializer = LearningPathSerializer(path, context={'request': request})
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        path = self._get_path(pk)
+        if path is None:
+            return Response({'detail': 'Not found'}, status=404)
+        serializer = LearningPathSerializer(path, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    def delete(self, request, pk):
+        path = self._get_path(pk)
+        if path is None:
+            return Response({'detail': 'Not found'}, status=404)
+        path.delete()
+        return Response({'detail': 'Deleted'}, status=204)
+
+
+class LearningPathCourseAdd(APIView):
+    """
+    POST /learning-path/<path_id>/add-course/
+    Body: { course: <id>, month_number: 1, order: 0, title_override: "" }
+    """
+
+    def post(self, request, path_id):
+        try:
+            path = models.LearningPath.objects.get(pk=path_id)
+        except models.LearningPath.DoesNotExist:
+            return Response({'detail': 'Path not found'}, status=404)
+
+        data = request.data.copy()
+        data['learning_path'] = path.id
+        serializer = LearningPathCourseSerializer(data=data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            # Return updated full path
+            path_serializer = LearningPathSerializer(path, context={'request': request})
+            return Response(path_serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+
+class LearningPathCourseRemove(APIView):
+    """
+    DELETE /learning-path-course/<id>/   — remove a course entry from a path
+    """
+
+    def delete(self, request, pk):
+        try:
+            lpc = models.LearningPathCourse.objects.get(pk=pk)
+        except models.LearningPathCourse.DoesNotExist:
+            return Response({'detail': 'Not found'}, status=404)
+        path = lpc.learning_path
+        lpc.delete()
+        # Re-sequence orders
+        for i, item in enumerate(path.path_courses.order_by('order', 'id')):
+            if item.order != i:
+                item.order = i
+                item.save(update_fields=['order'])
+        path_serializer = LearningPathSerializer(path, context={'request': request})
+        return Response(path_serializer.data)
+
+
+class LearningPathCourseReorder(APIView):
+    """
+    POST /learning-path/<path_id>/reorder-courses/
+    Body: { order: [<lpc_id>, <lpc_id>, ...] }  — new ordered list of LearningPathCourse IDs
+    """
+
+    def post(self, request, path_id):
+        try:
+            path = models.LearningPath.objects.get(pk=path_id)
+        except models.LearningPath.DoesNotExist:
+            return Response({'detail': 'Path not found'}, status=404)
+        id_list = request.data.get('order', [])
+        if not isinstance(id_list, list):
+            return Response({'detail': '`order` must be a list of IDs'}, status=400)
+        with transaction.atomic():
+            for i, lpc_id in enumerate(id_list):
+                models.LearningPathCourse.objects.filter(pk=lpc_id, learning_path=path).update(order=i)
+        path_serializer = LearningPathSerializer(path, context={'request': request})
+        return Response(path_serializer.data)
+
+
+class StudentEnrollInPath(APIView):
+    """
+    POST /student/<student_id>/enroll-path/<path_id>/
+    Enrolls the student in the learning path and auto-enrolls them in the first course.
+    """
+
+    def post(self, request, student_id, path_id):
+        try:
+            student = models.Student.objects.get(pk=student_id)
+        except models.Student.DoesNotExist:
+            return Response({'detail': 'Student not found'}, status=404)
+        try:
+            path = models.LearningPath.objects.get(pk=path_id, is_active=True)
+        except models.LearningPath.DoesNotExist:
+            return Response({'detail': 'Learning path not found or inactive'}, status=404)
+
+        # Prevent duplicate enrollment
+        if models.LearningPathEnrollment.objects.filter(student=student, learning_path=path, is_active=True).exists():
+            return Response({'detail': 'Already enrolled in this path'}, status=400)
+
+        with transaction.atomic():
+            enrollment = models.LearningPathEnrollment.objects.create(
+                student=student,
+                learning_path=path,
+                current_course_index=0,
+                is_active=True,
+            )
+            # Auto-enroll in first course if not already enrolled
+            first_lpc = path.path_courses.order_by('order', 'id').first()
+            if first_lpc:
+                models.StudentCourseEnrollment.objects.get_or_create(
+                    student=student,
+                    course=first_lpc.course,
+                )
+
+        serializer = LearningPathEnrollmentSerializer(enrollment, context={'request': request})
+        return Response(serializer.data, status=201)
+
+
+class StudentMyPaths(APIView):
+    """
+    GET /student/<student_id>/my-paths/
+    Returns all active path enrollments for the student, with progress and next lesson.
+    Also includes the student's upcoming group session (if any).
+    """
+
+    def get(self, request, student_id):
+        try:
+            student = models.Student.objects.get(pk=student_id)
+        except models.Student.DoesNotExist:
+            return Response({'detail': 'Student not found'}, status=404)
+
+        enrollments = models.LearningPathEnrollment.objects.filter(
+            student=student, is_active=True
+        ).select_related('learning_path').order_by('-enrolled_at')
+
+        enrollment_data = LearningPathEnrollmentSerializer(
+            enrollments, many=True, context={'request': request}
+        ).data
+
+        # Upcoming group session for this student
+        upcoming_session = None
+        today = timezone.now().date()
+        group_membership = models.GroupClassStudent.objects.filter(student=student).values_list('group_class_id', flat=True)
+        if group_membership:
+            next_session = models.GroupSession.objects.filter(
+                group_class_id__in=group_membership,
+                status='scheduled',
+                scheduled_date__gte=today,
+            ).order_by('scheduled_date', 'scheduled_time').first()
+            if next_session:
+                upcoming_session = {
+                    'id': next_session.id,
+                    'title': next_session.title,
+                    'group_class_id': next_session.group_class_id,
+                    'group_class_name': next_session.group_class.name,
+                    'scheduled_date': next_session.scheduled_date.isoformat(),
+                    'scheduled_time': str(next_session.scheduled_time),
+                    'duration_minutes': next_session.duration_minutes,
+                    'session_type': next_session.session_type,
+                    'meeting_link': next_session.meeting_link,
+                }
+
+        return Response({
+            'enrollments': enrollment_data,
+            'upcoming_group_session': upcoming_session,
+        })

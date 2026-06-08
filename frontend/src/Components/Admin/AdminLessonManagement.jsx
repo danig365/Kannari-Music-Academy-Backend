@@ -101,6 +101,7 @@ const AdminLessonManagement = ({
         is_premium: false,
         required_access_level: 'free'
     });
+    const [clearExistingFile, setClearExistingFile] = useState(false);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef(null);
     const repeatAudioInputRef = useRef(null);
@@ -129,6 +130,22 @@ const AdminLessonManagement = ({
     const [uploadingMultiple, setUploadingMultiple] = useState(false);
     const [multiUploadProgress, setMultiUploadProgress] = useState({});
     const multiFileInputRef = useRef(null);
+    // Block Builder States
+    const [lessonBuilderTab, setLessonBuilderTab] = useState('info'); // 'info' | 'blocks'
+    const [lessonBlocks, setLessonBlocks] = useState([]);
+    const [lessonBlocksLoading, setLessonBlocksLoading] = useState(false);
+    const [expandedBlockId, setExpandedBlockId] = useState(null);
+    const [blockEditData, setBlockEditData] = useState({});
+    const [savingBlockId, setSavingBlockId] = useState(null);
+    const [blockAchievements, setBlockAchievements] = useState([]);
+    const [loadingBlockAchievements, setLoadingBlockAchievements] = useState(false);
+    const [blockAssignmentTemplates, setBlockAssignmentTemplates] = useState([]);
+    const [loadingBlockAssignmentTemplates, setLoadingBlockAssignmentTemplates] = useState(false);
+    const [paletteTab, setPaletteTab] = useState('blocks');
+    const [libraryBlocks, setLibraryBlocks] = useState([]);
+    const [loadingLibrary, setLoadingLibrary] = useState(false);
+    const [libraryTypeFilter, setLibraryTypeFilter] = useState('all');
+    const [savingToLibraryId, setSavingToLibraryId] = useState(null);
     
     // Lesson Templates
     const lessonTemplates = [
@@ -251,6 +268,20 @@ const AdminLessonManagement = ({
     
     const [showTemplateSelector, setShowTemplateSelector] = useState(false);
     const [selectedTemplate, setSelectedTemplate] = useState(null);
+
+    const blockPaletteItems = [
+        { type: 'video',           label: 'Teacher Video',   icon: 'bi-camera-video-fill',    color: '#3b82f6' },
+        { type: 'audio',           label: 'Practice Audio',  icon: 'bi-music-note-beamed',    color: '#8b5cf6' },
+        { type: 'image',           label: 'Image/Diagram',   icon: 'bi-image',                color: '#06b6d4' },
+        { type: 'repeat_after_me', label: 'Repeat After Me', icon: 'bi-arrow-repeat',         color: '#f97316' },
+        { type: 'checklist',       label: 'Checklist',       icon: 'bi-check2-square',        color: '#16a34a' },
+        { type: 'timer',           label: 'Practice Timer',  icon: 'bi-stopwatch',            color: '#ef4444' },
+        { type: 'quiz',            label: 'Quiz',            icon: 'bi-question-circle-fill', color: '#f59e0b' },
+        { type: 'submission',      label: 'Submission',      icon: 'bi-mic-fill',             color: '#ec4899' },
+        { type: 'badge',           label: 'Reward Badge',    icon: 'bi-award-fill',           color: '#7c3aed' },
+        { type: 'assignment',      label: 'Assignment',      icon: 'bi-journal-text',         color: '#0891b2' },
+        { type: 'practice_counter', label: 'Practice Counter', icon: 'bi-hand-index-thumb-fill', color: '#0e7490' },
+    ];
 
     useEffect(() => {
         document.title = `${pageTitle} | ${userType === 'admin' ? 'Admin' : 'Teacher'} Dashboard`;
@@ -627,7 +658,10 @@ const AdminLessonManagement = ({
         setCurrentModuleId(moduleId);
         setDuplicateContext(null);
         setSelectedTemplate(null);
+        setLessonBuilderTab('info');
+        setLessonBlocks([]);
         setShowTemplateSelector(true); // Show template selector first
+        setClearExistingFile(false);
         setLessonFormData({
             title: '',
             description: '',
@@ -682,6 +716,7 @@ const AdminLessonManagement = ({
         setCurrentModuleId(moduleId);
         setDuplicateContext(duplicationMeta);
         setSelectedTemplate(null);
+        setClearExistingFile(false);
         let parsedConfig = {};
         if (lesson.interaction_config) {
             if (typeof lesson.interaction_config === 'string') {
@@ -717,6 +752,8 @@ const AdminLessonManagement = ({
             required_access_level: lesson.required_access_level || 'free'
         });
         setUploadProgress(0);
+        setLessonBuilderTab('info');
+        setLessonBlocks([]);
         setShowLessonModal(true);
     };
     
@@ -761,6 +798,7 @@ const AdminLessonManagement = ({
             if (!validateFileSize(file, detectedType)) return;
             
             setLessonFormData(prev => ({ ...prev, file, content_type: detectedType }));
+            setClearExistingFile(false);
         }
     };
 
@@ -816,6 +854,7 @@ const AdminLessonManagement = ({
                 return;
             }
             setLessonFormData({ ...lessonFormData, file });
+            setClearExistingFile(false);
         }
     };
 
@@ -870,6 +909,9 @@ const AdminLessonManagement = ({
             }
             if (lessonFormData.file) {
                 formData.append('file', lessonFormData.file);
+            }
+            if (editingLesson && clearExistingFile) {
+                formData.append('clear_file', 'true');
             }
             if (lessonFormData.duration_seconds) {
                 formData.append('duration_seconds', lessonFormData.duration_seconds);
@@ -931,6 +973,251 @@ const AdminLessonManagement = ({
             requester_type: requesterType,
             requester_id: requesterId
         };
+    };
+
+    // ─── Lesson Block Builder helpers ───────────────────────────────────────────
+    const getBlockRequestParams = () => ({
+        requester_type: userType === 'teacher' ? 'teacher' : 'admin',
+        requester_id:   userType === 'teacher' ? effectiveTeacherId : localStorage.getItem('adminId'),
+    });
+
+    const fetchLessonBlocks = async (lessonId) => {
+        if (!lessonId) return;
+        setLessonBlocksLoading(true);
+        try {
+            const res = await axios.get(`${baseUrl}/lesson/${lessonId}/blocks/`);
+            setLessonBlocks(res.data.blocks || []);
+        } catch (err) {
+            console.error('Error fetching lesson blocks:', err);
+        } finally {
+            setLessonBlocksLoading(false);
+        }
+    };
+
+    const addLessonBlock = async (blockType) => {
+        if (!editingLesson?.id) return;
+        try {
+            const res = await axios.post(`${baseUrl}/lesson/${editingLesson.id}/blocks/`, {
+                ...getBlockRequestParams(),
+                block_type: blockType,
+            });
+            setLessonBlocks(prev => [...prev, res.data]);
+        } catch (err) {
+            console.error('Error adding block:', err);
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Could not add block', confirmButtonColor: '#4285f4' });
+        }
+    };
+
+    const deleteLessonBlock = async (blockId) => {
+        const result = await Swal.fire({
+            title: 'Remove block?', text: 'This will permanently delete this block.',
+            icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Delete',
+        });
+        if (!result.isConfirmed) return;
+        try {
+            await axios.delete(`${baseUrl}/lesson-block/${blockId}/`, { params: getBlockRequestParams() });
+            setLessonBlocks(prev => prev.filter(b => b.id !== blockId));
+        } catch (err) {
+            console.error('Error deleting block:', err);
+        }
+    };
+
+    const reorderLessonBlocks = async (updatedBlocks) => {
+        if (!editingLesson?.id) return;
+        setLessonBlocks(updatedBlocks);
+        try {
+            await axios.post(`${baseUrl}/lesson/${editingLesson.id}/blocks/reorder/`, {
+                ...getBlockRequestParams(),
+                order: updatedBlocks.map((b, i) => ({ id: b.id, order: i })),
+            });
+        } catch (err) {
+            console.error('Reorder failed:', err);
+        }
+    };
+
+    const moveLessonBlockUp = (block, idx) => {
+        if (idx === 0) return;
+        const updated = [...lessonBlocks];
+        [updated[idx - 1], updated[idx]] = [updated[idx], updated[idx - 1]];
+        reorderLessonBlocks(updated);
+    };
+
+    const moveLessonBlockDown = (block, idx) => {
+        if (idx === lessonBlocks.length - 1) return;
+        const updated = [...lessonBlocks];
+        [updated[idx], updated[idx + 1]] = [updated[idx + 1], updated[idx]];
+        reorderLessonBlocks(updated);
+    };
+
+    const fetchBlockAchievements = async () => {
+        if (blockAchievements.length > 0) return;
+        setLoadingBlockAchievements(true);
+        try {
+            const res = await axios.get(`${baseUrl}/achievements/`);
+            setBlockAchievements(res.data || []);
+        } catch (err) {
+            console.error('Could not load achievements for badge block', err);
+        } finally {
+            setLoadingBlockAchievements(false);
+        }
+    };
+
+    const fetchBlockAssignmentTemplates = async () => {
+        if (blockAssignmentTemplates.length > 0) return;
+        const teacherId = effectiveTeacherId || courses.find(c => c.id === selectedCourse)?.teacher?.id;
+        if (!teacherId) return;
+        setLoadingBlockAssignmentTemplates(true);
+        try {
+            const res = await axios.get(`${baseUrl}/teacher/${teacherId}/assignment-templates/`);
+            setBlockAssignmentTemplates(res.data || []);
+        } catch (err) {
+            console.error('Could not load assignment templates for assignment block', err);
+        } finally {
+            setLoadingBlockAssignmentTemplates(false);
+        }
+    };
+
+    const fetchLibraryBlocks = async () => {
+        const teacherId = effectiveTeacherId || courses.find(c => c.id === selectedCourse)?.teacher?.id;
+        if (!teacherId) return;
+        setLoadingLibrary(true);
+        try {
+            const params = getBlockRequestParams();
+            const res = await axios.get(`${baseUrl}/teacher/${teacherId}/library-blocks/`, { params });
+            setLibraryBlocks(res.data?.blocks || []);
+        } catch (err) {
+            console.error('Could not load library blocks', err);
+        } finally {
+            setLoadingLibrary(false);
+        }
+    };
+
+    const saveBlockToLibrary = async (block) => {
+        const { value: libName } = await Swal.fire({
+            title: 'Save to Library',
+            input: 'text',
+            inputLabel: 'Name for this library block',
+            inputValue: block.library_name || block.title || '',
+            inputPlaceholder: 'e.g. "Intro Quiz" or "Breathing Exercise"',
+            showCancelButton: true,
+            confirmButtonText: 'Save',
+            confirmButtonColor: '#4285f4',
+            inputValidator: v => !v.trim() ? 'Please enter a name' : null,
+        });
+        if (!libName) return;
+        setSavingToLibraryId(block.id);
+        try {
+            const params = getBlockRequestParams();
+            const fd = new FormData();
+            fd.append('requester_type', params.requester_type);
+            fd.append('requester_id',   params.requester_id);
+            fd.append('is_library_item', 'true');
+            fd.append('library_name', libName.trim());
+            const res = await axios.put(`${baseUrl}/lesson-block/${block.id}/`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+            setLessonBlocks(prev => prev.map(b => b.id === block.id ? res.data : b));
+            setLibraryBlocks(prev => {
+                const without = prev.filter(lb => lb.id !== block.id);
+                return [...without, { id: res.data.id, block_type: res.data.block_type, title: res.data.title, library_name: res.data.library_name, file: res.data.file, config: res.data.config, lesson_title: '' }]
+                    .sort((a, b) => (a.library_name || '').localeCompare(b.library_name || ''));
+            });
+            Swal.fire({ icon: 'success', title: 'Saved!', text: `"${libName.trim()}" added to your library.`, timer: 2000, showConfirmButton: false });
+        } catch (err) {
+            console.error('Error saving to library:', err);
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Could not save to library.', confirmButtonColor: '#4285f4' });
+        } finally {
+            setSavingToLibraryId(null);
+        }
+    };
+
+    const cloneLibraryBlock = async (libBlock) => {
+        if (!editingLesson?.id) return;
+        try {
+            const params = getBlockRequestParams();
+            const fd = new FormData();
+            fd.append('requester_type', params.requester_type);
+            fd.append('requester_id',   params.requester_id);
+            fd.append('block_type', libBlock.block_type);
+            fd.append('title', libBlock.library_name || libBlock.title || '');
+            fd.append('config', JSON.stringify(libBlock.config || {}));
+            const res = await axios.post(`${baseUrl}/lesson/${editingLesson.id}/blocks/`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+            setLessonBlocks(prev => [...prev, res.data]);
+            setPaletteTab('blocks');
+        } catch (err) {
+            console.error('Error cloning library block:', err);
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Could not add block to lesson.', confirmButtonColor: '#4285f4' });
+        }
+    };
+
+    const toggleBlockExpand = (block) => {
+        if (expandedBlockId === block.id) { setExpandedBlockId(null); return; }
+        setBlockEditData(prev => ({
+            ...prev,
+            [block.id]: {
+                title:           block.title || '',
+                caption:         block.config?.caption || '',
+                alt_text:        block.config?.alt_text || '',
+                youtube_url:     block.config?.youtube_url || '',
+                prompt:          block.config?.prompt || '',
+                file:            null,
+                checklist_items:       Array.isArray(block.config?.items) ? [...block.config.items] : [''],
+                timer_minutes:         block.config?.minutes  ?? 1,
+                timer_seconds:         block.config?.seconds  ?? 0,
+                timer_label:           block.config?.label    || '',
+                quiz_questions:        Array.isArray(block.config?.questions)
+                    ? block.config.questions.map(q => ({ text: q.text || '', options: q.options || ['', '', '', ''], correct: q.correct ?? 0, points: q.points || 1 }))
+                    : [],
+                submission_type:       block.config?.submission_type || 'audio',
+                submission_prompt:     block.config?.prompt || '',
+                badge_achievement_id:  block.config?.achievement_id  || '',
+                assignment_template_id: block.config?.template_id    || '',
+                assignment_prompt:     block.config?.assignment_prompt || '',
+                practice_prompt:       block.config?.prompt  || '',
+                practice_target:       block.config?.target  ?? 3,
+            }
+        }));
+        if (block.block_type === 'badge')      fetchBlockAchievements();
+        if (block.block_type === 'assignment') fetchBlockAssignmentTemplates();
+        setExpandedBlockId(block.id);
+    };
+
+    const updateBlockEditData = (blockId, changes) => {
+        setBlockEditData(prev => ({ ...prev, [blockId]: { ...prev[blockId], ...changes } }));
+    };
+
+    const saveBlockConfig = async (block) => {
+        setSavingBlockId(block.id);
+        const ed = blockEditData[block.id] || {};
+        const params = getBlockRequestParams();
+        try {
+            const fd = new FormData();
+            fd.append('requester_type', params.requester_type);
+            fd.append('requester_id',   params.requester_id);
+            fd.append('title', ed.title || '');
+            const cfg = {};
+            if (block.block_type === 'video')           { cfg.youtube_url = ed.youtube_url || ''; cfg.caption = ed.caption || ''; }
+            else if (block.block_type === 'audio')      { cfg.caption = ed.caption || ''; }
+            else if (block.block_type === 'image')      { cfg.caption = ed.caption || ''; cfg.alt_text = ed.alt_text || ''; }
+            else if (block.block_type === 'repeat_after_me') { cfg.prompt = ed.prompt || ''; }
+            else if (block.block_type === 'checklist')  { cfg.items = (ed.checklist_items || ['']).filter(s => s.trim() !== ''); }
+            else if (block.block_type === 'timer')      { cfg.minutes = parseInt(ed.timer_minutes) || 0; cfg.seconds = Math.min(59, parseInt(ed.timer_seconds) || 0); cfg.label = ed.timer_label || ''; }
+            else if (block.block_type === 'quiz')       { cfg.questions = (ed.quiz_questions || []).filter(q => q.text.trim() !== ''); }
+            else if (block.block_type === 'submission') { cfg.submission_type = ed.submission_type || 'audio'; cfg.prompt = ed.submission_prompt || ''; }
+            else if (block.block_type === 'badge')      { cfg.achievement_id = ed.badge_achievement_id ? Number(ed.badge_achievement_id) : null; }
+            else if (block.block_type === 'assignment') { cfg.template_id = ed.assignment_template_id ? Number(ed.assignment_template_id) : null; cfg.assignment_prompt = ed.assignment_prompt || ''; }
+            else if (block.block_type === 'practice_counter') { cfg.prompt = ed.practice_prompt || ''; cfg.target = Math.max(1, parseInt(ed.practice_target) || 3); }
+            fd.append('config', JSON.stringify(cfg));
+            if (ed.file) fd.append('file', ed.file);
+            const res = await axios.put(`${baseUrl}/lesson-block/${block.id}/`, fd, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setLessonBlocks(prev => prev.map(b => b.id === block.id ? res.data : b));
+            setSavingBlockId(`done_${block.id}`);
+            setTimeout(() => setSavingBlockId(null), 1800);
+        } catch (err) {
+            console.error('Error saving block:', err);
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Could not save block', confirmButtonColor: '#4285f4' });
+            setSavingBlockId(null);
+        }
     };
 
     const openDownloadablesModal = async (lesson) => {
@@ -2060,7 +2347,7 @@ const AdminLessonManagement = ({
             {/* ============ LESSON MODAL ============ */}
             {showLessonModal && !showTemplateSelector && (
                 <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-                    <div className="modal-dialog modal-lg modal-dialog-centered">
+                    <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                         <div className="modal-content" style={{ border: 'none', borderRadius: '12px' }}>
                             <div className="modal-header" style={{ borderBottom: '1px solid #e5e7eb', padding: '20px 24px' }}>
                                 <div>
@@ -2080,11 +2367,27 @@ const AdminLessonManagement = ({
                                             Using {selectedTemplate.name} template
                                         </small>
                                     )}
+                                    {editingLesson && (
+                                        <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+                                            <button type="button"
+                                                onClick={() => setLessonBuilderTab('info')}
+                                                style={{ padding: '5px 14px', fontSize: 13, fontWeight: 600, borderRadius: 20, border: '1.5px solid', borderColor: lessonBuilderTab === 'info' ? '#4285f4' : '#e2e8f0', background: lessonBuilderTab === 'info' ? '#eff6ff' : '#f9fafb', color: lessonBuilderTab === 'info' ? '#4285f4' : '#64748b', cursor: 'pointer' }}>
+                                                <i className="bi bi-sliders me-1"></i>Lesson Info
+                                            </button>
+                                            <button type="button"
+                                                onClick={() => { setLessonBuilderTab('blocks'); if (editingLesson?.id) fetchLessonBlocks(editingLesson.id); }}
+                                                style={{ padding: '5px 14px', fontSize: 13, fontWeight: 600, borderRadius: 20, border: '1.5px solid', borderColor: lessonBuilderTab === 'blocks' ? '#8b5cf6' : '#e2e8f0', background: lessonBuilderTab === 'blocks' ? '#f5f3ff' : '#f9fafb', color: lessonBuilderTab === 'blocks' ? '#8b5cf6' : '#64748b', cursor: 'pointer' }}>
+                                                <i className="bi bi-layout-text-sidebar-reverse me-1"></i>Block Builder
+                                                {lessonBlocks.length > 0 && <span style={{ marginLeft: 6, background: '#8b5cf6', color: '#fff', borderRadius: 10, padding: '1px 7px', fontSize: 11 }}>{lessonBlocks.length}</span>}
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                                 <button type="button" className="btn-close" onClick={() => { setShowLessonModal(false); setDuplicateContext(null); }}></button>
                             </div>
                             <form onSubmit={handleLessonSubmit}>
                                 <div className="modal-body" style={{ padding: '24px' }}>
+                                    {lessonBuilderTab === 'info' && (<>
                                     {/* Upload Progress Bar */}
                                     {uploading && uploadProgress > 0 && (
                                         <div className="mb-4">
@@ -2193,6 +2496,7 @@ const AdminLessonManagement = ({
                                                             >
                                                                 <option value="audio">🎙️ Audio recording</option>
                                                                 <option value="video">🎥 Video recording</option>
+                                                                <option value="text">✏️ Text response</option>
                                                             </select>
                                                         </div>
                                                         <div className="col-12">
@@ -2585,10 +2889,26 @@ const AdminLessonManagement = ({
                                             </div>
                                             {editingLesson && editingLesson.file && !lessonFormData.file && (
                                                 <div className="mt-2 p-2" style={{ background: '#f3f4f6', borderRadius: '8px' }}>
-                                                    <small className="text-muted">
-                                                        <i className="bi bi-file-earmark me-1"></i>
-                                                        Current file: <strong>{editingLesson.file.split('/').pop()}</strong>
-                                                    </small>
+                                                    <div className="d-flex align-items-center justify-content-between" style={{ gap: '12px' }}>
+                                                        <small className="text-muted">
+                                                            <i className="bi bi-file-earmark me-1"></i>
+                                                            Current file: <strong>{editingLesson.file.split('/').pop()}</strong>
+                                                        </small>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-sm"
+                                                            onClick={() => setClearExistingFile(prev => !prev)}
+                                                            style={{ background: clearExistingFile ? '#e0f2fe' : '#fee2e2', color: clearExistingFile ? '#0369a1' : '#dc2626', border: 'none', borderRadius: '6px', fontSize: '12px' }}
+                                                        >
+                                                            <i className={`bi ${clearExistingFile ? 'bi-arrow-counterclockwise' : 'bi-trash3'} me-1`}></i>
+                                                            {clearExistingFile ? 'Undo' : 'Remove'}
+                                                        </button>
+                                                    </div>
+                                                    {clearExistingFile && (
+                                                        <div className="mt-2" style={{ fontSize: '12px', color: '#b91c1c' }}>
+                                                            This file will be removed when you save.
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
@@ -2606,16 +2926,501 @@ const AdminLessonManagement = ({
                                             </div>
                                         )}
                                     </div>
+                                    </>)}
+                                    {lessonBuilderTab === 'blocks' && (
+                                        <div style={{ padding: '4px 0' }}>
+                                            <div style={{ marginBottom: 20 }}>
+                                                {/* Palette tab toggle */}
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                                                    <div style={{ display: 'flex', gap: 6 }}>
+                                                        <button type="button" onClick={() => setPaletteTab('blocks')}
+                                                            style={{ padding: '4px 14px', fontSize: 12, fontWeight: 600, borderRadius: 20, border: `1.5px solid ${paletteTab === 'blocks' ? '#4285f4' : '#e2e8f0'}`, background: paletteTab === 'blocks' ? '#eff6ff' : '#f9fafb', color: paletteTab === 'blocks' ? '#4285f4' : '#64748b', cursor: 'pointer' }}>
+                                                            <i className="bi bi-grid-3x3-gap-fill me-1"></i>All Blocks
+                                                        </button>
+                                                        <button type="button"
+                                                            onClick={() => { setPaletteTab('library'); if (libraryBlocks.length === 0 && !loadingLibrary) fetchLibraryBlocks(); }}
+                                                            style={{ padding: '4px 14px', fontSize: 12, fontWeight: 600, borderRadius: 20, border: `1.5px solid ${paletteTab === 'library' ? '#f59e0b' : '#e2e8f0'}`, background: paletteTab === 'library' ? '#fffbeb' : '#f9fafb', color: paletteTab === 'library' ? '#d97706' : '#64748b', cursor: 'pointer' }}>
+                                                            <i className="bi bi-bookmark-fill me-1"></i>Library
+                                                            {libraryBlocks.length > 0 && <span style={{ marginLeft: 5, background: '#d97706', color: '#fff', borderRadius: 10, fontSize: 10, padding: '1px 6px' }}>{libraryBlocks.length}</span>}
+                                                        </button>
+                                                    </div>
+                                                    <span style={{ fontSize: 12, color: '#94a3b8' }}>{lessonBlocks.length} block{lessonBlocks.length !== 1 ? 's' : ''}</span>
+                                                </div>
+                                                {/* All Blocks tab */}
+                                                {paletteTab === 'blocks' && (
+                                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 8 }}>
+                                                        {blockPaletteItems.map(item => (
+                                                            <button key={item.type} type="button" onClick={() => addLessonBlock(item.type)}
+                                                                style={{ border: `1.5px solid ${item.color}33`, borderRadius: 10, padding: '10px 8px', background: `${item.color}0d`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, transition: 'all 0.15s' }}
+                                                                onMouseEnter={e => { e.currentTarget.style.background = `${item.color}22`; e.currentTarget.style.borderColor = item.color; }}
+                                                                onMouseLeave={e => { e.currentTarget.style.background = `${item.color}0d`; e.currentTarget.style.borderColor = `${item.color}33`; }}
+                                                            >
+                                                                <i className={`bi ${item.icon}`} style={{ fontSize: 20, color: item.color }}></i>
+                                                                <span style={{ fontSize: 11, fontWeight: 600, color: '#374151', textAlign: 'center', lineHeight: 1.2 }}>{item.label}</span>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                {/* Library tab */}
+                                                {paletteTab === 'library' && (
+                                                    <div>
+                                                        {/* Type filter chips */}
+                                                        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 10 }}>
+                                                            <button type="button" onClick={() => setLibraryTypeFilter('all')}
+                                                                style={{ padding: '3px 10px', fontSize: 11, borderRadius: 12, border: `1px solid ${libraryTypeFilter === 'all' ? '#d97706' : '#e2e8f0'}`, background: libraryTypeFilter === 'all' ? '#fef3c7' : '#f9fafb', color: libraryTypeFilter === 'all' ? '#92400e' : '#64748b', cursor: 'pointer', fontWeight: 600 }}>All</button>
+                                                            {[...new Set(libraryBlocks.map(b => b.block_type))].map(type => {
+                                                                const pi = blockPaletteItems.find(p => p.type === type) || { label: type, color: '#94a3b8' };
+                                                                return (
+                                                                    <button key={type} type="button" onClick={() => setLibraryTypeFilter(type)}
+                                                                        style={{ padding: '3px 10px', fontSize: 11, borderRadius: 12, border: `1px solid ${libraryTypeFilter === type ? pi.color : '#e2e8f0'}`, background: libraryTypeFilter === type ? `${pi.color}15` : '#f9fafb', color: libraryTypeFilter === type ? pi.color : '#64748b', cursor: 'pointer', fontWeight: 600 }}>
+                                                                        {pi.label}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                        {loadingLibrary ? (
+                                                            <div style={{ textAlign: 'center', padding: '20px' }}>
+                                                                <span className="spinner-border spinner-border-sm text-warning"></span>
+                                                                <span style={{ fontSize: 12, color: '#94a3b8', marginLeft: 8 }}>Loading library...</span>
+                                                            </div>
+                                                        ) : libraryBlocks.filter(b => libraryTypeFilter === 'all' || b.block_type === libraryTypeFilter).length === 0 ? (
+                                                            <div style={{ textAlign: 'center', padding: '24px 16px', border: '2px dashed #fde68a', borderRadius: 12, color: '#94a3b8' }}>
+                                                                <i className="bi bi-bookmark" style={{ fontSize: 28, display: 'block', marginBottom: 6, color: '#fbbf24' }}></i>
+                                                                <p style={{ margin: 0, fontSize: 13 }}>No saved blocks yet — click <i className="bi bi-bookmark"></i> on any block to save it</p>
+                                                            </div>
+                                                        ) : (
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                                                {libraryBlocks.filter(b => libraryTypeFilter === 'all' || b.block_type === libraryTypeFilter).map(lb => {
+                                                                    const pi = blockPaletteItems.find(p => p.type === lb.block_type) || { icon: 'bi-square', color: '#94a3b8', label: lb.block_type };
+                                                                    return (
+                                                                        <div key={lb.id} style={{ display: 'flex', alignItems: 'center', gap: 10, border: '1.5px solid #fde68a', borderRadius: 10, padding: '8px 12px', background: '#fffdf7' }}>
+                                                                            <div style={{ width: 30, height: 30, borderRadius: 7, background: `${pi.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                                                <i className={`bi ${pi.icon}`} style={{ fontSize: 14, color: pi.color }}></i>
+                                                                            </div>
+                                                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                                                <div style={{ fontWeight: 600, fontSize: 12, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{lb.library_name || lb.title}</div>
+                                                                                <div style={{ fontSize: 10, color: '#94a3b8' }}>{pi.label}{lb.lesson_title ? ` · from "${lb.lesson_title}"` : ''}</div>
+                                                                            </div>
+                                                                            <button type="button" onClick={() => cloneLibraryBlock(lb)} title="Add to this lesson"
+                                                                                style={{ background: '#eff6ff', color: '#4285f4', border: '1.5px solid #bfdbfe', borderRadius: 7, padding: '4px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>
+                                                                                <i className="bi bi-plus-lg me-1"></i>Use
+                                                                            </button>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                                                    <span style={{ fontWeight: 600, fontSize: 14, color: '#1e293b' }}>
+                                                        <i className="bi bi-layout-text-sidebar-reverse me-2" style={{ color: '#4285f4' }}></i>Lesson Canvas
+                                                    </span>
+                                                    {lessonBlocksLoading && <span className="spinner-border spinner-border-sm text-primary"></span>}
+                                                </div>
+                                                {!lessonBlocksLoading && lessonBlocks.length === 0 ? (
+                                                    <div style={{ textAlign: 'center', padding: '32px 16px', border: '2px dashed #e2e8f0', borderRadius: 12, color: '#94a3b8' }}>
+                                                        <i className="bi bi-layers" style={{ fontSize: 32, display: 'block', marginBottom: 8 }}></i>
+                                                        <p style={{ margin: 0, fontSize: 14 }}>No blocks yet — click a type above to add one</p>
+                                                    </div>
+                                                ) : (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                                        {lessonBlocks.map((block, idx) => {
+                                                            const pi = blockPaletteItems.find(p => p.type === block.block_type) || { icon: 'bi-square', color: '#94a3b8', label: block.block_type };
+                                                            const isExpanded  = expandedBlockId === block.id;
+                                                            const isSaving    = savingBlockId === block.id;
+                                                            const isSaved     = savingBlockId === `done_${block.id}`;
+                                                            const ed          = blockEditData[block.id] || {};
+                                                            const isMediaBlock = ['video','audio','image','repeat_after_me','checklist','timer','quiz','submission','badge','assignment','practice_counter'].includes(block.block_type);
+                                                            return (
+                                                                <div key={block.id} style={{ border: `1.5px solid ${isExpanded ? pi.color + '55' : '#e2e8f0'}`, borderRadius: 10, background: '#f8fafc', overflow: 'hidden', transition: 'border-color 0.2s' }}>
+                                                                    {/* Header row */}
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
+                                                                        <div style={{ width: 34, height: 34, borderRadius: 8, background: `${pi.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                                            <i className={`bi ${pi.icon}`} style={{ fontSize: 16, color: pi.color }}></i>
+                                                                        </div>
+                                                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                                                            <div style={{ fontWeight: 600, fontSize: 13, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                                {block.title || pi.label}
+                                                                            </div>
+                                                                            <div style={{ fontSize: 11, color: '#94a3b8' }}>{pi.label}</div>
+                                                                        </div>
+                                                                        <span style={{ fontSize: 11, color: '#cbd5e1', minWidth: 20, textAlign: 'center' }}>#{idx + 1}</span>
+                                                                        <button type="button" disabled={idx === 0} onClick={() => moveLessonBlockUp(block, idx)} title="Move up"
+                                                                            style={{ background: 'none', border: '1px solid #e2e8f0', borderRadius: 6, padding: '3px 8px', color: idx === 0 ? '#cbd5e1' : '#64748b', cursor: idx === 0 ? 'not-allowed' : 'pointer' }}>
+                                                                            <i className="bi bi-chevron-up" style={{ fontSize: 11 }}></i>
+                                                                        </button>
+                                                                        <button type="button" disabled={idx === lessonBlocks.length - 1} onClick={() => moveLessonBlockDown(block, idx)} title="Move down"
+                                                                            style={{ background: 'none', border: '1px solid #e2e8f0', borderRadius: 6, padding: '3px 8px', color: idx === lessonBlocks.length - 1 ? '#cbd5e1' : '#64748b', cursor: idx === lessonBlocks.length - 1 ? 'not-allowed' : 'pointer' }}>
+                                                                            <i className="bi bi-chevron-down" style={{ fontSize: 11 }}></i>
+                                                                        </button>
+                                                                        {isMediaBlock && (
+                                                                            <button type="button" onClick={() => toggleBlockExpand(block)} title={isExpanded ? 'Collapse' : 'Edit config'}
+                                                                                style={{ background: isExpanded ? `${pi.color}15` : 'none', border: `1px solid ${isExpanded ? pi.color + '55' : '#e2e8f0'}`, borderRadius: 6, padding: '3px 8px', color: isExpanded ? pi.color : '#64748b', cursor: 'pointer' }}>
+                                                                                <i className={`bi bi-${isExpanded ? 'chevron-up' : 'pencil'}`} style={{ fontSize: 11 }}></i>
+                                                                            </button>
+                                                                        )}
+                                                                        <button type="button"
+                                                                            onClick={() => saveBlockToLibrary(block)}
+                                                                            title={block.is_library_item ? `In library: "${block.library_name}"` : 'Save to library'}
+                                                                            disabled={savingToLibraryId === block.id}
+                                                                            style={{ background: block.is_library_item ? '#fffbeb' : '#f8fafc', color: block.is_library_item ? '#d97706' : '#94a3b8', border: `1px solid ${block.is_library_item ? '#fde68a' : '#e2e8f0'}`, borderRadius: 6, padding: '3px 8px', cursor: savingToLibraryId === block.id ? 'wait' : 'pointer' }}>
+                                                                            <i className={`bi ${savingToLibraryId === block.id ? 'bi-hourglass' : block.is_library_item ? 'bi-bookmark-fill' : 'bi-bookmark'}`} style={{ fontSize: 11 }}></i>
+                                                                        </button>
+                                                                        <button type="button" onClick={() => deleteLessonBlock(block.id)} title="Remove block"
+                                                                            style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 6, padding: '3px 9px', cursor: 'pointer' }}>
+                                                                            <i className="bi bi-trash" style={{ fontSize: 11 }}></i>
+                                                                        </button>
+                                                                    </div>
+                                                                    {/* Inline config form */}
+                                                                    {isExpanded && isMediaBlock && (
+                                                                        <div style={{ borderTop: `1px solid ${pi.color}22`, background: '#fff', padding: '14px 16px' }}>
+                                                                            {/* Title */}
+                                                                            <div style={{ marginBottom: 12 }}>
+                                                                                <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Block Title</label>
+                                                                                <input type="text" value={ed.title || ''} onChange={e => updateBlockEditData(block.id, { title: e.target.value })}
+                                                                                    placeholder={pi.label}
+                                                                                    style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                                                                            </div>
+                                                                            {/* VIDEO */}
+                                                                            {block.block_type === 'video' && (<>
+                                                                                <div style={{ marginBottom: 10 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>YouTube URL</label>
+                                                                                    <input type="url" value={ed.youtube_url || ''} onChange={e => updateBlockEditData(block.id, { youtube_url: e.target.value })}
+                                                                                        placeholder="https://youtube.com/watch?v=..."
+                                                                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                                                                                </div>
+                                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                                                                                    <div style={{ flex: 1, height: 1, background: '#e2e8f0' }}></div>
+                                                                                    <span style={{ fontSize: 11, color: '#94a3b8' }}>or upload a video file</span>
+                                                                                    <div style={{ flex: 1, height: 1, background: '#e2e8f0' }}></div>
+                                                                                </div>
+                                                                                <div style={{ marginBottom: 10 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Video File</label>
+                                                                                    {block.file && <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}><i className="bi bi-file-earmark-play me-1"></i>Current: {block.file.split('/').pop()}</div>}
+                                                                                    <input type="file" accept="video/*" onChange={e => updateBlockEditData(block.id, { file: e.target.files[0] || null })} style={{ fontSize: 12, width: '100%' }} />
+                                                                                </div>
+                                                                                <div style={{ marginBottom: 14 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Caption</label>
+                                                                                    <input type="text" value={ed.caption || ''} onChange={e => updateBlockEditData(block.id, { caption: e.target.value })}
+                                                                                        placeholder="Optional caption"
+                                                                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                                                                                </div>
+                                                                            </>)}
+                                                                            {/* AUDIO */}
+                                                                            {block.block_type === 'audio' && (<>
+                                                                                <div style={{ marginBottom: 10 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Audio File</label>
+                                                                                    {block.file && <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}><i className="bi bi-file-earmark-music me-1"></i>Current: {block.file.split('/').pop()}</div>}
+                                                                                    <input type="file" accept="audio/*" onChange={e => updateBlockEditData(block.id, { file: e.target.files[0] || null })} style={{ fontSize: 12, width: '100%' }} />
+                                                                                </div>
+                                                                                <div style={{ marginBottom: 14 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Caption</label>
+                                                                                    <input type="text" value={ed.caption || ''} onChange={e => updateBlockEditData(block.id, { caption: e.target.value })}
+                                                                                        placeholder="Optional caption"
+                                                                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                                                                                </div>
+                                                                            </>)}
+                                                                            {/* IMAGE */}
+                                                                            {block.block_type === 'image' && (<>
+                                                                                <div style={{ marginBottom: 10 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Image File</label>
+                                                                                    {block.file && <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}><i className="bi bi-file-earmark-image me-1"></i>Current: {block.file.split('/').pop()}</div>}
+                                                                                    <input type="file" accept="image/*" onChange={e => updateBlockEditData(block.id, { file: e.target.files[0] || null })} style={{ fontSize: 12, width: '100%' }} />
+                                                                                </div>
+                                                                                <div style={{ marginBottom: 10 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Caption</label>
+                                                                                    <input type="text" value={ed.caption || ''} onChange={e => updateBlockEditData(block.id, { caption: e.target.value })}
+                                                                                        placeholder="Optional caption"
+                                                                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                                                                                </div>
+                                                                                <div style={{ marginBottom: 14 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Alt Text</label>
+                                                                                    <input type="text" value={ed.alt_text || ''} onChange={e => updateBlockEditData(block.id, { alt_text: e.target.value })}
+                                                                                        placeholder="Describe the image for screen readers"
+                                                                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                                                                                </div>
+                                                                            </>)}
+                                                                            {/* REPEAT AFTER ME */}
+                                                                            {block.block_type === 'repeat_after_me' && (<>
+                                                                                <div style={{ marginBottom: 10 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Prompt</label>
+                                                                                    <textarea rows={3} value={ed.prompt || ''} onChange={e => updateBlockEditData(block.id, { prompt: e.target.value })}
+                                                                                        placeholder="What should the student repeat? e.g. 'Say after me: Do Re Mi'"
+                                                                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
+                                                                                </div>
+                                                                                <div style={{ marginBottom: 14 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Teacher Audio</label>
+                                                                                    {block.file && <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}><i className="bi bi-file-earmark-music me-1"></i>Current: {block.file.split('/').pop()}</div>}
+                                                                                    <input type="file" accept="audio/*" onChange={e => updateBlockEditData(block.id, { file: e.target.files[0] || null })} style={{ fontSize: 12, width: '100%' }} />
+                                                                                </div>
+                                                                            </>)}
+                                                                            {/* CHECKLIST */}
+                                                                            {block.block_type === 'checklist' && (<>
+                                                                                <div style={{ marginBottom: 14 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 8 }}>Checklist Items</label>
+                                                                                    {(ed.checklist_items || ['']).map((item, i) => (
+                                                                                        <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center' }}>
+                                                                                            <span style={{ width: 20, flexShrink: 0, fontSize: 11, color: '#94a3b8', textAlign: 'right' }}>{i + 1}.</span>
+                                                                                            <input type="text" value={item}
+                                                                                                onChange={e => {
+                                                                                                    const next = [...(ed.checklist_items || [''])];
+                                                                                                    next[i] = e.target.value;
+                                                                                                    updateBlockEditData(block.id, { checklist_items: next });
+                                                                                                }}
+                                                                                                placeholder={`Item ${i + 1}`}
+                                                                                                style={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: 8, padding: '7px 10px', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                                                                                            <button type="button"
+                                                                                                disabled={(ed.checklist_items || ['']).length <= 1}
+                                                                                                onClick={() => {
+                                                                                                    const next = (ed.checklist_items || ['']).filter((_, j) => j !== i);
+                                                                                                    updateBlockEditData(block.id, { checklist_items: next.length ? next : [''] });
+                                                                                                }}
+                                                                                                style={{ background: (ed.checklist_items || ['']).length <= 1 ? '#f3f4f6' : '#fee2e2', color: (ed.checklist_items || ['']).length <= 1 ? '#cbd5e1' : '#dc2626', border: 'none', borderRadius: 6, padding: '4px 9px', cursor: (ed.checklist_items || ['']).length <= 1 ? 'not-allowed' : 'pointer', flexShrink: 0 }}>
+                                                                                                <i className="bi bi-x" style={{ fontSize: 14 }}></i>
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    ))}
+                                                                                    <button type="button"
+                                                                                        onClick={() => updateBlockEditData(block.id, { checklist_items: [...(ed.checklist_items || ['']), ''] })}
+                                                                                        style={{ background: 'none', border: '1.5px dashed #cbd5e1', borderRadius: 8, padding: '6px 14px', fontSize: 12, color: '#64748b', cursor: 'pointer', width: '100%', marginTop: 2 }}>
+                                                                                        <i className="bi bi-plus me-1"></i>Add Item
+                                                                                    </button>
+                                                                                </div>
+                                                                            </>)}
+                                                                            {/* TIMER */}
+                                                                            {block.block_type === 'timer' && (<>
+                                                                                <div style={{ marginBottom: 10 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>Duration</label>
+                                                                                    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+                                                                                        <div style={{ flex: 1 }}>
+                                                                                            <label style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 3 }}>Minutes</label>
+                                                                                            <input type="number" min="0" max="99" value={ed.timer_minutes ?? 1}
+                                                                                                onChange={e => updateBlockEditData(block.id, { timer_minutes: Math.max(0, parseInt(e.target.value) || 0) })}
+                                                                                                style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 10px', fontSize: 16, fontWeight: 700, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />
+                                                                                        </div>
+                                                                                        <span style={{ fontSize: 22, color: '#94a3b8', paddingBottom: 8 }}>:</span>
+                                                                                        <div style={{ flex: 1 }}>
+                                                                                            <label style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 3 }}>Seconds</label>
+                                                                                            <input type="number" min="0" max="59" value={ed.timer_seconds ?? 0}
+                                                                                                onChange={e => updateBlockEditData(block.id, { timer_seconds: Math.min(59, Math.max(0, parseInt(e.target.value) || 0)) })}
+                                                                                                style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 10px', fontSize: 16, fontWeight: 700, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div style={{ marginBottom: 14 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Timer Label</label>
+                                                                                    <input type="text" value={ed.timer_label || ''} onChange={e => updateBlockEditData(block.id, { timer_label: e.target.value })}
+                                                                                        placeholder="e.g. Practice this section for:"
+                                                                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                                                                                </div>
+                                                                            </>)}
+                                                                            {/* QUIZ */}
+                                                                            {block.block_type === 'quiz' && (<>
+                                                                                <div style={{ marginBottom: 14 }}>
+                                                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                                                                                        <label style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>Questions</label>
+                                                                                        <button type="button"
+                                                                                            onClick={() => updateBlockEditData(block.id, { quiz_questions: [...(ed.quiz_questions || []), { text: '', options: ['', '', '', ''], correct: 0, points: 1 }] })}
+                                                                                            style={{ background: '#eff6ff', color: '#4285f4', border: '1.5px solid #bfdbfe', borderRadius: 6, padding: '4px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                                                                                            <i className="bi bi-plus me-1"></i>Add Question
+                                                                                        </button>
+                                                                                    </div>
+                                                                                    {(ed.quiz_questions || []).length === 0 && (
+                                                                                        <div style={{ textAlign: 'center', padding: '20px', border: '2px dashed #e2e8f0', borderRadius: 10, color: '#94a3b8', fontSize: 13 }}>
+                                                                                            <i className="bi bi-question-circle" style={{ fontSize: 24, display: 'block', marginBottom: 6 }}></i>
+                                                                                            No questions yet — click Add Question to begin
+                                                                                        </div>
+                                                                                    )}
+                                                                                    {(ed.quiz_questions || []).map((q, qi) => (
+                                                                                        <div key={qi} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 14px', marginBottom: 10, background: '#fff' }}>
+                                                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                                                                                                <span style={{ fontSize: 11, fontWeight: 700, color: '#4285f4', background: '#eff6ff', borderRadius: 4, padding: '2px 7px', flexShrink: 0 }}>Q{qi + 1}</span>
+                                                                                                <input type="text" value={q.text}
+                                                                                                    onChange={e => { const qs = [...(ed.quiz_questions || [])]; qs[qi] = { ...qs[qi], text: e.target.value }; updateBlockEditData(block.id, { quiz_questions: qs }); }}
+                                                                                                    placeholder="Question text"
+                                                                                                    style={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: 8, padding: '7px 10px', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                                                                                                <input type="number" min="1" max="100" value={q.points}
+                                                                                                    onChange={e => { const qs = [...(ed.quiz_questions || [])]; qs[qi] = { ...qs[qi], points: parseInt(e.target.value) || 1 }; updateBlockEditData(block.id, { quiz_questions: qs }); }}
+                                                                                                    title="Points value"
+                                                                                                    style={{ width: 52, border: '1px solid #e2e8f0', borderRadius: 8, padding: '7px 6px', fontSize: 12, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />
+                                                                                                <span style={{ fontSize: 10, color: '#94a3b8', flexShrink: 0 }}>pts</span>
+                                                                                                <button type="button"
+                                                                                                    onClick={() => { const qs = (ed.quiz_questions || []).filter((_, j) => j !== qi); updateBlockEditData(block.id, { quiz_questions: qs }); }}
+                                                                                                    style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', flexShrink: 0 }}>
+                                                                                                    <i className="bi bi-trash" style={{ fontSize: 11 }}></i>
+                                                                                                </button>
+                                                                                            </div>
+                                                                                            {['A', 'B', 'C', 'D'].map((letter, oi) => (
+                                                                                                <div key={oi} style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 5 }}>
+                                                                                                    <input type="radio" name={`quiz_correct_${block.id}_${qi}`}
+                                                                                                        checked={q.correct === oi}
+                                                                                                        onChange={() => { const qs = [...(ed.quiz_questions || [])]; qs[qi] = { ...qs[qi], correct: oi }; updateBlockEditData(block.id, { quiz_questions: qs }); }}
+                                                                                                        style={{ accentColor: '#16a34a', cursor: 'pointer', flexShrink: 0 }} />
+                                                                                                    <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b', width: 14, flexShrink: 0 }}>{letter}</span>
+                                                                                                    <input type="text" value={(q.options || [])[oi] || ''}
+                                                                                                        onChange={e => { const qs = [...(ed.quiz_questions || [])]; const opts = [...(qs[qi].options || ['', '', '', ''])]; opts[oi] = e.target.value; qs[qi] = { ...qs[qi], options: opts }; updateBlockEditData(block.id, { quiz_questions: qs }); }}
+                                                                                                        placeholder={`Option ${letter}`}
+                                                                                                        style={{ flex: 1, border: `1px solid ${q.correct === oi ? '#86efac' : '#e2e8f0'}`, borderRadius: 6, padding: '5px 8px', fontSize: 12, outline: 'none', background: q.correct === oi ? '#f0fdf4' : '#fff', boxSizing: 'border-box' }} />
+                                                                                                </div>
+                                                                                            ))}
+                                                                                            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>
+                                                                                                <i className="bi bi-info-circle me-1"></i>Select the radio button next to the correct answer
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    ))}
+                                                                                </div>
+                                                                            </>)}
+                                                                            {/* SUBMISSION */}
+                                                                            {block.block_type === 'submission' && (<>
+                                                                                <div style={{ marginBottom: 10 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 8 }}>Submission Type</label>
+                                                                                    <div style={{ display: 'flex', gap: 10 }}>
+                                                                                        {[{ value: 'audio', label: 'Audio', icon: 'bi-mic-fill', color: '#8b5cf6' }, { value: 'video', label: 'Video', icon: 'bi-camera-video-fill', color: '#3b82f6' }].map(opt => (
+                                                                                            <label key={opt.value} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, border: `1.5px solid ${ed.submission_type === opt.value ? opt.color : '#e2e8f0'}`, borderRadius: 8, padding: '8px 12px', cursor: 'pointer', background: ed.submission_type === opt.value ? `${opt.color}1a` : '#fff' }}>
+                                                                                                <input type="radio" name={`sub_type_${block.id}`} value={opt.value}
+                                                                                                    checked={ed.submission_type === opt.value}
+                                                                                                    onChange={() => updateBlockEditData(block.id, { submission_type: opt.value })}
+                                                                                                    style={{ accentColor: opt.color }} />
+                                                                                                <i className={`bi ${opt.icon}`} style={{ color: opt.color, fontSize: 15 }}></i>
+                                                                                                <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{opt.label}</span>
+                                                                                            </label>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div style={{ marginBottom: 14 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Prompt</label>
+                                                                                    <textarea rows={3} value={ed.submission_prompt || ''}
+                                                                                        onChange={e => updateBlockEditData(block.id, { submission_prompt: e.target.value })}
+                                                                                        placeholder="What should the student record? e.g. 'Record yourself singing the first verse'"
+                                                                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
+                                                                                </div>
+                                                                            </>)}
+                                                                            {/* BADGE */}
+                                                                            {block.block_type === 'badge' && (<>
+                                                                                <div style={{ marginBottom: 14 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>Achievement Badge</label>
+                                                                                    {loadingBlockAchievements ? (
+                                                                                        <div style={{ padding: '12px', textAlign: 'center' }}>
+                                                                                            <span className="spinner-border spinner-border-sm text-primary"></span>
+                                                                                            <span style={{ fontSize: 12, color: '#94a3b8', marginLeft: 8 }}>Loading achievements...</span>
+                                                                                        </div>
+                                                                                    ) : (
+                                                                                        <select value={ed.badge_achievement_id || ''}
+                                                                                            onChange={e => updateBlockEditData(block.id, { badge_achievement_id: e.target.value })}
+                                                                                            style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', boxSizing: 'border-box', background: '#fff' }}>
+                                                                                            <option value="">— Select an achievement —</option>
+                                                                                            {blockAchievements.map(a => (
+                                                                                                <option key={a.id} value={a.id}>{a.name} ({a.points} pts)</option>
+                                                                                            ))}
+                                                                                        </select>
+                                                                                    )}
+                                                                                    {ed.badge_achievement_id && (() => {
+                                                                                        const ach = blockAchievements.find(a => String(a.id) === String(ed.badge_achievement_id));
+                                                                                        return ach ? (
+                                                                                            <div style={{ marginTop: 8, padding: '8px 12px', background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                                                                <i className="bi bi-award-fill" style={{ fontSize: 22, color: '#7c3aed' }}></i>
+                                                                                                <div>
+                                                                                                    <div style={{ fontWeight: 600, fontSize: 13, color: '#1e293b' }}>{ach.name}</div>
+                                                                                                    <div style={{ fontSize: 11, color: '#64748b' }}>{ach.description} — {ach.points} XP</div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        ) : null;
+                                                                                    })()}
+                                                                                </div>
+                                                                            </>)}
+                                                                            {/* ASSIGNMENT */}
+                                                                            {block.block_type === 'assignment' && (<>
+                                                                                <div style={{ marginBottom: 10 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>Assignment Template <span style={{ fontWeight: 400, color: '#94a3b8' }}>(optional)</span></label>
+                                                                                    {loadingBlockAssignmentTemplates ? (
+                                                                                        <div style={{ padding: '12px', textAlign: 'center' }}>
+                                                                                            <span className="spinner-border spinner-border-sm text-primary"></span>
+                                                                                            <span style={{ fontSize: 12, color: '#94a3b8', marginLeft: 8 }}>Loading templates...</span>
+                                                                                        </div>
+                                                                                    ) : (
+                                                                                        <select value={ed.assignment_template_id || ''}
+                                                                                            onChange={e => updateBlockEditData(block.id, { assignment_template_id: e.target.value })}
+                                                                                            style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', boxSizing: 'border-box', background: '#fff' }}>
+                                                                                            <option value="">— No template (use text prompt below) —</option>
+                                                                                            {blockAssignmentTemplates.map(t => (
+                                                                                                <option key={t.id} value={t.id}>{t.title} ({t.question_count} question{t.question_count !== 1 ? 's' : ''})</option>
+                                                                                            ))}
+                                                                                        </select>
+                                                                                    )}
+                                                                                </div>
+                                                                                <div style={{ marginBottom: 14 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>
+                                                                                        {ed.assignment_template_id ? 'Additional Instructions' : 'Assignment Prompt'}
+                                                                                        {ed.assignment_template_id && <span style={{ fontWeight: 400, color: '#94a3b8' }}> (optional)</span>}
+                                                                                    </label>
+                                                                                    <textarea rows={3} value={ed.assignment_prompt || ''}
+                                                                                        onChange={e => updateBlockEditData(block.id, { assignment_prompt: e.target.value })}
+                                                                                        placeholder={ed.assignment_template_id ? 'Any additional instructions for this assignment...' : 'Describe what the student needs to do...'}
+                                                                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
+                                                                                </div>
+                                                                            </>)}
+                                                                            {/* PRACTICE COUNTER */}
+                                                                            {block.block_type === 'practice_counter' && (<>
+                                                                                <div style={{ marginBottom: 10 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Practice Prompt</label>
+                                                                                    <input type="text" value={ed.practice_prompt || ''} onChange={e => updateBlockEditData(block.id, { practice_prompt: e.target.value })}
+                                                                                        placeholder="e.g. Play this scale, Sing this phrase, Do this exercise"
+                                                                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                                                                                </div>
+                                                                                <div style={{ marginBottom: 14 }}>
+                                                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Target Repetitions</label>
+                                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                                                        <input type="number" min="1" max="50" value={ed.practice_target ?? 3} onChange={e => updateBlockEditData(block.id, { practice_target: Math.max(1, parseInt(e.target.value) || 1) })}
+                                                                                            style={{ width: 80, border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px', fontSize: 16, fontWeight: 700, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />
+                                                                                        <span style={{ fontSize: 13, color: '#64748b' }}>times</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </>)}
+                                                                            {/* Save / Cancel row */}
+                                                                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
+                                                                                <button type="button" onClick={() => setExpandedBlockId(null)}
+                                                                                    style={{ background: 'none', border: '1px solid #e2e8f0', borderRadius: 8, padding: '7px 16px', fontSize: 13, color: '#64748b', cursor: 'pointer' }}>Cancel</button>
+                                                                                <button type="button" onClick={() => saveBlockConfig(block)} disabled={isSaving || isSaved}
+                                                                                    style={{ background: isSaved ? '#16a34a' : pi.color, color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontSize: 13, fontWeight: 600, cursor: (isSaving || isSaved) ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                                    {isSaving ? (<><span className="spinner-border spinner-border-sm"></span>Saving...</>) : isSaved ? (<><i className="bi bi-check-lg"></i>Saved!</>) : (<><i className="bi bi-floppy"></i>Save Block</>)}
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="modal-footer" style={{ borderTop: '1px solid #e5e7eb', padding: '16px 24px' }}>
-                                    <button type="button" className="btn" onClick={() => setShowLessonModal(false)} style={{ background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: '8px', padding: '10px 20px' }}>Cancel</button>
-                                    <button type="submit" className="btn" disabled={uploading} style={{ background: '#4285f4', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 20px' }}>
-                                        {uploading ? (
-                                            <><span className="spinner-border spinner-border-sm me-2"></span>Uploading...</>
-                                        ) : (
-                                            editingLesson ? 'Update Lesson' : 'Create Lesson'
-                                        )}
-                                    </button>
+                                    {lessonBuilderTab === 'info' ? (
+                                        <>
+                                            <button type="button" className="btn" onClick={() => setShowLessonModal(false)} style={{ background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: '8px', padding: '10px 20px' }}>Cancel</button>
+                                            <button type="submit" className="btn" disabled={uploading} style={{ background: '#4285f4', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 20px' }}>
+                                                {uploading ? (
+                                                    <><span className="spinner-border spinner-border-sm me-2"></span>Uploading...</>
+                                                ) : (
+                                                    editingLesson ? 'Update Lesson' : 'Create Lesson'
+                                                )}
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button type="button" className="btn" onClick={() => setLessonBuilderTab('info')} style={{ background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: '8px', padding: '10px 20px' }}>
+                                                <i className="bi bi-arrow-left me-1"></i>Back to Lesson Info
+                                            </button>
+                                            <span style={{ fontSize: 13, color: '#6b7280' }}>
+                                                <i className="bi bi-check-circle-fill me-1" style={{ color: '#16a34a' }}></i>Changes saved automatically
+                                            </span>
+                                        </>
+                                    )}
                                 </div>
                             </form>
                         </div>

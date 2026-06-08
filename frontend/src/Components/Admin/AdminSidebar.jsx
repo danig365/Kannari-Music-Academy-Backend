@@ -236,6 +236,33 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                     </Link>
 
                     <Link 
+                        to="/admin-panel/learning-paths" 
+                        onClick={(e) => handleNavClick(e, '/admin-panel/learning-paths')}
+                        className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
+                        style={{ 
+                            color: isActive('/admin-panel/learning-paths') ? '#fff' : '#8b92a7',
+                            backgroundColor: isActive('/admin-panel/learning-paths') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
+                            borderLeft: isActive('/admin-panel/learning-paths') ? '3px solid #4285f4' : '3px solid transparent',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!isActive('/admin-panel/learning-paths')) {
+                                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                                e.currentTarget.style.color = '#fff';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!isActive('/admin-panel/learning-paths')) {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                                e.currentTarget.style.color = '#8b92a7';
+                            }
+                        }}
+                    >
+                        <i className="bi bi-map me-3" style={{ fontSize: '18px' }}></i>
+                        <span style={{ fontSize: '14px' }}>Learning Paths</span>
+                    </Link>
+
+                    <Link 
                         to="/admin-panel/audit-logs" 
                         onClick={(e) => handleNavClick(e, '/admin-panel/audit-logs')}
                         className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"

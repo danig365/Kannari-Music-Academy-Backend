@@ -1764,3 +1764,108 @@ class WeeklyGameLeaderboardSerializer(serializers.ModelSerializer):
         fields = ['id', 'student', 'student_name', 'game', 'game_type', 'game_title',
                   'week_start', 'week_end', 'total_score', 'attempts_count',
                   'avg_accuracy', 'best_streak', 'rank', 'updated_at']
+
+
+# ==================== LEARNING PATH SERIALIZERS ====================
+
+class LearningPathCourseSerializer(serializers.ModelSerializer):
+    """A single course entry in a learning path — includes summary course info."""
+    course_title = serializers.CharField(source='course.title', read_only=True)
+    course_description = serializers.CharField(source='course.description', read_only=True)
+    course_featured_img = serializers.ImageField(source='course.featured_img', read_only=True)
+    display_title = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.LearningPathCourse
+        fields = [
+            'id', 'learning_path', 'course', 'month_number', 'order',
+            'title_override', 'display_title',
+            'course_title', 'course_description', 'course_featured_img',
+        ]
+
+    def get_display_title(self, obj):
+        return obj.title_override or obj.course.title
+
+
+class LearningPathSerializer(serializers.ModelSerializer):
+    """Full learning path — includes ordered list of its courses."""
+    courses = serializers.SerializerMethodField()
+    total_courses = serializers.SerializerMethodField()
+    total_enrollments = serializers.SerializerMethodField()
+    created_by_teacher_name = serializers.CharField(
+        source='created_by_teacher.full_name', read_only=True, default=None
+    )
+    created_by_admin_name = serializers.CharField(
+        source='created_by_admin.full_name', read_only=True, default=None
+    )
+
+    class Meta:
+        model = models.LearningPath
+        fields = [
+            'id', 'title', 'subtitle', 'description', 'duration_months', 'is_active',
+            'created_by_teacher', 'created_by_teacher_name',
+            'created_by_admin', 'created_by_admin_name',
+            'total_courses', 'total_enrollments',
+            'courses', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+
+    def get_courses(self, obj):
+        qs = obj.path_courses.order_by('order', 'id')
+        return LearningPathCourseSerializer(qs, many=True, context=self.context).data
+
+    def get_total_courses(self, obj):
+        return obj.path_courses.count()
+
+    def get_total_enrollments(self, obj):
+        return obj.enrollments.filter(is_active=True).count()
+
+
+class LearningPathEnrollmentSerializer(serializers.ModelSerializer):
+    """Student's enrollment in a path — includes per-course progress and next lesson."""
+    path = LearningPathSerializer(source='learning_path', read_only=True)
+    progress_percent = serializers.SerializerMethodField()
+    current_course = serializers.SerializerMethodField()
+    next_lesson = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.LearningPathEnrollment
+        fields = [
+            'id', 'student', 'learning_path', 'path',
+            'current_course_index', 'is_active', 'is_completed',
+            'progress_percent', 'current_course', 'next_lesson',
+            'enrolled_at', 'completed_at', 'updated_at',
+        ]
+        read_only_fields = ['enrolled_at', 'completed_at', 'updated_at']
+
+    def get_progress_percent(self, obj):
+        return obj.progress_percent()
+
+    def get_current_course(self, obj):
+        lpc = obj.current_path_course()
+        if lpc is None:
+            return None
+        return LearningPathCourseSerializer(lpc, context=self.context).data
+
+    def get_next_lesson(self, obj):
+        """Return the first uncompleted lesson in the student's current course."""
+        lpc = obj.current_path_course()
+        if lpc is None:
+            return None
+        course = lpc.course
+        # Walk modules in order, then lessons in order
+        for chapter in course.course_chapters.order_by('order', 'id'):
+            for lesson in chapter.module_lessons.order_by('order', 'id'):
+                completed = models.ModuleLessonProgress.objects.filter(
+                    student=obj.student, lesson=lesson, is_completed=True
+                ).exists()
+                if not completed:
+                    return {
+                        'lesson_id': lesson.id,
+                        'lesson_title': lesson.title,
+                        'module_id': chapter.id,
+                        'module_title': chapter.title,
+                        'course_id': course.id,
+                        'course_title': course.title,
+                    }
+        return None

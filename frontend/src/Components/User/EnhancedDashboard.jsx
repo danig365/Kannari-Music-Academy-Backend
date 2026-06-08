@@ -8,6 +8,7 @@ import AchievementBadges from './AchievementBadges';
 import RecentBookings from './RecentBookings';
 import LoadingSpinner from '../LoadingSpinner';
 import './EnhancedDashboard.css';
+import Swal from 'sweetalert2';
 
 import { API_BASE_URL, SITE_URL } from '../../config';
 
@@ -19,7 +20,35 @@ const EnhancedDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const [pathData, setPathData] = useState(null);
     const studentId = localStorage.getItem('studentId');
+
+    // Milestone celebration — fires when student advances to a new course/month in their path
+    useEffect(() => {
+        if (!pathData) return;
+        const activeEnrollment = pathData.enrollments?.find(e => !e.is_completed && e.path);
+        if (!activeEnrollment) return;
+        const storageKey = `path_milestone_${activeEnrollment.learning_path}`;
+        const lastKnown = parseInt(localStorage.getItem(storageKey) ?? '-1', 10);
+        const current = activeEnrollment.current_course_index || 0;
+        if (lastKnown === -1) {
+            // First time seeing this enrollment — just store, no popup
+            localStorage.setItem(storageKey, String(current));
+        } else if (current > lastKnown) {
+            const completedCourse = activeEnrollment.path?.courses?.[lastKnown];
+            const monthNum = completedCourse?.month_number || lastKnown + 1;
+            localStorage.setItem(storageKey, String(current));
+            Swal.fire({
+                icon: 'success',
+                title: `Month ${monthNum} Complete! 🎉`,
+                text: "Amazing work! You've unlocked the next month of your learning path.",
+                confirmButtonText: 'Keep Going!',
+                confirmButtonColor: '#4f46e5',
+                timer: 8000,
+                timerProgressBar: true,
+            });
+        }
+    }, [pathData]);
     const studentLoginStatus = localStorage.getItem('studentLoginStatus');
 
     // Authentication check and fetch data
@@ -112,6 +141,14 @@ const EnhancedDashboard = () => {
                 });
             }
             
+            // Fetch learning path data (non-blocking)
+            try {
+                const pathResponse = await axios.get(`${baseUrl}/student/${studentId}/my-paths/`);
+                setPathData(pathResponse.data);
+            } catch (e) {
+                console.warn('Learning paths not available:', e);
+            }
+
             setLoading(false);
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
@@ -185,6 +222,35 @@ const EnhancedDashboard = () => {
                 </div>
 
                 <div className="dashboard-main">
+                    {/* Upcoming Group Session Banner */}
+                    {(() => {
+                        const sess = pathData?.upcoming_group_session;
+                        if (!sess) return null;
+                        const sessionDate = new Date(sess.scheduled_date);
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        sessionDate.setHours(0, 0, 0, 0);
+                        const days = Math.round((sessionDate - today) / (1000 * 60 * 60 * 24));
+                        if (days > 7) return null;
+                        const urgencyClass = days === 0 ? 'danger' : days === 1 ? 'warning' : 'info';
+                        const dayLabel = days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : `In ${days} days`;
+                        return (
+                            <div className={`alert alert-${urgencyClass} d-flex align-items-center gap-3 py-2 mb-3`}>
+                                <i className="bi bi-camera-video-fill fs-5"></i>
+                                <div className="flex-grow-1">
+                                    <strong>{sess.title || 'Group Session'}</strong>
+                                    {sess.group_class_name && <span className="ms-2 text-muted small">— {sess.group_class_name}</span>}
+                                    <span className={`ms-2 badge bg-${urgencyClass}`}>{dayLabel}</span>
+                                </div>
+                                {sess.meeting_link && (
+                                    <a href={sess.meeting_link} target="_blank" rel="noopener noreferrer" className={`btn btn-sm btn-${urgencyClass}`}>
+                                        <i className="bi bi-camera-video me-1"></i>Join
+                                    </a>
+                                )}
+                            </div>
+                        );
+                    })()}
+
                     {/* Welcome Header */}
                     <div className="welcome-header game-style">
                         <div className="welcome-content">
@@ -257,6 +323,48 @@ const EnhancedDashboard = () => {
                             </div>
                         </div>
                     </div>
+
+                    {/* Learning Path CTA Card */}
+                    {(() => {
+                        const activeEnrollment = pathData?.enrollments?.find(e => !e.is_completed && e.path);
+                        if (!activeEnrollment) return null;
+                        const courses = activeEnrollment.path?.courses || [];
+                        const totalMonths = courses.length > 0 ? Math.max(...courses.map(c => c.month_number || 1)) : 1;
+                        const currentMonth = activeEnrollment.current_course?.month_number || 1;
+                        const nextLesson = activeEnrollment.next_lesson;
+                        const continueTo = nextLesson
+                            ? `/student/learn/${nextLesson.course_id}/lesson/${nextLesson.lesson_id}`
+                            : `/student/my-learning-path`;
+                        return (
+                            <div className="row g-3 mb-4">
+                                <div className="col-12">
+                                    <div className="card border-0 shadow-sm" style={{background:'linear-gradient(135deg,#6366f1 0%,#4f46e5 100%)',color:'#fff'}}>
+                                        <div className="card-body d-flex align-items-center gap-3 p-3 flex-wrap">
+                                            <div className="flex-shrink-0">
+                                                <i className="bi bi-map fs-2"></i>
+                                            </div>
+                                            <div className="flex-grow-1" style={{minWidth:'180px'}}>
+                                                <div className="d-flex align-items-center gap-2 flex-wrap mb-1">
+                                                    <span className="fw-bold fs-6">{activeEnrollment.path.title}</span>
+                                                    <span className="badge" style={{background:'rgba(255,255,255,0.25)'}}>Month {currentMonth} of {totalMonths}</span>
+                                                </div>
+                                                <div className="progress mb-1" style={{height:'5px',background:'rgba(255,255,255,0.25)'}}>
+                                                    <div className="progress-bar" style={{width:`${activeEnrollment.progress_percent}%`,background:'#fff'}}></div>
+                                                </div>
+                                                <small style={{opacity:0.85}}>{activeEnrollment.progress_percent}% complete{nextLesson ? ` · Up next: ${nextLesson.lesson_title}` : ''}</small>
+                                            </div>
+                                            <div className="flex-shrink-0">
+                                                <Link to={continueTo} className="btn btn-sm fw-semibold" style={{background:'#fff',color:'#4f46e5'}}>
+                                                    <i className="bi bi-play-circle-fill me-1"></i>
+                                                    {nextLesson ? 'Continue' : 'View Path'}
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })()}
 
                     {/* Streak Calendar & Achievements Row */}
                     <div className="row g-3 mb-4">
