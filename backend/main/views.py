@@ -2992,20 +2992,26 @@ class AdminCourseDetail(generics.RetrieveUpdateDestroyAPIView):
                 data['category'] = category.id
                 print(f'Updated Category: {category.title} (id: {category.id}) - Created: {created}')
         
-        # Update the request data with the modified data
-        if isinstance(request.data, dict):
-            request.data.update(data)
-        else:
-            request._full_data = data
+        # Always replace parsed payload with our mutable copy.
+        # Multipart/form-data uses QueryDict, which is immutable and will
+        # raise AttributeError if we try request.data.update(...).
+        request._full_data = data
         
         print(f'=== COURSE UPDATE ===')
         print(f'Course ID: {kwargs.get("pk")}')
         print(f'Update Data: {dict(data)}')
         
-        response = super().update(request, *args, **kwargs)
-        log_activity(request, 'update', f'Course "{response.data.get("title", "")}" updated',
-                     model_name='Course', object_id=kwargs.get('pk'))
-        return response
+        try:
+            response = super().update(request, *args, **kwargs)
+            log_activity(request, 'update', f'Course "{response.data.get("title", "")}" updated',
+                         model_name='Course', object_id=kwargs.get('pk'))
+            return response
+        except Exception as e:
+            print('Exception during AdminCourseDetail.update:')
+            import traceback
+            traceback.print_exc()
+            print('Request DATA at failure:', dict(data))
+            raise
 
 
 # ==================== ENHANCED STUDENT DASHBOARD VIEWS ====================
