@@ -8,7 +8,7 @@ import axios from 'axios'
 import './CourseDetail.css'
 import Sidebar from './Sidebar';
 import LoadingSpinner from '../LoadingSpinner';
-import { checkCourseAccess, enrollWithSubscription, getStudentSubscription, formatAccessLevel, getAccessLevelColor } from '../../services/subscriptionService';
+import { checkCourseAccess, getStudentSubscription, formatAccessLevel, getAccessLevelColor } from '../../services/subscriptionService';
 
 import { API_BASE_URL, SITE_URL } from '../../config';
 
@@ -178,130 +178,6 @@ const CourseDetail = () => {
       checkAccess();
     }, [course_id, studentLoginStatus]);
 
-    const enrollCourse = async () => {
-        console.log('Enroll button clicked! Student ID:', studentId, 'Course ID:', course_id);
-        
-        if (!studentId) {
-            Swal.fire({
-                title: 'Please Login',
-                text: 'You need to be logged in to enroll',
-                icon: 'warning',
-                confirmButtonColor: '#4285f4'
-            });
-            return;
-        }
-
-        // Check for active subscription first
-        try {
-            const subscriptionCheck = await getStudentSubscription(studentId);
-            console.log('Subscription check result:', subscriptionCheck);
-            
-            if (!subscriptionCheck || !subscriptionCheck.has_active_subscription) {
-                Swal.fire({
-                    title: 'Active Subscription Required',
-                    html: `
-                        <div style="text-align: left;">
-                            <p>You need an active subscription to enroll in courses.</p>
-                            <p>Choose a subscription plan that fits your learning goals.</p>
-                        </div>
-                    `,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Browse Plans',
-                    cancelButtonText: 'Cancel',
-                    confirmButtonColor: '#3b82f6'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        navigate('/student/subscriptions');
-                    }
-                });
-                return;
-            }
-        } catch (error) {
-            console.error('Error checking subscription:', error);
-            Swal.fire({
-                title: 'Error',
-                text: 'Unable to verify your subscription status. Please try again.',
-                icon: 'error',
-                confirmButtonColor: '#4285f4'
-            });
-            return;
-        }
-
-        // Check if course requires subscription access
-        if (!courseAccess.can_access) {
-            Swal.fire({
-                title: 'Cannot Access Course',
-                html: `
-                    <div style="text-align: left;">
-                        <p><strong>${courseAccess.message || courseAccess.reason || 'This course requires an active subscription.'}</strong></p>
-                        ${courseData.required_access_level ? `<p style="margin-top: 10px;"><strong>Required Level:</strong> ${formatAccessLevel(courseData.required_access_level)}</p>` : ''}
-                        <p style="margin-top: 10px; font-size: 14px; color: #666;">Contact admin or upgrade your subscription to access this course.</p>
-                    </div>
-                `,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'View Plans',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#3b82f6'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    navigate('/student/subscriptions');
-                }
-            });
-            return;
-        }
-
-        // Enroll via subscription-validated endpoint
-        try {
-            const result = await enrollWithSubscription(studentId, course_id);
-            
-            if (result.success) {
-                Swal.fire({
-                    title: 'You Successfully Enrolled!',
-                    icon: 'success',
-                    toast: true,
-                    timer: 3000,
-                    position: 'top-right',
-                    timerProgressBar: true,
-                    showConfirmButton: false
-                });
-                setEnrolledStatus('success');
-                
-                // Refresh access info
-                const newAccessInfo = await checkCourseAccess(studentId, course_id);
-                setCourseAccess({ ...newAccessInfo, checking: false });
-            } else {
-                // Enrollment denied by subscription validation
-                Swal.fire({
-                    title: 'Enrollment Failed',
-                    html: `
-                        <div style="text-align: left;">
-                            <p>${result.message || result.error || 'You do not meet the subscription requirements for this course.'}</p>
-                            <p style="margin-top: 10px; font-size: 14px; color: #666;">Please check your subscription plan or contact support.</p>
-                        </div>
-                    `,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'View Plans',
-                    cancelButtonText: 'Close',
-                    confirmButtonColor: '#3b82f6'
-                }).then((swalResult) => {
-                    if (swalResult.isConfirmed) {
-                        navigate('/student/subscriptions');
-                    }
-                });
-            }
-        } catch (error) {
-            console.error('Enrollment error:', error);
-            Swal.fire({
-                title: 'Enrollment Failed',
-                text: error.response?.data?.message || error.response?.data?.error || 'Something went wrong. Please try again.',
-                icon: 'error',
-                confirmButtonColor: '#4285f4'
-            });
-        }
-    }
 
     const [ratingData,setRatingData]=useState({
       rating:'',
@@ -555,20 +431,24 @@ const CourseDetail = () => {
 
                   {userLoginStatus === 'success' && enrolledStatus !== 'success' && (
                     courseAccess.can_access ? (
-                      <button 
-                        type='button' 
-                        onClick={enrollCourse}
+                      <div
                         className="course-btn course-btn-enroll"
+                        style={{
+                          background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0',
+                          cursor: 'default', display: 'flex', alignItems: 'center', gap: '8px',
+                          fontSize: '14px', fontWeight: 500, lineHeight: 1.3
+                        }}
                       >
-                        <i className='bi bi-plus-circle'></i> Enroll Now
-                      </button>
+                        <i className='bi bi-person-check'></i>
+                        Your classes are assigned by your administrator. You'll be enrolled once an admin assigns you.
+                      </div>
                     ) : (
-                      <Link 
-                        to='/student/subscriptions' 
+                      <Link
+                        to='/student/subscriptions'
                         className='course-btn course-btn-enroll'
                         style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}
                       >
-                        <i className='bi bi-star-fill'></i> Upgrade to Enroll
+                        <i className='bi bi-star-fill'></i> Subscribe
                       </Link>
                     )
                   )}

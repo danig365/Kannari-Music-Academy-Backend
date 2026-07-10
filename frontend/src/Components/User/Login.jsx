@@ -274,7 +274,7 @@ const Login = () => {
                 borderRadius: '8px'
               }}>
                 <p style={{ margin: '0 0 10px', fontSize: '13px', color: '#1e3a8a' }}>
-                  Verification email nahi mili? Dubara bhej dein.
+                  Didn't receive the verification email? Click below to resend.
                 </p>
                 <button
                   type="button"

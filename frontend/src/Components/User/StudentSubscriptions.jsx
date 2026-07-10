@@ -48,13 +48,37 @@ const PaymentForm = ({ plan, studentId, hasCardOnFile, onSuccess, onCancel }) =>
             // Create Stripe Subscription on backend
             const response = await axios.post(`${baseUrl}/subscription/create-payment-intent/`, paymentData);
 
-            // With trial_end the initial invoice is $0 — no client_secret needed
-            if (!response.data.clientSecret || response.data.isTrialing) {
-                onSuccess();
+            const { clientSecret, setupClientSecret, isTrialing } = response.data;
+
+            // Trial: $0 today, but we MUST save a card now so the first real
+            // charge (on the 1st) succeeds. Confirm the SetupIntent to attach it.
+            if (isTrialing) {
+                if (hasCardOnFile) {
+                    // Customer already has a saved default payment method.
+                    onSuccess();
+                    return;
+                }
+                if (setupClientSecret) {
+                    const cardElement = elements.getElement(CardElement);
+                    const { error: setupErr, setupIntent } = await stripe.confirmCardSetup(setupClientSecret, {
+                        payment_method: { card: cardElement, billing_details: { name, email } }
+                    });
+                    if (setupErr) { setError(setupErr.message || 'Could not save your card. Please try again.'); }
+                    else if (setupIntent?.status === 'succeeded') { onSuccess(); }
+                    else { setError('Card could not be saved. Please try again.'); }
+                    return;
+                }
+                // No setup secret returned (unexpected) — fail loudly rather than
+                // silently creating a subscription with no payment method.
+                setError('We could not set up your card for future billing. Please try again or contact support.');
                 return;
             }
 
-            const { clientSecret } = response.data;
+            // Non-trial path: an immediate payment is required.
+            if (!clientSecret) {
+                onSuccess();
+                return;
+            }
 
             if (hasCardOnFile) {
                 // Use the customer's saved default payment method — no card element needed

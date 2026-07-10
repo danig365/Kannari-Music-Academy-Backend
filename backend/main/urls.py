@@ -251,7 +251,12 @@ urlpatterns =[
         path('teacher/assign-course/<int:teacher_id>/', views.assign_course_to_student),
         path('teacher/unassign-course/<int:teacher_id>/', views.unassign_course_from_student),
         path('teacher/courses-for-student/<int:teacher_id>/<int:student_id>/', views.get_teacher_courses_for_student),
-        
+
+        # Admin-controlled student placement (Phase 3)
+        path('admin/assign-student/', views.admin_assign_student),
+        path('admin/student-assignments/<int:student_id>/', views.admin_student_assignments),
+        path('admin/unassign-student/', views.admin_unassign_student),
+
         # Teacher Sessions/Appointments
         path('teacher/sessions/<int:teacher_id>/', views.TeacherSessionList.as_view()),
         path('teacher/session/<int:pk>/', views.TeacherSessionDetail.as_view()),
@@ -299,6 +304,9 @@ urlpatterns =[
         
         # Admin Stats
         path('admin/subscription-stats/', views.get_admin_subscription_stats),
+        path('admin/unpaid-students/', views.admin_unpaid_students),
+        path('admin/subscription/<int:subscription_id>/activate/', views.admin_activate_subscription),
+        path('admin/subscription/<int:subscription_id>/charge/', views.admin_charge_subscription_now),
         
         # ==================== ACCESS CONTROL URLS ====================
         

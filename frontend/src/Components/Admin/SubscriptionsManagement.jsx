@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import LoadingSpinner from '../LoadingSpinner';
+import AdminChargeSubscription from './AdminChargeSubscription';
 import './SubscriptionsManagement.css';
 import { API_BASE_URL, SITE_URL } from '../../config';
 
@@ -34,7 +35,9 @@ const mapAccessLevelToString = (level) => {
 };
 
 const SubscriptionsManagement = () => {
-    const [activeTab, setActiveTab] = useState('subscriptions'); // subscriptions, plans, history
+    const [activeTab, setActiveTab] = useState('subscriptions'); // subscriptions, plans, history, unpaid
+    const [unpaid, setUnpaid] = useState({ overdue: [], pending: [], counts: { overdue: 0, pending: 0 } });
+    const [unpaidLoading, setUnpaidLoading] = useState(false);
     const [subscriptions, setSubscriptions] = useState([]);
     const [plans, setPlans] = useState([]);
     const [students, setStudents] = useState([]);
@@ -48,6 +51,7 @@ const SubscriptionsManagement = () => {
 
     // Form states
     const [showSubscriptionForm, setShowSubscriptionForm] = useState(false);
+    const [showChargeModal, setShowChargeModal] = useState(false); // #8 admin card charge
     const [showPlanForm, setShowPlanForm] = useState(false);
     const [editingPlan, setEditingPlan] = useState(null);
     const [formData, setFormData] = useState({
@@ -150,6 +154,50 @@ const SubscriptionsManagement = () => {
             console.error('Error fetching data:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchUnpaid = async () => {
+        setUnpaidLoading(true);
+        try {
+            const adminId = localStorage.getItem('adminId');
+            const res = await axios.get(`${baseUrl}/admin/unpaid-students/`, {
+                params: { requester_admin_id: adminId },
+            });
+            setUnpaid(res.data);
+        } catch (err) {
+            setUnpaid({ overdue: [], pending: [], counts: { overdue: 0, pending: 0 } });
+        } finally {
+            setUnpaidLoading(false);
+        }
+    };
+
+    const openUnpaidTab = () => {
+        setActiveTab('unpaid');
+        fetchUnpaid();
+    };
+
+    const handleActivateSub = async (row) => {
+        if (!window.confirm(`Manually activate ${row.student_name}'s membership WITHOUT charging?\n\nUse this for testing/overrides. It grants access immediately.`)) return;
+        try {
+            const adminId = localStorage.getItem('adminId');
+            const res = await axios.post(`${baseUrl}/admin/subscription/${row.subscription_id}/activate/`, { requester_admin_id: adminId });
+            alert(res.data.message || 'Activated.');
+            fetchUnpaid();
+        } catch (err) {
+            alert(err.response?.data?.error || 'Could not activate.');
+        }
+    };
+
+    const handleChargeNow = async (row) => {
+        if (!window.confirm(`Attempt to charge ${row.student_name}'s saved card now?`)) return;
+        try {
+            const adminId = localStorage.getItem('adminId');
+            const res = await axios.post(`${baseUrl}/admin/subscription/${row.subscription_id}/charge/`, { requester_admin_id: adminId });
+            alert(res.data.message || 'Charge attempted.');
+            fetchUnpaid();
+        } catch (err) {
+            alert(err.response?.data?.error || 'Could not charge.');
         }
     };
 
@@ -561,6 +609,14 @@ Weekly Lessons: ${subscription.current_week_lessons || 0} / ${subscription.plan_
                         <i className="bi bi-clock-history me-2"></i>History
                     </button>
                 </li>
+                <li className="nav-item" role="presentation">
+                    <button
+                        className={`nav-link ${activeTab === 'unpaid' ? 'active' : ''}`}
+                        onClick={openUnpaidTab}
+                    >
+                        <i className="bi bi-exclamation-triangle me-2"></i>Unpaid / Overdue
+                    </button>
+                </li>
             </ul>
 
             {/* Subscriptions Tab */}
@@ -570,20 +626,38 @@ Weekly Lessons: ${subscription.current_week_lessons || 0} / ${subscription.plan_
                         <h4 className="mb-0 fw-700" style={{color: '#2c3e50', fontSize: '1.5rem'}}>
                             <i className="bi bi-person-check me-2"></i>Student Subscriptions
                         </h4>
-                        <button
-                            className="btn-create-subscription-custom"
-                            onClick={() => setShowSubscriptionForm(!showSubscriptionForm)}
-                        >
-                            <i className="bi bi-plus-circle me-2"></i>
-                            {showSubscriptionForm ? 'Cancel' : 'Create Subscription'}
-                        </button>
+                        <div className="d-flex gap-2">
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => setShowChargeModal(true)}
+                            >
+                                <i className="bi bi-credit-card me-2"></i>
+                                Charge Card &amp; Subscribe
+                            </button>
+                            <button
+                                className="btn-create-subscription-custom"
+                                onClick={() => setShowSubscriptionForm(!showSubscriptionForm)}
+                            >
+                                <i className="bi bi-plus-circle me-2"></i>
+                                {showSubscriptionForm ? 'Cancel' : 'Manual Entry'}
+                            </button>
+                        </div>
                     </div>
+
+                    {showChargeModal && (
+                        <AdminChargeSubscription
+                            students={students}
+                            plans={plans}
+                            onClose={() => setShowChargeModal(false)}
+                            onSuccess={fetchAllData}
+                        />
+                    )}
 
                     {/* Subscription Form */}
                     {showSubscriptionForm && (
                         <div className="card mb-4">
                             <div className="card-body">
-                                <h5 className="card-title">Create New Subscription</h5>
+                                <h5 className="card-title">Create New Subscription (manual record)</h5>
                                 <form onSubmit={handleCreateSubscription}>
                                     <div className="row">
                                         <div className="col-md-6 mb-3">
@@ -1301,6 +1375,82 @@ Weekly Lessons: ${subscription.current_week_lessons || 0} / ${subscription.plan_
                         Subscription history is currently being fetched and displayed.
                     </div>
                     <p className="text-muted">History tracking for subscription changes will appear here.</p>
+                </div>
+            )}
+
+            {/* Unpaid / Overdue Tab (#6) */}
+            {activeTab === 'unpaid' && (
+                <div>
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <h4 className="mb-0">
+                            <i className="bi bi-exclamation-triangle me-2 text-warning"></i>
+                            Unpaid / Overdue Accounts
+                        </h4>
+                        <button className="btn btn-sm btn-outline-secondary" onClick={fetchUnpaid} disabled={unpaidLoading}>
+                            <i className="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                    </div>
+
+                    {unpaidLoading ? (
+                        <LoadingSpinner />
+                    ) : (
+                        <>
+                            <div className="mb-3">
+                                <span className="badge bg-danger me-2">Overdue: {unpaid.counts?.overdue || 0}</span>
+                                <span className="badge bg-warning text-dark">Pending: {unpaid.counts?.pending || 0}</span>
+                            </div>
+
+                            {(unpaid.overdue?.length === 0 && unpaid.pending?.length === 0) ? (
+                                <div className="alert alert-success">
+                                    <i className="bi bi-check-circle me-2"></i>No unpaid or overdue accounts. 🎉
+                                </div>
+                            ) : (
+                                <div className="table-responsive">
+                                    <table className="table table-hover align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Student</th>
+                                                <th>Email</th>
+                                                <th>Plan</th>
+                                                <th>Status</th>
+                                                <th>Amount</th>
+                                                <th>Since</th>
+                                                <th>Days Overdue</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {[...(unpaid.overdue || []), ...(unpaid.pending || [])].map((r) => (
+                                                <tr key={r.subscription_id}>
+                                                    <td><strong>{r.student_name || 'Unknown'}</strong></td>
+                                                    <td>{r.student_email || '—'}</td>
+                                                    <td>{r.plan || '—'}</td>
+                                                    <td>
+                                                        <span className={`badge ${r.status === 'expired' ? 'bg-danger' : 'bg-warning text-dark'}`}>
+                                                            {r.status}
+                                                        </span>
+                                                    </td>
+                                                    <td>{r.amount != null ? `$${r.amount.toFixed(2)}` : '—'}</td>
+                                                    <td>{r.end_date || r.last_payment?.slice(0, 10) || '—'}</td>
+                                                    <td>{r.days_overdue != null ? `${r.days_overdue} days` : '—'}</td>
+                                                    <td>
+                                                        <div className="d-flex gap-1">
+                                                            <button className="btn btn-sm btn-outline-primary" title="Charge saved card now" onClick={() => handleChargeNow(r)}>
+                                                                <i className="bi bi-credit-card"></i> Charge
+                                                            </button>
+                                                            <button className="btn btn-sm btn-success" title="Activate without charging (testing)" onClick={() => handleActivateSub(r)}>
+                                                                <i className="bi bi-check-circle"></i> Activate
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </>
+                    )}
                 </div>
             )}
         </div>

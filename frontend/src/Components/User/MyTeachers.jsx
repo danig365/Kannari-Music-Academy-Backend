@@ -89,10 +89,10 @@ const MyTeachers = () => {
                         <i className="bi bi-person-fill-x" style={{ fontSize: '3rem', color: '#d1d5db', marginBottom: '1rem', display: 'block' }}></i>
                         <h5 style={{ color: '#6b7280', marginBottom: '0.5rem' }}>No Teachers Yet</h5>
                         <p style={{ color: '#9ca3af', marginBottom: '1.5rem' }}>
-                            Enroll in courses to connect with teachers
+                            Once your administrator assigns you to classes, your teachers will appear here.
                         </p>
                         <Link
-                            to="/all-courses"
+                            to="/student/subscriptions"
                             style={{
                                 display: 'inline-block',
                                 backgroundColor: '#4285f4',
@@ -107,7 +107,7 @@ const MyTeachers = () => {
                             onMouseEnter={(e) => e.target.style.backgroundColor = '#3b7ce1'}
                             onMouseLeave={(e) => e.target.style.backgroundColor = '#4285f4'}
                         >
-                            Browse Courses
+                            View Subscription
                         </Link>
                     </div>
                 ) : (

@@ -123,14 +123,14 @@ const MyCourses = () => {
                     {/* Courses Grid */}
                     {courseData.length === 0 ? (
                         <div className="empty-state">
-                            <i className="bi bi-music-note-beamed"></i>
+                            <i className="bi bi-person-check"></i>
                             <h5>Your musical journey starts here.</h5>
-                            <p>Start your musical journey by enrolling in a course</p>
-                            <Link 
-                                to="/all-courses" 
+                            <p>You haven't been assigned to any classes yet. Your administrator will enroll you in the right courses for your level and teacher.</p>
+                            <Link
+                                to="/student/subscriptions"
                                 className="btn btn-primary"
                             >
-                                Browse Courses
+                                View Subscription
                             </Link>
                         </div>
                     ) : (

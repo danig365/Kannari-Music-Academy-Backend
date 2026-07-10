@@ -175,8 +175,14 @@ const TextMessages = () => {
       }
       setTimeout(() => scrollToBottom(), 100);
     } catch (err) {
-      const errMsg = err.response?.data?.error || 'Failed to send message';
-      alert(errMsg);
+      const data = err.response?.data;
+      if (data?.requires_upgrade) {
+        if (window.confirm((data.error || 'An active subscription is required to message your teacher.') + '\n\nView subscription plans now?')) {
+          window.location.href = '/student/subscriptions';
+        }
+      } else {
+        alert(data?.error || 'Failed to send message');
+      }
     }
     setSending(false);
   };

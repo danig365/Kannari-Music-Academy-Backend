@@ -40,6 +40,7 @@ import MyProgress from './User/MyProgress'
 import MyAchievements from './User/MyAchievements'
 import StudentCoursePlayer from './User/StudentCoursePlayer'
 import StudentSubscriptions from './User/StudentSubscriptions'
+import UpdatePaymentMethod from './User/UpdatePaymentMethod'
 
 // Enhanced Teacher Dashboard Components
 import TeacherOverview from './Teacher/TeacherOverview'
@@ -192,6 +193,7 @@ const MainContent = () => {
           <Route path='/student/my-progress' element={<MyProgress />}/>
           <Route path='/student/my-achievements' element={<MyAchievements />}/>
           <Route path='/student/subscriptions' element={<StudentSubscriptions />}/>
+          <Route path='/student/update-payment' element={<UpdatePaymentMethod />}/>
           <Route path='/student/learn/:course_id' element={<StudentCoursePlayer />}/>
           <Route path='/student/learn/:course_id/lesson/:lesson_id' element={<StudentCoursePlayer />}/>
           <Route path='/student/my-sessions' element={<StudentSessions />}/>

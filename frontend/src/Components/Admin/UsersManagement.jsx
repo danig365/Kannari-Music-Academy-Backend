@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import LoadingSpinner from '../LoadingSpinner';
+import StudentAssignmentModal from './StudentAssignmentModal';
 import './UsersManagement.css';
 
 import { API_BASE_URL } from '../../config';
@@ -82,6 +83,8 @@ const UsersManagement = () => {
     // Students Modal State
     const [showStudentModal, setShowStudentModal] = useState(false);
     const [editingStudent, setEditingStudent] = useState(null);
+    // Admin-controlled placement (Phase 3)
+    const [assignStudent, setAssignStudent] = useState(null);
     const [studentFormData, setStudentFormData] = useState({
         fullname: '',
         email: '',
@@ -89,7 +92,8 @@ const UsersManagement = () => {
         password: '',
         interseted_categories: '',
         phone_number: '',
-        address: ''
+        address: '',
+        date_of_birth: ''
     });
 
     // Teachers Modal State
@@ -286,6 +290,9 @@ const UsersManagement = () => {
             formData.append('interseted_categories', studentFormData.interseted_categories);
             formData.append('phone_number', studentFormData.phone_number || '');
             formData.append('address', studentFormData.address || '');
+            if (studentFormData.date_of_birth) {
+                formData.append('date_of_birth', studentFormData.date_of_birth);
+            }
             if (studentFormData.password) {
                 formData.append('password', studentFormData.password);
             }
@@ -468,7 +475,8 @@ const UsersManagement = () => {
             phone_number: student.phone_number || '',
             address: student.address || '',
             password: '',
-            interseted_categories: student.interseted_categories || ''
+            interseted_categories: student.interseted_categories || '',
+            date_of_birth: student.date_of_birth || ''
         });
         setShowStudentModal(true);
     };
@@ -1282,11 +1290,23 @@ const UsersManagement = () => {
                                                             <TableCell label="Username">{student.username || 'N/A'}</TableCell>
                                                             <TableCell label="Phone">{student.phone_number || 'N/A'}</TableCell>
                                                             <TableCell label="Enrolled">
-                                                                <span className="badge bg-primary">
-                                                                    {student.enrolled_courses || 0}
-                                                                </span>
+                                                                {(student.enrolled_courses || 0) > 0 ? (
+                                                                    <span className="badge bg-success">
+                                                                        <i className="bi bi-check-circle me-1"></i>
+                                                                        Assigned ({student.enrolled_courses})
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="badge bg-secondary">Not assigned</span>
+                                                                )}
                                                             </TableCell>
                                                             <TableCell label="Actions">
+                                                                <button
+                                                                    className={`btn btn-sm me-2 ${(student.enrolled_courses || 0) > 0 ? 'btn-outline-success' : 'btn-success'}`}
+                                                                    onClick={() => setAssignStudent(student)}
+                                                                    title={(student.enrolled_courses || 0) > 0 ? 'Manage assigned classes' : 'Assign classes'}
+                                                                >
+                                                                    <i className="bi bi-person-check"></i> {(student.enrolled_courses || 0) > 0 ? 'Assigned' : 'Assign'}
+                                                                </button>
                                                                 <button
                                                                     className="btn btn-sm btn-warning me-2"
                                                                     onClick={() => handleEditStudent(student)}
@@ -1861,6 +1881,15 @@ const UsersManagement = () => {
                     )}
 
             {/* Student Modal */}
+            {assignStudent && (
+                <StudentAssignmentModal
+                    student={assignStudent}
+                    adminId={adminId}
+                    onClose={() => setAssignStudent(null)}
+                    onChanged={fetchStudents}
+                />
+            )}
+
             {showStudentModal && (
                 <div className="modal d-block" tabIndex="-1" style={{backgroundColor: 'rgba(0, 0, 0, 0.5)'}}>
                     <div className="modal-dialog">
@@ -1932,6 +1961,17 @@ const UsersManagement = () => {
                                             onChange={handleStudentChange}
                                             placeholder="+1 (555) 000-0000"
                                         />
+                                    </div>
+                                    <div className="mb-3">
+                                        <label className="form-label">Date of Birth</label>
+                                        <input
+                                            type="date"
+                                            className="form-control"
+                                            name="date_of_birth"
+                                            value={studentFormData.date_of_birth}
+                                            onChange={handleStudentChange}
+                                        />
+                                        <small className="text-muted">Affects whether the student is treated as a minor (parental-consent rules).</small>
                                     </div>
                                     <div className="mb-3">
                                         <label className="form-label">Address</label>

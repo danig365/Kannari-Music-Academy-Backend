@@ -62,6 +62,41 @@ services:
       driver: json-file
       options: { max-size: "20m", max-file: "5" }
 
+  # ── Scheduler (daily jobs) ───────────────────────────────────────────────────
+  # Runs once a day at 09:00 UTC: expire lapsed subscriptions and send payment
+  # reminders. On (re)start it waits until the next 09:00, so redeploys never
+  # trigger duplicate reminder emails.
+  scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    networks:
+      - backend_net
+    depends_on:
+      db:
+        condition: service_healthy
+    # Override the image entrypoint (which runs gunicorn) with a daily loop.
+    entrypoint:
+      - sh
+      - -c
+      - |
+        while true; do
+          now=$$(date -u +%s);
+          t=$$(date -u -d 'today 09:00' +%s);
+          if [ "$$now" -ge "$$t" ]; then t=$$(date -u -d 'tomorrow 09:00' +%s); fi;
+          echo "[scheduler] sleeping $$((t - now))s until next 09:00 UTC";
+          sleep $$((t - now));
+          echo "[scheduler] running daily jobs";
+          python manage.py expire_subscriptions || true;
+          python manage.py payment_reminders --send || true;
+        done
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
   # ── React / Nginx (SPA) ─────────────────────────────────────────────────────
   frontend:
     build:

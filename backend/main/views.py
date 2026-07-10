@@ -304,6 +304,27 @@ def _validate_admin_requester(request, payload=None):
     return admin, None
 
 
+# Phase 1 (admin-controlled enrollment): course enrollment is admin-only.
+# Students can no longer self-enroll — an admin must assign them to courses.
+ENROLLMENT_ADMIN_ONLY_MESSAGE = (
+    "Course enrollment is managed by an administrator. "
+    "Please contact your admin to be assigned to classes."
+)
+
+
+def _enrollment_admin_or_none(request, payload=None):
+    """Return the requesting Admin if a valid, active admin id was supplied,
+    else None. Used to gate enrollment endpoints to admins only."""
+    payload = payload or {}
+    requester_admin_id = (
+        payload.get('requester_admin_id')
+        or request.GET.get('requester_admin_id')
+    )
+    if not requester_admin_id:
+        return None
+    return models.Admin.objects.filter(id=requester_admin_id, is_active=True).first()
+
+
 def _get_active_parent_link(student):
     return models.StudentParentLink.objects.filter(
         student=student,
@@ -994,9 +1015,13 @@ class StudentEnrollCourseList(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         """Override create to enforce subscription validation on enrollment"""
         from .access_control import SubscriptionAccessControl
+        # Phase 1: enrollment is admin-only — block student self-enrollment.
+        if not _enrollment_admin_or_none(request, request.data):
+            return Response({'error': ENROLLMENT_ADMIN_ONLY_MESSAGE,
+                             'error_code': 'ENROLLMENT_ADMIN_ONLY'}, status=403)
         student_id = request.data.get('student')
         course_id = request.data.get('course')
-        
+
         if student_id and course_id:
             can_enroll, msg = SubscriptionAccessControl.can_enroll_in_course(student_id, course_id)
             if not can_enroll:
@@ -4208,6 +4233,234 @@ def unassign_course_from_student(request, teacher_id):
     if deleted_count > 0:
         return JsonResponse({'bool': True, 'message': 'Enrollment removed'})
     return JsonResponse({'bool': False, 'message': 'Enrollment not found'})
+
+
+# ==================== ADMIN-CONTROLLED STUDENT PLACEMENT (Phase 3) ====================
+# Admin manually assigns students to a teacher, level, and specific course(s).
+# This is the only sanctioned way to enroll students (see Phase 1 — self-enroll is blocked).
+
+
+def _assignable_subscription(student):
+    """Return the subscription to link an admin assignment to. Prefers an
+    active+paid subscription; otherwise the most recent non-terminal one
+    (pending/trialing/paused) so admins can place students during a trial."""
+    from .access_control import SubscriptionAccessControl
+    sub = SubscriptionAccessControl.get_active_subscription(student.id)
+    if sub:
+        return sub
+    return models.Subscription.objects.filter(
+        student=student,
+        status__in=['pending', 'active', 'trialing', 'paused'],
+    ).order_by('-id').first()
+
+
+@csrf_exempt
+def admin_assign_student(request):
+    """
+    Admin assigns a student to a teacher, level, and one or more courses.
+    POST /api/admin/assign-student/
+    Body: {
+      requester_admin_id, student_id, teacher_id, level,
+      course_ids: [int, ...], instrument (optional)
+    }
+    Admin override: bypasses plan teacher/category/limit restrictions, but
+    still enforces minor parental-consent and an active subscription.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST only'}, status=405)
+
+    data = _extract_request_data(request)
+    admin = _enrollment_admin_or_none(request, data)
+    if not admin:
+        return JsonResponse({'error': 'A valid requester_admin_id is required'}, status=403)
+
+    student_id = data.get('student_id')
+    teacher_id = data.get('teacher_id')
+    level = (data.get('level') or 'beginner').strip()
+    instrument = (data.get('instrument') or 'piano').strip()
+    course_ids = data.get('course_ids') or []
+
+    if not student_id or not teacher_id:
+        return JsonResponse({'error': 'student_id and teacher_id are required'}, status=400)
+    if not isinstance(course_ids, list) or not course_ids:
+        return JsonResponse({'error': 'course_ids must be a non-empty list'}, status=400)
+
+    valid_levels = {c[0] for c in models.TeacherStudent.LEVEL_CHOICES}
+    if level not in valid_levels:
+        return JsonResponse({'error': f'Invalid level. Choose one of: {", ".join(sorted(valid_levels))}'}, status=400)
+
+    try:
+        student = models.Student.objects.get(pk=student_id)
+    except models.Student.DoesNotExist:
+        return JsonResponse({'error': 'Student not found'}, status=404)
+    try:
+        teacher = models.Teacher.objects.get(pk=teacher_id)
+    except models.Teacher.DoesNotExist:
+        return JsonResponse({'error': 'Teacher not found'}, status=404)
+
+    # Child-safety gate stays enforced even for admin placement.
+    if student.is_minor() and not student.has_approved_parent_with_policies():
+        return JsonResponse({
+            'error': 'This student is a minor without completed parental consent. '
+                     'Parental consent (Terms of Service + Child Safety Policy) must be '
+                     'completed before the student can be assigned to classes.'
+        }, status=403)
+
+    # Student must have a subscription before placement (Ketler's workflow).
+    subscription = _assignable_subscription(student)
+    if not subscription:
+        return JsonResponse({
+            'error': f'{student.fullname} does not have a subscription. The student must '
+                     f'subscribe to a plan before being assigned to classes.'
+        }, status=403)
+
+    # Set the teacher/level relationship (create or update).
+    teacher_student, _created = models.TeacherStudent.objects.get_or_create(
+        teacher=teacher, student=student,
+        defaults={'instrument': instrument, 'level': level, 'status': 'active', 'progress_percentage': 0},
+    )
+    if not _created:
+        teacher_student.level = level
+        teacher_student.instrument = instrument
+        teacher_student.status = 'active'
+        teacher_student.save(update_fields=['level', 'instrument', 'status'])
+
+    # Make the assigned teacher the subscription's assigned teacher.
+    if subscription.assigned_teacher_id != teacher.id:
+        subscription.assigned_teacher = teacher
+        try:
+            subscription.save(update_fields=['assigned_teacher', 'updated_at'])
+        except Exception:
+            subscription.save()
+
+    enrolled, skipped, errors = [], [], []
+    for cid in course_ids:
+        try:
+            course = models.Course.objects.get(pk=cid)
+        except models.Course.DoesNotExist:
+            errors.append({'course_id': cid, 'error': 'Course not found'})
+            continue
+        if course.teacher_id != teacher.id:
+            errors.append({'course_id': cid, 'error': f'"{course.title}" does not belong to {teacher.full_name}'})
+            continue
+
+        enrollment, created = models.StudentCourseEnrollment.objects.get_or_create(
+            student=student, course=course,
+            defaults={'subscription': subscription, 'is_active': True, 'progress_percent': 0},
+        )
+        if not created:
+            skipped.append({'course_id': cid, 'title': course.title})
+            continue
+
+        # Course progress scaffold
+        total_lessons = models.ModuleLesson.objects.filter(module__course=course).count()
+        models.CourseProgress.objects.get_or_create(
+            student=student, course=course,
+            defaults={'enrollment': enrollment, 'total_chapters': total_lessons,
+                      'completed_chapters': 0, 'progress_percentage': 0, 'is_completed': False},
+        )
+        if subscription:
+            try:
+                subscription.record_course_enrollment()
+            except Exception:
+                pass
+        try:
+            log_access(request=request, access_type='course_enroll', was_allowed=True,
+                       student=student, course=course, subscription=subscription)
+        except Exception:
+            pass
+        enrolled.append({'course_id': cid, 'title': course.title, 'enrollment_id': enrollment.id})
+
+    return JsonResponse({
+        'bool': True,
+        'message': f'Assigned {student.fullname} to {teacher.full_name} ({level}). '
+                   f'{len(enrolled)} course(s) added, {len(skipped)} already assigned.',
+        'assigned_teacher': {'id': teacher.id, 'name': teacher.full_name},
+        'level': level,
+        'enrolled': enrolled,
+        'skipped': skipped,
+        'errors': errors,
+    })
+
+
+def admin_student_assignments(request, student_id):
+    """
+    Get a student's current placement: assigned teacher, level, and enrolled courses.
+    GET /api/admin/student-assignments/<student_id>/?requester_admin_id=<id>
+    """
+    if request.method != 'GET':
+        return JsonResponse({'error': 'GET only'}, status=405)
+
+    admin = _enrollment_admin_or_none(request)
+    if not admin:
+        return JsonResponse({'error': 'A valid requester_admin_id is required'}, status=403)
+
+    try:
+        student = models.Student.objects.get(pk=student_id)
+    except models.Student.DoesNotExist:
+        return JsonResponse({'error': 'Student not found'}, status=404)
+
+    subscription = _assignable_subscription(student)
+    assigned_teacher = subscription.assigned_teacher if subscription else None
+
+    # Level comes from the TeacherStudent link with the assigned teacher (if any).
+    level = None
+    if assigned_teacher:
+        ts = models.TeacherStudent.objects.filter(teacher=assigned_teacher, student=student).first()
+        level = ts.level if ts else None
+
+    enrollments = models.StudentCourseEnrollment.objects.filter(
+        student=student
+    ).select_related('course', 'course__teacher')
+    courses = [{
+        'enrollment_id': e.id,
+        'course_id': e.course_id,
+        'title': e.course.title if e.course else 'Unknown',
+        'teacher_id': e.course.teacher_id if e.course else None,
+        'teacher_name': e.course.teacher.full_name if e.course and e.course.teacher else None,
+        'progress_percent': e.progress_percent,
+    } for e in enrollments if e.course]
+
+    return JsonResponse({
+        'student': {'id': student.id, 'name': student.fullname, 'email': student.email},
+        'has_subscription': bool(subscription),
+        'subscription_status': subscription.status if subscription else None,
+        'assigned_teacher': {'id': assigned_teacher.id, 'name': assigned_teacher.full_name} if assigned_teacher else None,
+        'level': level,
+        'courses': courses,
+    })
+
+
+@csrf_exempt
+def admin_unassign_student(request):
+    """
+    Admin removes a student's assignment to a course.
+    POST /api/admin/unassign-student/
+    Body: { requester_admin_id, student_id, course_id }
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST only'}, status=405)
+
+    data = _extract_request_data(request)
+    admin = _enrollment_admin_or_none(request, data)
+    if not admin:
+        return JsonResponse({'error': 'A valid requester_admin_id is required'}, status=403)
+
+    student_id = data.get('student_id')
+    course_id = data.get('course_id')
+    if not student_id or not course_id:
+        return JsonResponse({'error': 'student_id and course_id are required'}, status=400)
+
+    deleted_count, _ = models.StudentCourseEnrollment.objects.filter(
+        student_id=student_id, course_id=course_id
+    ).delete()
+    models.CourseProgress.objects.filter(
+        student_id=student_id, course_id=course_id
+    ).delete()
+
+    if deleted_count > 0:
+        return JsonResponse({'bool': True, 'message': 'Course assignment removed'})
+    return JsonResponse({'bool': False, 'message': 'Assignment not found'})
 
 
 def get_teacher_courses_for_student(request, teacher_id, student_id):
@@ -7473,13 +7726,17 @@ def create_setup_intent(request):
     email = (data.get('email') or '').strip()
     name = (data.get('name') or '').strip()
 
-    if not all([student_id, email, name]):
-        return JsonResponse({'error': 'Missing required fields: student_id, email, name'}, status=400)
+    if not student_id:
+        return JsonResponse({'error': 'Missing required field: student_id'}, status=400)
 
     try:
         student = models.Student.objects.get(id=student_id)
     except models.Student.DoesNotExist:
         return JsonResponse({'error': 'Student not found.'}, status=404)
+
+    # Fall back to the student's own account details when not provided.
+    email = email or student.email
+    name = name or student.fullname
 
     try:
         # ── Retrieve or create Stripe Customer ────────────────────────────────
@@ -7584,9 +7841,32 @@ def save_payment_method(request):
             invoice_settings={'default_payment_method': payment_method_id},
         )
 
+        # Belt-and-suspenders: set the card directly on the student's
+        # pending/active/trialing subscriptions so the trial-end charge uses it
+        # even if the customer-default fallback doesn't apply. This is what
+        # remediates existing trials that were created without a saved card.
+        updated_subs = 0
+        for sub in models.Subscription.objects.filter(
+            student=student, status__in=['pending', 'active', 'trialing']
+        ).exclude(stripe_subscription_id__isnull=True).exclude(stripe_subscription_id=''):
+            try:
+                stripe.Subscription.modify(
+                    sub.stripe_subscription_id,
+                    default_payment_method=payment_method_id,
+                )
+                updated_subs += 1
+            except Exception as e:
+                print(f"[save_payment_method] Could not set default PM on {sub.stripe_subscription_id}: {e}")
+
+        # Persist the customer id on the student if it wasn't already stored.
+        if not student.stripe_customer_id:
+            student.stripe_customer_id = stripe_customer_id
+            student.save(update_fields=['stripe_customer_id'])
+
         return JsonResponse({
             'saved': True,
             'customerId': stripe_customer_id,
+            'subscriptions_updated': updated_subs,
         })
 
     except stripe.error.StripeError as e:
@@ -7624,11 +7904,11 @@ def create_payment_intent(request):
         data = json.loads(request.body)
         plan_id = data.get('plan_id')
         student_id = data.get('student_id')
-        email = data.get('email', '').strip()
-        name = data.get('name', '').strip()
+        email = (data.get('email') or '').strip()
+        name = (data.get('name') or '').strip()
 
-        if not all([plan_id, student_id, email, name]):
-            return JsonResponse({'error': 'Missing required fields: plan_id, student_id, email, name'}, status=400)
+        if not all([plan_id, student_id]):
+            return JsonResponse({'error': 'Missing required fields: plan_id, student_id'}, status=400)
 
         try:
             plan = models.SubscriptionPlan.objects.get(id=plan_id)
@@ -7639,6 +7919,11 @@ def create_payment_intent(request):
             student = models.Student.objects.get(id=student_id)
         except models.Student.DoesNotExist:
             return JsonResponse({'error': 'Student not found'}, status=404)
+
+        # Fall back to the student's own account details when the payer didn't
+        # supply them (e.g. card-on-file flow where the frontend omits these).
+        email = email or student.email
+        name = name or student.fullname
 
         # ── 1. Retrieve or create Stripe Customer ──────────────────────────────
         # Prefer the customer id stored directly on the student (set at signup)
@@ -7663,6 +7948,38 @@ def create_payment_intent(request):
             # Persist on student for future reuse
             student.stripe_customer_id = stripe_customer_id
             student.save(update_fields=['stripe_customer_id'])
+
+        # ── 1b. Reuse an existing in-progress subscription ─────────────────────
+        # Guard against duplicate Stripe subscriptions when a student clicks
+        # "subscribe" more than once. If they already have a pending/active/
+        # trialing subscription for THIS plan with a live Stripe sub, return its
+        # secrets instead of creating another one.
+        existing = models.Subscription.objects.filter(
+            student=student, plan=plan, status__in=['pending', 'active', 'trialing']
+        ).exclude(stripe_subscription_id__isnull=True).exclude(
+            stripe_subscription_id=''
+        ).order_by('-id').first()
+        if existing:
+            try:
+                ex_sub = stripe.Subscription.retrieve(
+                    existing.stripe_subscription_id,
+                    expand=['latest_invoice.confirmation_secret', 'pending_setup_intent'],
+                )
+                if getattr(ex_sub, 'status', None) in ('trialing', 'active', 'incomplete'):
+                    ex_inv = getattr(ex_sub, 'latest_invoice', None)
+                    ex_cs = getattr(ex_inv, 'confirmation_secret', None) if ex_inv else None
+                    ex_psi = getattr(ex_sub, 'pending_setup_intent', None)
+                    return JsonResponse({
+                        'clientSecret': getattr(ex_cs, 'client_secret', None) if ex_cs else None,
+                        'setupClientSecret': getattr(ex_psi, 'client_secret', None) if ex_psi else None,
+                        'isTrialing': getattr(ex_sub, 'status', None) == 'trialing',
+                        'stripeSubscriptionId': ex_sub.id,
+                        'localSubscriptionId': existing.id,
+                        'reused': True,
+                        'status': 'success',
+                    })
+            except stripe.error.StripeError:
+                pass  # Stripe sub is gone/invalid — fall through and create a new one.
 
         # ── 2. Ensure a Stripe Price exists for this plan ──────────────────────
         if not plan.stripe_price_id:
@@ -7692,33 +8009,63 @@ def create_payment_intent(request):
         if today.month == 12:
             first_next_month = date(today.year + 1, 1, 1)
         else:
-            first_next_month = date(today.month // 12 and today.year, today.month + 1, 1)
             first_next_month = date(today.year, today.month + 1, 1)
         import datetime as _dt
         billing_anchor_ts = int(_dt.datetime.combine(first_next_month, _dt.time.min).timestamp())
 
         # ── 4. Create the Stripe Subscription ─────────────────────────────────
-        # trial_end = first of next month → rest of current month is free
-        # billing_cycle_anchor = same date → all future invoices on the 1st
-        stripe_sub = stripe.Subscription.create(
+        # Billing-cycle rule (#2):
+        #   • Subscribe on/before the 15th → charge the FULL current month now,
+        #     then recurring bills on the 1st.
+        #   • Subscribe after the 15th → free until the 1st (trial), first charge
+        #     on the 1st.
+        # billing_cycle_anchor = 1st of next month → all future invoices on the 1st.
+        common_kwargs = dict(
             customer=stripe_customer_id,
             items=[{'price': plan.stripe_price_id}],
             payment_behavior='default_incomplete',
             payment_settings={'save_default_payment_method': 'on_subscription'},
             billing_cycle_anchor=billing_anchor_ts,
-            trial_end=billing_anchor_ts,
-            expand=['latest_invoice.payment_intent'],
+            expand=['latest_invoice.confirmation_secret', 'pending_setup_intent'],
             metadata={
                 'plan_id': str(plan_id),
                 'student_id': str(student_id),
             },
         )
 
-        payment_intent = stripe_sub['latest_invoice']['payment_intent']
-        # With trial_end, the initial $0 invoice has no PaymentIntent — nothing to confirm upfront.
-        client_secret = payment_intent['client_secret'] if payment_intent else None
+        if today.day <= 15:
+            # Charge for the current month NOW. Stripe bills the prorated amount
+            # for today→1st immediately (payment_intent to confirm), then the
+            # full price recurs on the 1st. (A full-month upfront charge cannot
+            # be cleanly combined with 1st-of-month alignment in Stripe, so the
+            # immediate charge is prorated to the days remaining this month.)
+            stripe_sub = stripe.Subscription.create(
+                **common_kwargs,
+                proration_behavior='create_prorations',
+            )
+        else:
+            # After the 15th → trial until the 1st (no charge now).
+            stripe_sub = stripe.Subscription.create(
+                **common_kwargs,
+                trial_end=billing_anchor_ts,
+            )
+
+        # Stripe's 2025-03-31 (basil) API removed `payment_intent` from Invoice
+        # objects; the client secret now lives on `invoice.confirmation_secret`.
+        # Stripe response objects don't support dict.get(), so use getattr.
+        latest_invoice = getattr(stripe_sub, 'latest_invoice', None)
+        confirmation_secret = getattr(latest_invoice, 'confirmation_secret', None) if latest_invoice else None
+        # With trial_end, the initial $0 invoice has nothing to confirm upfront.
+        client_secret = getattr(confirmation_secret, 'client_secret', None) if confirmation_secret else None
         stripe_sub_id = stripe_sub['id']
-        is_trialing = (stripe_sub.get('status') == 'trialing')
+        is_trialing = (getattr(stripe_sub, 'status', None) == 'trialing')
+
+        # During a trial the $0 invoice has no PaymentIntent, but Stripe creates a
+        # SetupIntent (pending_setup_intent) so we can collect and SAVE the card now
+        # for the first real charge on the billing anchor. Without confirming this,
+        # the subscription has no payment method and renewal fails.
+        pending_setup_intent = getattr(stripe_sub, 'pending_setup_intent', None)
+        setup_client_secret = getattr(pending_setup_intent, 'client_secret', None) if pending_setup_intent else None
 
         # ── 5. Pre-create a pending local Subscription record ──────────────────
         # end_date=None → ongoing subscription (no expiry); access controlled by Stripe webhooks
@@ -7736,8 +8083,28 @@ def create_payment_intent(request):
             auto_renew=True,
         )
 
+        # Plan change / upgrade: cancel the student's OTHER in-progress
+        # subscriptions so they are never billed for two plans at once.
+        # (The same-plan reuse guard earlier already prevented duplicates of the
+        # SAME plan; this handles switching to a DIFFERENT plan.)
+        others = models.Subscription.objects.filter(
+            student=student, status__in=['pending', 'active', 'trialing']
+        ).exclude(id=local_sub.id)
+        for other in others:
+            if other.stripe_subscription_id and other.stripe_subscription_id != stripe_sub_id:
+                try:
+                    stripe.Subscription.cancel(other.stripe_subscription_id)
+                except Exception as e:
+                    print(f'[create_payment_intent] could not cancel old sub {other.stripe_subscription_id}: {e}')
+            other.status = 'cancelled'
+            try:
+                other.save(update_fields=['status'])
+            except Exception:
+                other.save()
+
         return JsonResponse({
             'clientSecret': client_secret,           # None when in trial (no immediate charge)
+            'setupClientSecret': setup_client_secret,  # SetupIntent secret → save card during trial
             'isTrialing': is_trialing,
             'stripeSubscriptionId': stripe_sub_id,
             'localSubscriptionId': local_sub.id,
@@ -7754,6 +8121,127 @@ def create_payment_intent(request):
         import traceback
         print(traceback.format_exc())
         return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)
+
+
+def _admin_recipient_emails():
+    """Active super/school admin emails (falls back to any active admin)."""
+    recipients = list(
+        models.Admin.objects.filter(
+            is_active=True, role__in=['super_admin', 'school_admin']
+        ).values_list('email', flat=True)
+    )
+    if not recipients:
+        recipients = list(
+            models.Admin.objects.filter(is_active=True).values_list('email', flat=True)
+        )
+    return [e for e in recipients if e]
+
+
+def _notify_payment_failed(subscription):
+    """#6: email admins AND the student when a recurring payment fails, so the
+    admin knows payment wasn't received and the student can fix their card."""
+    try:
+        student = subscription.student
+        plan_name = subscription.plan.name if subscription.plan else 'Unknown plan'
+        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
+        from_email = os.getenv('EMAIL_HOST_USER') or getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@kannari.local')
+
+        # 1) Admins
+        admins = _admin_recipient_emails()
+        if admins:
+            send_mail(
+                f'Payment failed — {student.fullname}',
+                (f"A subscription payment did not go through.\n\n"
+                 f"Student: {student.fullname} ({student.email})\n"
+                 f"Plan: {plan_name}\n"
+                 f"Status: {subscription.status}\n\n"
+                 f"The student has been asked to update their card. You can review "
+                 f"unpaid accounts in the admin Subscriptions panel.\n\n"
+                 f"Open admin: {frontend_url}/admin/subscriptions\n"),
+                from_email, admins, fail_silently=True,
+            )
+
+        # 2) The student — with a link to fix their card
+        if student.email:
+            send_mail(
+                'Your Kannari payment did not go through',
+                (f"Hi {student.fullname},\n\n"
+                 f"We were unable to process the payment for your {plan_name} subscription. "
+                 f"To keep your access active, please update your payment card here:\n\n"
+                 f"{frontend_url}/student/update-payment\n\n"
+                 f"Once your card is updated we'll retry the charge automatically.\n\n"
+                 f"Thank you,\nKannari Music Academy"),
+                from_email, [student.email], fail_silently=True,
+            )
+
+        print(f"[PaymentFailed] Notified admins+student for student {student.id}")
+        return True
+    except Exception as e:
+        print(f"[PaymentFailed] Failed to notify: {e}")
+        return False
+
+
+def _notify_payment_received(subscription, amount=None):
+    """#3: email admins when a recurring renewal payment is received (the first
+    payment is covered by the new-subscription alert, so this is renewals only)."""
+    try:
+        admins = _admin_recipient_emails()
+        if not admins:
+            return False
+        student = subscription.student
+        plan_name = subscription.plan.name if subscription.plan else 'Unknown plan'
+        amount_str = f"${amount:.2f}" if amount is not None else (
+            f"${float(subscription.price_paid):.2f}" if subscription.price_paid is not None else "the subscription amount"
+        )
+        from_email = os.getenv('EMAIL_HOST_USER') or getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@kannari.local')
+        send_mail(
+            f'Payment received — {student.fullname}',
+            (f"A subscription renewal payment was received.\n\n"
+             f"Student: {student.fullname} ({student.email})\n"
+             f"Plan: {plan_name}\n"
+             f"Amount: {amount_str}\n"
+             f"Date: {timezone.now().strftime('%Y-%m-%d %H:%M UTC')}\n"),
+            from_email, admins, fail_silently=True,
+        )
+        print(f"[PaymentReceived] Admin notified for student {student.id}")
+        return True
+    except Exception as e:
+        print(f"[PaymentReceived] Failed to notify: {e}")
+        return False
+
+
+def _notify_admins_new_subscription(subscription):
+    """Phase 4: email active admins when a student's subscription first
+    activates, so an admin can review the student and assign classes."""
+    try:
+        recipients = _admin_recipient_emails()
+        if not recipients:
+            return False
+
+        student = subscription.student
+        plan_name = subscription.plan.name if subscription.plan else 'Unknown plan'
+        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
+
+        subject = f'New subscription — {student.fullname} needs class assignment'
+        message = (
+            f"A student has subscribed and their account is now active.\n\n"
+            f"Student: {student.fullname} ({student.email})\n"
+            f"Plan: {plan_name}\n"
+            f"Status: {subscription.status}\n"
+            f"Started: {subscription.start_date}\n\n"
+            f"ACTION REQUIRED: This student is NOT yet enrolled in any classes. "
+            f"Please review them and assign a teacher, level, and course(s) from the "
+            f"admin Users panel.\n\n"
+            f"Open admin: {frontend_url}/admin/users\n"
+        )
+
+        from_email = os.getenv('EMAIL_HOST_USER') or getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@kannari.local')
+        send_mail(subject, message, from_email, recipients, fail_silently=True)
+        print(f"[NewSubscription] Admin notification sent to {recipients} for student {student.id}")
+        return True
+    except Exception as e:
+        print(f"[NewSubscription] Failed to notify admins: {e}")
+        return False
 
 
 @csrf_exempt
@@ -7787,7 +8275,7 @@ def stripe_webhook(request):
 
     # ── invoice.payment_succeeded ─────────────────────────────────────────────
     if event_type == 'invoice.payment_succeeded':
-        stripe_sub_id = data_obj.get('subscription')
+        stripe_sub_id = getattr(data_obj, 'subscription', None)
         if not stripe_sub_id:
             return JsonResponse({'received': True})
 
@@ -7799,6 +8287,9 @@ def stripe_webhook(request):
         from datetime import date, timedelta
         duration_days = {'monthly': 31, 'quarterly': 92, 'semi_annual': 183, 'annual': 365}
         days = duration_days.get(sub.plan.duration if sub.plan else 'monthly', 31)
+
+        # First activation (new subscription) vs. a recurring renewal.
+        is_first_activation = sub.activated_at is None
 
         today = date.today()
         sub.status = 'active'
@@ -7812,16 +8303,26 @@ def stripe_webhook(request):
 
         models.SubscriptionHistory.objects.create(
             subscription=sub,
-            action='renewed' if sub.status == 'active' else 'activated',
+            action='activated' if is_first_activation else 'renewed',
             new_status='active',
             new_plan=sub.plan,
             changed_by='stripe_webhook',
-            notes=f'Payment succeeded via Stripe invoice {data_obj.get("id")}'
+            notes=f'Payment succeeded via Stripe invoice {getattr(data_obj, "id", None)}'
         )
+
+        # Notify admins on every payment: first activation gets the richer
+        # "new subscription — assign classes" alert; renewals get a lighter
+        # "payment received" alert (#3). One email per payment either way.
+        if is_first_activation:
+            _notify_admins_new_subscription(sub)
+        else:
+            amount_cents = getattr(data_obj, 'amount_paid', None)
+            amount = (amount_cents / 100.0) if isinstance(amount_cents, (int, float)) else None
+            _notify_payment_received(sub, amount)
 
     # ── invoice.payment_failed ────────────────────────────────────────────────
     elif event_type == 'invoice.payment_failed':
-        stripe_sub_id = data_obj.get('subscription')
+        stripe_sub_id = getattr(data_obj, 'subscription', None)
         if stripe_sub_id:
             try:
                 sub = models.Subscription.objects.get(stripe_subscription_id=stripe_sub_id)
@@ -7835,12 +8336,14 @@ def stripe_webhook(request):
                     changed_by='stripe_webhook',
                     notes='Recurring payment failed'
                 )
+                # #6: alert admins + the student so the card can be fixed.
+                _notify_payment_failed(sub)
             except models.Subscription.DoesNotExist:
                 pass
 
     # ── customer.subscription.deleted ────────────────────────────────────────
     elif event_type == 'customer.subscription.deleted':
-        stripe_sub_id = data_obj.get('id')
+        stripe_sub_id = getattr(data_obj, 'id', None)
         if stripe_sub_id:
             try:
                 sub = models.Subscription.objects.get(stripe_subscription_id=stripe_sub_id)
@@ -7905,6 +8408,173 @@ def get_admin_subscription_stats(request):
         import traceback
         traceback.print_exc()
         return JsonResponse({'bool': False, 'message': str(e)}, status=200)
+
+
+@csrf_exempt
+def admin_unpaid_students(request):
+    """
+    #6: Report of students whose subscription payment is outstanding.
+    GET /api/admin/unpaid-students/?requester_admin_id=<id>
+
+    Returns two groups:
+      - overdue:  status='expired' (a recurring payment failed / lapsed)
+      - pending:  status='pending' with a Stripe sub (started, never paid)
+    """
+    if request.method != 'GET':
+        return JsonResponse({'error': 'GET only'}, status=405)
+
+    admin = _enrollment_admin_or_none(request)
+    if not admin:
+        return JsonResponse({'error': 'A valid requester_admin_id is required'}, status=403)
+
+    import datetime as _dt
+    today = _dt.date.today()
+
+    def serialize(sub):
+        days_overdue = (today - sub.end_date).days if sub.end_date and sub.end_date < today else None
+        return {
+            'subscription_id': sub.id,
+            'student_id': sub.student_id,
+            'student_name': sub.student.fullname if sub.student else None,
+            'student_email': sub.student.email if sub.student else None,
+            'plan': sub.plan.name if sub.plan else None,
+            'status': sub.status,
+            'amount': float(sub.price_paid) if sub.price_paid is not None else None,
+            'end_date': sub.end_date.isoformat() if sub.end_date else None,
+            'last_payment': sub.payment_date.isoformat() if sub.payment_date else None,
+            'days_overdue': days_overdue,
+            'has_stripe': bool(sub.stripe_subscription_id),
+        }
+
+    overdue_qs = models.Subscription.objects.filter(
+        status='expired'
+    ).select_related('student', 'plan').order_by('end_date')
+
+    pending_qs = models.Subscription.objects.filter(
+        status='pending'
+    ).exclude(stripe_subscription_id__isnull=True).exclude(
+        stripe_subscription_id=''
+    ).select_related('student', 'plan').order_by('start_date')
+
+    overdue = [serialize(s) for s in overdue_qs]
+    pending = [serialize(s) for s in pending_qs]
+
+    return JsonResponse({
+        'bool': True,
+        'counts': {'overdue': len(overdue), 'pending': len(pending)},
+        'overdue': overdue,
+        'pending': pending,
+    })
+
+
+@csrf_exempt
+def admin_activate_subscription(request, subscription_id):
+    """
+    Admin manually activates a membership WITHOUT charging (testing/override).
+    POST /api/admin/subscription/<id>/activate/
+    Body: { requester_admin_id }
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST only'}, status=405)
+
+    data = _extract_request_data(request)
+    admin = _enrollment_admin_or_none(request, data)
+    if not admin:
+        return JsonResponse({'error': 'A valid requester_admin_id is required'}, status=403)
+
+    try:
+        sub = models.Subscription.objects.select_related('student', 'plan').get(id=subscription_id)
+    except models.Subscription.DoesNotExist:
+        return JsonResponse({'error': 'Subscription not found'}, status=404)
+
+    import datetime as _dt
+    old_status = sub.status
+    sub.status = 'active'
+    sub.is_paid = True
+    sub.payment_date = sub.payment_date or timezone.now()
+    sub.activated_at = sub.activated_at or timezone.now()
+    if not sub.start_date:
+        sub.start_date = _dt.date.today()
+    sub.end_date = None  # ongoing — access granted; billing still handled by Stripe if linked
+    sub.save()
+
+    models.SubscriptionHistory.objects.create(
+        subscription=sub,
+        action='activated',
+        old_status=old_status,
+        new_status='active',
+        changed_by=f'admin:{admin.id}',
+        notes='Manually activated by admin (no charge)',
+    )
+
+    return JsonResponse({
+        'bool': True,
+        'message': f'{sub.student.fullname if sub.student else "Subscription"} activated manually. Access is now granted.',
+    })
+
+
+@csrf_exempt
+def admin_charge_subscription_now(request, subscription_id):
+    """
+    Admin attempts to charge the student's saved card now by paying the
+    subscription's latest open/past-due Stripe invoice.
+    POST /api/admin/subscription/<id>/charge/
+    Body: { requester_admin_id }
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST only'}, status=405)
+
+    data = _extract_request_data(request)
+    admin = _enrollment_admin_or_none(request, data)
+    if not admin:
+        return JsonResponse({'error': 'A valid requester_admin_id is required'}, status=403)
+
+    try:
+        sub = models.Subscription.objects.select_related('student').get(id=subscription_id)
+    except models.Subscription.DoesNotExist:
+        return JsonResponse({'error': 'Subscription not found'}, status=404)
+
+    if not sub.stripe_subscription_id:
+        return JsonResponse({'error': 'This subscription is not linked to Stripe. Use "Charge Card & Subscribe" to set up billing.'}, status=400)
+
+    import os, stripe
+    stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+
+    # Verify a card is on file first, so we can give a clear message.
+    has_card = False
+    try:
+        stripe_sub = stripe.Subscription.retrieve(sub.stripe_subscription_id)
+        has_card = bool(getattr(stripe_sub, 'default_payment_method', None))
+        if not has_card and sub.stripe_customer_id:
+            cust = stripe.Customer.retrieve(sub.stripe_customer_id)
+            inv = getattr(cust, 'invoice_settings', None)
+            has_card = bool(getattr(inv, 'default_payment_method', None) if inv else None)
+    except stripe.error.StripeError as e:
+        return JsonResponse({'error': f'Stripe error: {str(e)}'}, status=400)
+
+    if not has_card:
+        return JsonResponse({
+            'error': 'No card on file for this client. Use "Charge Card & Subscribe" to enter their card, '
+                     'or send them the update-payment link.',
+            'no_card': True,
+        }, status=400)
+
+    # Find the latest open/uncollectible invoice for this subscription and pay it.
+    try:
+        invoices = stripe.Invoice.list(subscription=sub.stripe_subscription_id, limit=5)
+        target = next((inv for inv in invoices.data if inv.status in ('open', 'past_due', 'draft')), None)
+        if not target:
+            return JsonResponse({'error': 'No open invoice to charge. The subscription may already be paid.'}, status=400)
+        if target.status == 'draft':
+            target = stripe.Invoice.finalize_invoice(target.id)
+        paid = stripe.Invoice.pay(target.id)
+        if getattr(paid, 'status', None) == 'paid':
+            return JsonResponse({'bool': True, 'message': 'Payment collected successfully. The subscription will activate on the next webhook.'})
+        return JsonResponse({'bool': False, 'message': f'Charge attempted; invoice status is "{getattr(paid, "status", "unknown")}".'})
+    except stripe.error.CardError as e:
+        return JsonResponse({'error': f'Card was declined: {e.user_message}', 'declined': True}, status=400)
+    except stripe.error.StripeError as e:
+        return JsonResponse({'error': f'Stripe error: {str(e)}'}, status=400)
 
 
 # ==================== ACCESS CONTROL VIEWS ====================
@@ -8119,15 +8789,22 @@ def enroll_with_subscription(request):
     try:
         import json
         data = json.loads(request.body)
+        # Phase 1: enrollment is admin-only — block student self-enrollment.
+        if not _enrollment_admin_or_none(request, data):
+            return JsonResponse({
+                'success': False,
+                'error': ENROLLMENT_ADMIN_ONLY_MESSAGE,
+                'error_code': 'ENROLLMENT_ADMIN_ONLY'
+            }, status=403)
         student_id = data.get('student_id')
         course_id = data.get('course_id')
-        
+
         if not student_id or not course_id:
             return JsonResponse({
                 'success': False,
                 'error': 'student_id and course_id are required'
             }, status=400)
-        
+
         success, enrollment, msg = SubscriptionAccessControl.enroll_student_in_course(student_id, course_id)
         
         if success:
@@ -8538,14 +9215,18 @@ class ProtectedCourseEnrollView(generics.CreateAPIView):
     serializer_class = StudentCourseEnrollSerializer
     
     def create(self, request, *args, **kwargs):
+        # Phase 1: enrollment is admin-only — block student self-enrollment.
+        if not _enrollment_admin_or_none(request, request.data):
+            return Response({'error': ENROLLMENT_ADMIN_ONLY_MESSAGE,
+                             'error_code': 'ENROLLMENT_ADMIN_ONLY'}, status=403)
         student_id = request.data.get('student')
         course_id = request.data.get('course')
-        
+
         if not student_id or not course_id:
             return Response({
                 'error': 'student and course are required'
             }, status=400)
-        
+
         # Validate subscription access
         can_enroll, msg = SubscriptionAccessControl.can_enroll_in_course(student_id, course_id)
         
@@ -10178,6 +10859,15 @@ def send_message(request):
             ts = models.TeacherStudent.objects.select_related('student').get(pk=teacher_student_id)
             if ts.student.is_minor():
                 return JsonResponse({'error': 'Direct messaging is only available for students 18 and older.'}, status=403)
+            # Paywall: a student needs an active subscription to message a teacher.
+            # (Admin/support and parent messaging stay open for non-payers.)
+            if sender_type == 'student':
+                from .access_control import SubscriptionAccessControl
+                if not SubscriptionAccessControl.get_active_subscription(ts.student_id):
+                    return JsonResponse({
+                        'error': 'An active subscription is required to message your teacher.',
+                        'requires_upgrade': True,
+                    }, status=403)
         except models.TeacherStudent.DoesNotExist:
             return JsonResponse({'error': 'Teacher-student assignment not found'}, status=404)
 
@@ -11334,6 +12024,16 @@ def group_session_join(request, session_id, student_id):
     if not in_group:
         return JsonResponse({'error': 'Student is not in this group class'}, status=403)
 
+    # Paywall: an active subscription is required to join live events.
+    from .access_control import SubscriptionAccessControl
+    if not SubscriptionAccessControl.get_active_subscription(student.id):
+        return JsonResponse({
+            'bool': False,
+            'error': 'An active subscription is required to join live sessions.',
+            'message': 'An active subscription is required to join live sessions.',
+            'requires_upgrade': True,
+        }, status=403)
+
     # Check parental consent for minors
     if student.is_minor():
         consent = models.SessionAuthorization.objects.filter(
@@ -12089,6 +12789,16 @@ def student_join_group_session(request, student_id, session_id):
     if not in_group:
         return JsonResponse({'error': 'Student is not in this group class'}, status=403)
 
+    # Paywall: an active subscription is required to join live events.
+    from .access_control import SubscriptionAccessControl
+    if not SubscriptionAccessControl.get_active_subscription(student.id):
+        return JsonResponse({
+            'bool': False,
+            'error': 'An active subscription is required to join live sessions.',
+            'message': 'An active subscription is required to join live sessions.',
+            'requires_upgrade': True,
+        }, status=403)
+
     # Check parental consent for minors
     if student.is_minor():
         consent = models.SessionAuthorization.objects.filter(
@@ -12831,6 +13541,15 @@ def student_game_start_session(request, student_id, game_type):
     if not student or not game:
         return JsonResponse({'bool': False, 'message': 'Student or game not found'}, status=404)
 
+    # Paywall: games require an active subscription.
+    from .access_control import SubscriptionAccessControl
+    if not SubscriptionAccessControl.get_active_subscription(student.id):
+        return JsonResponse({
+            'bool': False,
+            'message': 'An active subscription is required to play games.',
+            'requires_upgrade': True,
+        }, status=403)
+
     try:
         body = json.loads(request.body) if request.body else {}
     except Exception:
@@ -13553,6 +14272,11 @@ class StudentEnrollInPath(APIView):
     """
 
     def post(self, request, student_id, path_id):
+        # Phase 1: enrollment is admin-only — block student self-enrollment.
+        # Enrolling in a path auto-enrolls the student into its first course.
+        if not _enrollment_admin_or_none(request, request.data):
+            return Response({'detail': ENROLLMENT_ADMIN_ONLY_MESSAGE,
+                             'error_code': 'ENROLLMENT_ADMIN_ONLY'}, status=403)
         try:
             student = models.Student.objects.get(pk=student_id)
         except models.Student.DoesNotExist:

@@ -41,16 +41,22 @@ class SubscriptionAccessControl:
             return None
         
         today = timezone.now().date()
-        
-        # Get active subscription (most recent first)
+
+        # Get active subscription (most recent first).
+        # end_date=None means an ongoing subscription with no expiry (Stripe-
+        # managed recurring billing) — it must count as active. The previous
+        # `end_date__gte=today` filter silently excluded these NULL end_dates,
+        # so paid, active subscriptions granted no access at all.
+        from django.db.models import Q
         subscription = models.Subscription.objects.filter(
             student=student,
             status='active',
             is_paid=True,
             start_date__lte=today,
-            end_date__gte=today
-        ).select_related('plan', 'assigned_teacher').first()
-        
+        ).filter(
+            Q(end_date__gte=today) | Q(end_date__isnull=True)
+        ).select_related('plan', 'assigned_teacher').order_by('-id').first()
+
         return subscription
     
     @staticmethod

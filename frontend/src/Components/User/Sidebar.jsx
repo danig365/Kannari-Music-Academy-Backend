@@ -240,25 +240,6 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
           <span style={{ fontSize: '14px', fontWeight: '500' }}>Learning Path</span>
         </Link>
 
-        <Link 
-          to='/all-courses'
-          onClick={handleNavClick}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '12px 16px',
-            borderRadius: '8px',
-            textDecoration: 'none',
-            color: isActive('/all-courses') ? 'white' : '#94a3b8',
-            backgroundColor: isActive('/all-courses') ? '#1e40af' : 'transparent',
-            marginBottom: '4px',
-            transition: 'all 0.2s'
-          }}
-        >
-          <i className="bi bi-collection" style={{ fontSize: '18px' }}></i>
-          <span style={{ fontSize: '14px', fontWeight: '500' }}>All Courses</span>
-        </Link>
 
         <Link 
           to='/student/my-progress'

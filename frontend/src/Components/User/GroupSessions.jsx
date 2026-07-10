@@ -46,7 +46,20 @@ const GroupSessions = ({ groupId, studentId }) => {
       }
       await fetchSessions();
     } catch (err) {
-      Swal.fire({ icon: 'error', text: err.response?.data?.error || 'Failed to join session.' });
+      const data = err.response?.data;
+      if (data?.requires_upgrade) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Subscription Required',
+          text: data.message || data.error || 'An active subscription is required to join live sessions.',
+          confirmButtonText: 'View Plans',
+          showCancelButton: true,
+        }).then(result => {
+          if (result.isConfirmed) window.location.href = '/student/subscriptions';
+        });
+      } else {
+        Swal.fire({ icon: 'error', text: data?.error || 'Failed to join session.' });
+      }
     }
     setJoining(null);
   };

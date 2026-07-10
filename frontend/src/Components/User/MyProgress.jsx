@@ -294,17 +294,19 @@ const MyProgress = () => {
                             <i className="bi bi-music-note-beamed" aria-hidden="true"></i>
                             <h5>No courses found</h5>
                             <p>
-                                {filter === 'all' 
-                                    ? 'Start your musical journey — enroll in a course today!' 
+                                {filter === 'all'
+                                    ? "You haven't been assigned to any classes yet. Your administrator will enroll you in the right courses."
                                     : `No courses match the "${filter}" filter.`}
                             </p>
-                            <Link 
-                                to="/all-courses"
-                                className="browse-btn"
-                            >
-                                <i className="bi bi-search me-1" aria-hidden="true"></i>
-                                Explore Courses
-                            </Link>
+                            {filter === 'all' && (
+                                <Link
+                                    to="/student/subscriptions"
+                                    className="browse-btn"
+                                >
+                                    <i className="bi bi-star-fill me-1" aria-hidden="true"></i>
+                                    View Subscription
+                                </Link>
+                            )}
                         </div>
                     )}
                 </div>
