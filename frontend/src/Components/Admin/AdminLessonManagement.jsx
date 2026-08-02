@@ -309,8 +309,17 @@ const AdminLessonManagement = ({
                 // For admin, fetch all courses
                 url = `${baseUrl}/course/`;
             }
-            const response = await axios.get(url);
-            setCourses(response.data.results || response.data);
+            // The course endpoint is paginated — follow "next" so ALL courses
+            // load (otherwise courses beyond page 1 silently disappear).
+            let all = [];
+            let nextUrl = url;
+            while (nextUrl) {
+                const response = await axios.get(nextUrl);
+                const data = response.data;
+                if (Array.isArray(data)) { all = all.concat(data); nextUrl = null; }
+                else { all = all.concat(data.results || []); nextUrl = data.next; }
+            }
+            setCourses(all);
         } catch (error) {
             console.error('Error fetching courses:', error);
         } finally {

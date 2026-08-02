@@ -38,6 +38,8 @@ const SubscriptionsManagement = () => {
     const [activeTab, setActiveTab] = useState('subscriptions'); // subscriptions, plans, history, unpaid
     const [unpaid, setUnpaid] = useState({ overdue: [], pending: [], counts: { overdue: 0, pending: 0 } });
     const [unpaidLoading, setUnpaidLoading] = useState(false);
+    const [requests, setRequests] = useState([]);
+    const [requestsLoading, setRequestsLoading] = useState(false);
     const [subscriptions, setSubscriptions] = useState([]);
     const [plans, setPlans] = useState([]);
     const [students, setStudents] = useState([]);
@@ -175,6 +177,44 @@ const SubscriptionsManagement = () => {
     const openUnpaidTab = () => {
         setActiveTab('unpaid');
         fetchUnpaid();
+    };
+
+    const fetchRequests = async () => {
+        setRequestsLoading(true);
+        try {
+            const adminId = localStorage.getItem('adminId');
+            const res = await axios.get(`${baseUrl}/admin/subscription-requests/`, { params: { requester_admin_id: adminId } });
+            setRequests(res.data.requests || []);
+        } catch (err) {
+            setRequests([]);
+        } finally {
+            setRequestsLoading(false);
+        }
+    };
+
+    const openRequestsTab = () => { setActiveTab('requests'); fetchRequests(); };
+
+    const handleApproveRequest = async (row) => {
+        if (!window.confirm(`Approve ${row.student_name}'s request for ${row.plan}?\n\nThis activates their access. Collect payment externally.`)) return;
+        try {
+            const adminId = localStorage.getItem('adminId');
+            const res = await axios.post(`${baseUrl}/admin/subscription/${row.subscription_id}/activate/`, { requester_admin_id: adminId });
+            alert(res.data.message || 'Approved.');
+            fetchRequests();
+        } catch (err) {
+            alert(err.response?.data?.error || 'Could not approve.');
+        }
+    };
+
+    const handleRejectRequest = async (row) => {
+        if (!window.confirm(`Reject ${row.student_name}'s request for ${row.plan}?`)) return;
+        try {
+            const adminId = localStorage.getItem('adminId');
+            await axios.post(`${baseUrl}/subscription/${row.subscription_id}/cancel/`, { requester_admin_id: adminId });
+            fetchRequests();
+        } catch (err) {
+            alert(err.response?.data?.message || 'Could not reject.');
+        }
     };
 
     const handleActivateSub = async (row) => {
@@ -436,9 +476,8 @@ const SubscriptionsManagement = () => {
         const sub = subscriptions.find(s => s.id === subscriptionId);
         const studentName = sub?.student_details?.fullname || 'this student';
         const confirmed = window.confirm(
-            `Schedule cancellation for ${studentName}?\n\n` +
-            `The student will keep full access until the end of their current billing period, ` +
-            `then access will be revoked automatically. This cannot be undone.`
+            `Cancel ${studentName}'s subscription immediately?\n\n` +
+            `Access will be revoked right away and billing will stop. This cannot be undone.`
         );
         if (!confirmed) return;
         try {
@@ -450,13 +489,10 @@ const SubscriptionsManagement = () => {
             if (response.data.bool) {
                 setSubscriptions(subscriptions.map(s =>
                     s.id === subscriptionId
-                        ? { ...s, cancel_at_period_end: true }
+                        ? { ...s, status: 'cancelled', cancel_at_period_end: false }
                         : s
                 ));
-                alert(
-                    'Cancellation scheduled.\n\n' +
-                    `${studentName} retains access until the end of their current billing period.`
-                );
+                alert(`${studentName}'s subscription was cancelled and access revoked immediately.`);
             }
         } catch (error) {
             console.error('Error cancelling subscription:', error);
@@ -615,6 +651,14 @@ Weekly Lessons: ${subscription.current_week_lessons || 0} / ${subscription.plan_
                         onClick={openUnpaidTab}
                     >
                         <i className="bi bi-exclamation-triangle me-2"></i>Unpaid / Overdue
+                    </button>
+                </li>
+                <li className="nav-item" role="presentation">
+                    <button
+                        className={`nav-link ${activeTab === 'requests' ? 'active' : ''}`}
+                        onClick={openRequestsTab}
+                    >
+                        <i className="bi bi-inbox me-2"></i>Requests{requests.length > 0 ? ` (${requests.length})` : ''}
                     </button>
                 </li>
             </ul>
@@ -1450,6 +1494,55 @@ Weekly Lessons: ${subscription.current_week_lessons || 0} / ${subscription.plan_
                                 </div>
                             )}
                         </>
+                    )}
+                </div>
+            )}
+
+            {/* Requests Tab (#3 — request/approve, external payment) */}
+            {activeTab === 'requests' && (
+                <div>
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <h4 className="mb-0"><i className="bi bi-inbox me-2 text-primary"></i>Plan Requests</h4>
+                        <button className="btn btn-sm btn-outline-secondary" onClick={fetchRequests} disabled={requestsLoading}>
+                            <i className="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                    </div>
+                    <p className="text-muted" style={{ fontSize: 14 }}>
+                        Students who selected a plan without paying online. Approve to grant access, then collect payment externally.
+                    </p>
+                    {requestsLoading ? (
+                        <LoadingSpinner />
+                    ) : requests.length === 0 ? (
+                        <div className="alert alert-info"><i className="bi bi-inbox me-2"></i>No pending requests.</div>
+                    ) : (
+                        <div className="table-responsive">
+                            <table className="table table-hover align-middle">
+                                <thead>
+                                    <tr><th>Student</th><th>Email</th><th>Plan</th><th>Amount</th><th>Requested</th><th>Actions</th></tr>
+                                </thead>
+                                <tbody>
+                                    {requests.map(r => (
+                                        <tr key={r.subscription_id}>
+                                            <td><strong>{r.student_name || 'Unknown'}</strong></td>
+                                            <td>{r.student_email || '—'}</td>
+                                            <td>{r.plan || '—'}</td>
+                                            <td>{r.amount != null ? `$${r.amount.toFixed(2)}` : '—'}</td>
+                                            <td>{r.requested_on || '—'}</td>
+                                            <td>
+                                                <div className="d-flex gap-1">
+                                                    <button className="btn btn-sm btn-success" onClick={() => handleApproveRequest(r)}>
+                                                        <i className="bi bi-check-lg"></i> Approve
+                                                    </button>
+                                                    <button className="btn btn-sm btn-outline-danger" onClick={() => handleRejectRequest(r)}>
+                                                        <i className="bi bi-x-lg"></i> Reject
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
                 </div>
             )}

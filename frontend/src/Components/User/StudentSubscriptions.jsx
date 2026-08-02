@@ -318,6 +318,32 @@ const StudentSubscriptions = () => {
         );
     };
 
+    const handleRequestPlan = async (plan) => {
+        const result = await Swal.fire({
+            icon: 'question',
+            title: `Request ${plan.name}?`,
+            html: `<p style="font-size:14px;color:#374151">Submit a request for this plan. An admin will review and activate your access, and arrange payment with you directly.</p>`,
+            showCancelButton: true,
+            confirmButtonText: 'Send Request',
+            confirmButtonColor: '#2563eb',
+        });
+        if (!result.isConfirmed) return;
+        try {
+            const res = await axios.post(`${baseUrl}/subscription/request/`, {
+                student_id: parseInt(studentId),
+                plan_id: parseInt(plan.id),
+            });
+            Swal.fire({
+                icon: res.data.bool ? 'success' : 'info',
+                title: res.data.bool ? 'Request sent' : 'Notice',
+                text: res.data.message || 'Your request was submitted.',
+            });
+            if (studentId) fetchData(studentId);
+        } catch (err) {
+            Swal.fire('Could not send request', err.response?.data?.error || err.response?.data?.message || 'Please try again.', 'error');
+        }
+    };
+
     const handleSubscriptionSuccess = () => {
         Swal.fire({
             icon: 'success',
@@ -591,6 +617,15 @@ const StudentSubscriptions = () => {
                                         </>
                                     )}
                                 </button>
+                                {!isSubscribedToPlan(plan.id) && (
+                                    <button
+                                        onClick={() => handleRequestPlan(plan)}
+                                        className="btn btn-outline-primary w-100 mt-2"
+                                    >
+                                        <i className="bi bi-hand-index me-2"></i>
+                                        Request Plan (pay outside app)
+                                    </button>
+                                )}
                             </div>
                         )})}
                     </div>

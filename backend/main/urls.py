@@ -307,6 +307,8 @@ urlpatterns =[
         path('admin/unpaid-students/', views.admin_unpaid_students),
         path('admin/subscription/<int:subscription_id>/activate/', views.admin_activate_subscription),
         path('admin/subscription/<int:subscription_id>/charge/', views.admin_charge_subscription_now),
+        path('subscription/request/', views.subscription_request),
+        path('admin/subscription-requests/', views.admin_subscription_requests),
         
         # ==================== ACCESS CONTROL URLS ====================
         

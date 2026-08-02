@@ -509,7 +509,7 @@ const StudentCoursePlayer = () => {
                 if (!block.file) return null;
                 const src = block.file.startsWith('http') ? block.file : `${mediaUrl}${block.file.startsWith('/') ? '' : '/'}${block.file}`;
                 return blockCard('bi-image', '#06b6d4', <>
-                    <img src={src} alt={cfg.alt_text || blockTitle || 'Image'} style={{ width: '100%', borderRadius: 10, display: 'block' }} />
+                    <img src={src} alt={cfg.alt_text || blockTitle || 'Image'} style={{ maxWidth: '100%', width: '100%', height: 'auto', borderRadius: 10, display: 'block', margin: '0 auto', objectFit: 'contain' }} />
                     {cfg.caption && <p style={{ margin: '10px 0 0', fontSize: 13, color: '#64748b' }}>{cfg.caption}</p>}
                 </>);
             }
@@ -1512,12 +1512,15 @@ const StudentCoursePlayer = () => {
             );
         }
         
-        // If the lesson has a YouTube link, prioritize the embed for video lessons.
-        if (youtubeEmbedUrl && content_type === 'video') {
+        // Reusable YouTube embed with an always-visible fallback link, so if the
+        // iframe is blocked/blank on a device or network the student can still
+        // open the video directly on YouTube.
+        const renderYouTubeEmbed = () => {
+            const watchUrl = youtube_url && String(youtube_url).trim();
             return (
                 <div className="content-section-wrapper">
                     <div className="content-player-wrapper">
-                        <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '12px' }}>
+                        <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '12px', background: '#000' }}>
                             <iframe
                                 src={youtubeEmbedUrl}
                                 title={title}
@@ -1527,27 +1530,23 @@ const StudentCoursePlayer = () => {
                             ></iframe>
                         </div>
                     </div>
+                    {watchUrl && (
+                        <div style={{ marginTop: '10px', textAlign: 'center' }}>
+                            <a href={watchUrl} target="_blank" rel="noopener noreferrer"
+                               style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#dc2626', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}>
+                                <i className="bi bi-youtube"></i> Video not loading? Watch on YouTube
+                            </a>
+                        </div>
+                    )}
                 </div>
             );
-        }
+        };
 
-        // YouTube-only lesson (no file uploaded)
-        if (!fileUrl && youtubeEmbedUrl) {
-            return (
-                <div className="content-section-wrapper">
-                    <div className="content-player-wrapper">
-                        <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '12px' }}>
-                            <iframe
-                                src={youtubeEmbedUrl}
-                                title={title}
-                                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                            ></iframe>
-                        </div>
-                    </div>
-                </div>
-            );
+        // Any lesson that has a YouTube link shows the embed prominently, no
+        // matter its content_type (teachers often set audio/pdf/image with a
+        // video link). If a file is also present, it renders below.
+        if (youtubeEmbedUrl && (content_type === 'video' || !fileUrl)) {
+            return renderYouTubeEmbed();
         }
 
         const getContentTypeLabel = (type) => {

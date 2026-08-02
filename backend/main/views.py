@@ -7625,47 +7625,51 @@ def cancel_subscription(request, subscription_id):
 
     try:
         subscription = models.Subscription.objects.get(id=subscription_id)
+        admin_name = getattr(admin, 'full_name', None) or getattr(admin, 'email', str(admin.id))
 
-        # ── Schedule cancellation at period end in Stripe ─────────────────────
+        # ── Cancel IMMEDIATELY in Stripe (no more billing, access ends now) ────
         if subscription.stripe_subscription_id:
             try:
-                stripe.Subscription.modify(
-                    subscription.stripe_subscription_id,
-                    cancel_at_period_end=True,
-                )
+                stripe.Subscription.cancel(subscription.stripe_subscription_id)
             except stripe.error.InvalidRequestError:
                 pass  # Already cancelled in Stripe — proceed locally
 
-        # Mark locally as pending cancellation (access continues until period ends)
-        subscription.cancel_at_period_end = True
-        subscription.save(update_fields=['cancel_at_period_end', 'updated_at'])
+        # Mark locally cancelled immediately → access is revoked at once because
+        # get_active_subscription only returns status='active' subscriptions.
+        old_status = subscription.status
+        subscription.status = 'cancelled'
+        subscription.cancel_at_period_end = False
+        subscription.cancelled_at = timezone.now()
+        subscription.end_date = timezone.now().date()
+        try:
+            subscription.save(update_fields=['status', 'cancel_at_period_end', 'cancelled_at', 'end_date', 'updated_at'])
+        except Exception:
+            subscription.save()
 
         # Audit history
         models.SubscriptionHistory.objects.create(
             subscription=subscription,
             action='cancelled',
-            old_status=subscription.status,
-            new_status=subscription.status,  # still 'active' until period ends
-            notes=f'Cancellation scheduled by admin #{admin.id} ({admin.username}). '
-                  f'Access continues until end of current billing period.',
+            old_status=old_status,
+            new_status='cancelled',
+            notes=f'Cancelled immediately by admin #{admin.id} ({admin_name}). Access revoked now.',
             changed_by=str(admin.id),
         )
 
         log_activity(
             request, 'update',
-            f'Subscription #{subscription.id} cancellation scheduled for '
-            f'{subscription.student.fullname} by admin {admin.username}',
+            f'Subscription #{subscription.id} cancelled immediately for '
+            f'{subscription.student.fullname} by admin {admin_name}',
             model_name='Subscription', object_id=subscription.id
         )
 
         return JsonResponse({
             'bool': True,
-            'message': 'Cancellation scheduled. The student keeps access until the end of '
-                       'the current billing period, then access will be revoked automatically.',
+            'message': 'Subscription cancelled. Access has been revoked immediately.',
             'subscription': {
                 'id': subscription.id,
                 'status': subscription.status,
-                'cancel_at_period_end': subscription.cancel_at_period_end,
+                'cancel_at_period_end': False,
             }
         })
     except models.Subscription.DoesNotExist:
@@ -8575,6 +8579,103 @@ def admin_charge_subscription_now(request, subscription_id):
         return JsonResponse({'error': f'Card was declined: {e.user_message}', 'declined': True}, status=400)
     except stripe.error.StripeError as e:
         return JsonResponse({'error': f'Stripe error: {str(e)}'}, status=400)
+
+
+@csrf_exempt
+def subscription_request(request):
+    """
+    Student requests a plan WITHOUT paying through Stripe. Creates a pending
+    request that an admin reviews and approves; payment is collected externally.
+    POST /api/subscription/request/
+    Body: { student_id, plan_id }
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST only'}, status=405)
+
+    data = _extract_request_data(request)
+    student_id = data.get('student_id')
+    plan_id = data.get('plan_id')
+    if not student_id or not plan_id:
+        return JsonResponse({'error': 'student_id and plan_id are required'}, status=400)
+
+    try:
+        student = models.Student.objects.get(id=student_id)
+    except models.Student.DoesNotExist:
+        return JsonResponse({'error': 'Student not found'}, status=404)
+    try:
+        plan = models.SubscriptionPlan.objects.get(id=plan_id)
+    except models.SubscriptionPlan.DoesNotExist:
+        return JsonResponse({'error': 'Plan not found'}, status=404)
+
+    # Already has active access? Don't create a request.
+    if SubscriptionAccessControl.get_active_subscription(student.id):
+        return JsonResponse({'bool': False, 'message': 'You already have an active subscription.'}, status=400)
+
+    # Reuse an existing pending request for the same plan instead of duplicating.
+    existing = models.Subscription.objects.filter(
+        student=student, plan=plan, status='pending'
+    ).filter(Q(stripe_subscription_id__isnull=True) | Q(stripe_subscription_id='')).first()
+    if existing:
+        return JsonResponse({'bool': True, 'message': 'Your request is already pending admin approval.', 'request_id': existing.id})
+
+    import datetime as _dt
+    sub = models.Subscription.objects.create(
+        student=student, plan=plan, status='pending', is_paid=False,
+        price_paid=plan.get_final_price(), start_date=_dt.date.today(),
+        end_date=None, auto_renew=False,
+    )
+    models.SubscriptionHistory.objects.create(
+        subscription=sub, action='created', new_status='pending',
+        new_plan=plan, changed_by=f'student:{student.id}',
+        notes='Plan requested by student — awaiting admin approval (external payment)',
+    )
+
+    # Notify admins there's a request to approve.
+    try:
+        admins = _admin_recipient_emails()
+        if admins:
+            frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
+            from_email = os.getenv('EMAIL_HOST_USER') or getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@kannari.local')
+            send_mail(
+                f'New plan request — {student.fullname}',
+                (f"{student.fullname} ({student.email}) requested the {plan.name} plan.\n\n"
+                 f"Review and approve it in the admin Subscriptions panel (Requests tab), "
+                 f"then collect payment externally.\n\n{frontend_url}/admin/subscriptions\n"),
+                from_email, admins, fail_silently=True,
+            )
+    except Exception:
+        pass
+
+    return JsonResponse({'bool': True, 'message': 'Request submitted. An admin will review and activate your access.', 'request_id': sub.id})
+
+
+def admin_subscription_requests(request):
+    """
+    List pending plan requests (student-submitted, no Stripe) for admin review.
+    GET /api/admin/subscription-requests/?requester_admin_id=<id>
+    """
+    if request.method != 'GET':
+        return JsonResponse({'error': 'GET only'}, status=405)
+
+    admin = _enrollment_admin_or_none(request)
+    if not admin:
+        return JsonResponse({'error': 'A valid requester_admin_id is required'}, status=403)
+
+    qs = models.Subscription.objects.filter(status='pending').filter(
+        Q(stripe_subscription_id__isnull=True) | Q(stripe_subscription_id='')
+    ).select_related('student', 'plan').order_by('-id')
+
+    requests_data = [{
+        'subscription_id': s.id,
+        'student_id': s.student_id,
+        'student_name': s.student.fullname if s.student else None,
+        'student_email': s.student.email if s.student else None,
+        'plan': s.plan.name if s.plan else None,
+        'amount': float(s.plan.get_final_price()) if s.plan else None,
+        'requested_on': s.start_date.isoformat() if s.start_date else None,
+    } for s in qs]
+
+    return JsonResponse({'bool': True, 'count': len(requests_data), 'requests': requests_data})
 
 
 # ==================== ACCESS CONTROL VIEWS ====================
