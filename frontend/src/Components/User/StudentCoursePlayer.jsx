@@ -1092,10 +1092,13 @@ const StudentCoursePlayer = () => {
     const handleNext = () => {
         if (navigation.next) {
             if (navigation.next.is_locked) {
+                const unlockOn = navigation.next.unlock_date ? formatUnlockDate(navigation.next.unlock_date) : null;
                 Swal.fire({
                     icon: 'info',
-                    title: '🔒 Next Lesson Locked',
-                    text: 'Complete this lesson first to unlock the next one',
+                    title: '🔒 Next Module Locked',
+                    text: unlockOn
+                        ? `The next module unlocks on ${unlockOn}. One new module opens each week.`
+                        : 'The next module is not yet available.',
                     confirmButtonColor: '#3b82f6'
                 });
                 return;
@@ -1456,6 +1459,16 @@ const StudentCoursePlayer = () => {
         return { enabled, trackType };
     };
 
+    // Format the weekly module-drip unlock date shown on locked lessons/modules.
+    const formatUnlockDate = (iso) => {
+        if (!iso) return null;
+        try {
+            return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+        } catch (e) {
+            return null;
+        }
+    };
+
     const renderContent = () => {
         if (!currentLesson) {
             return (
@@ -1475,19 +1488,21 @@ const StudentCoursePlayer = () => {
                     <div className="locked-icon">
                         <i className="bi bi-lock-fill"></i>
                     </div>
-                    <h4>🔒 Lesson Locked</h4>
-                    <p>Complete the previous lessons to unlock this content</p>
-                    <button 
-                        className="btn-primary-gradient"
-                        onClick={() => {
-                            if (navigation.previous) {
+                    <h4>🔒 Module Locked</h4>
+                    <p>{currentLesson.unlock_date
+                        ? `This module unlocks on ${formatUnlockDate(currentLesson.unlock_date)}. One new module opens each week.`
+                        : 'This module is not yet available.'}</p>
+                    {navigation.previous && (
+                        <button
+                            className="btn-primary-gradient"
+                            onClick={() => {
                                 navigate(`/student/learn/${course_id}/lesson/${navigation.previous.id}`);
-                            }
-                        }}
-                    >
-                        <i className="bi bi-arrow-left"></i>
-                        Go to Previous Lesson
-                    </button>
+                            }}
+                        >
+                            <i className="bi bi-arrow-left"></i>
+                            Go to Previous Lesson
+                        </button>
+                    )}
                 </div>
             );
         }
@@ -2298,19 +2313,21 @@ const StudentCoursePlayer = () => {
                             <div className="locked-icon">
                                 <i className="bi bi-lock-fill"></i>
                             </div>
-                            <h4>🔒 Lesson Locked</h4>
-                            <p>Complete the previous lessons to unlock this content</p>
-                            <button 
-                                className="btn-primary-gradient"
-                                onClick={() => {
-                                    if (navigation.previous) {
+                            <h4>🔒 Module Locked</h4>
+                            <p>{currentLesson.unlock_date
+                                ? `This module unlocks on ${formatUnlockDate(currentLesson.unlock_date)}. One new module opens each week.`
+                                : 'This module is not yet available.'}</p>
+                            {navigation.previous && (
+                                <button
+                                    className="btn-primary-gradient"
+                                    onClick={() => {
                                         navigate(`/student/learn/${course_id}/lesson/${navigation.previous.id}`);
-                                    }
-                                }}
-                            >
-                                <i className="bi bi-arrow-left"></i>
-                                Go to Previous Lesson
-                            </button>
+                                    }}
+                                >
+                                    <i className="bi bi-arrow-left"></i>
+                                    Go to Previous Lesson
+                                </button>
+                            )}
                         </div>
                     )}
 

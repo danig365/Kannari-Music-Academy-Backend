@@ -6373,7 +6373,7 @@ class StudentModuleProgressEnhanced(APIView):
             course = models.Course.objects.get(pk=course_id)
 
             from .access_control import SubscriptionAccessControl
-            has_sub, _, sub_msg = SubscriptionAccessControl.check_subscription_status(student_id)
+            has_sub, subscription, sub_msg = SubscriptionAccessControl.check_subscription_status(student_id)
             if not has_sub:
                 return Response({'error': sub_msg, 'subscription_required': True}, status=403)
 
@@ -6385,7 +6385,12 @@ class StudentModuleProgressEnhanced(APIView):
                 return Response({'error': 'Not enrolled in this course'}, status=403)
 
             modules = models.Chapter.objects.filter(course=course).order_by('order', 'id')
-            
+
+            # Weekly module-drip unlock state (one module per week from enrollment).
+            module_unlock_state = SubscriptionAccessControl.get_course_module_unlock_state(
+                student_id, course, subscription
+            )
+
             modules_data = []
             total_lessons = 0
             completed_lessons = 0
@@ -6437,32 +6442,13 @@ class StudentModuleProgressEnhanced(APIView):
                         module_completed += 1
                         completed_lessons += 1
                     
-                    # Determine if lesson is locked
-                    # First lesson is always unlocked, others unlock when previous is complete
-                    is_first_lesson = (module_index == 0 and lesson_index == 0)
+                    # Weekly module drip: a lesson is unlocked if its module is
+                    # unlocked for this student. Preview lessons and already-accessed
+                    # lessons stay open regardless.
                     is_preview = lesson.is_preview
-                    
-                    # A lesson is unlocked if:
-                    # 1. It's the first lesson overall, OR
-                    # 2. It's marked as a preview lesson, OR
-                    # 3. It's already completed, OR
-                    # 4. The previous lesson (in order) is completed, OR
-                    # 5. It's the first uncompleted lesson (current lesson to work on)
-                    
-                    is_unlocked = is_first_lesson or is_preview or is_completed
-                    
-                    if not is_unlocked and not first_incomplete_found:
-                        # This is the first incomplete lesson - unlock it
-                        is_unlocked = True
-                        first_incomplete_found = True
-                    elif not is_unlocked:
-                        # Check if previous lesson in this module is completed
-                        if lesson_index > 0:
-                            prev_lesson = lessons[lesson_index - 1]
-                            prev_progress = models.ModuleLessonProgress.objects.filter(
-                                student=student, lesson=prev_lesson, is_completed=True
-                            ).exists()
-                            is_unlocked = prev_progress
+                    _mstate = module_unlock_state.get(module.id, {"unlocked": True, "unlock_date": None})
+                    already_accessed = lesson_progress is not None
+                    is_unlocked = _mstate["unlocked"] or is_preview or already_accessed
                     
                     # Get downloadables for this lesson
                     downloadables = models.LessonDownloadable.objects.filter(
@@ -6499,23 +6485,18 @@ class StudentModuleProgressEnhanced(APIView):
                         'is_preview': is_preview,
                         'is_locked': not is_unlocked,
                         'is_unlocked': is_unlocked,
+                        'unlock_date': _mstate.get("unlock_date").isoformat() if (not is_unlocked and _mstate.get("unlock_date")) else None,
                         'last_position': lesson_progress.last_position_seconds if lesson_progress else 0,
                         'downloadables': downloadables_data
                     })
                 
                 total_lessons += module_total
                 
-                # Module is unlocked if first module or previous module is completed
-                module_unlocked = True
-                if module_index > 0:
-                    prev_module = modules[module_index - 1]
-                    prev_module_progress = models.ModuleProgress.objects.filter(
-                        student=student, module=prev_module, is_completed=True
-                    ).exists()
-                    # But if any lesson in this module is unlocked, the module is also unlocked
-                    any_lesson_unlocked = any(l['is_unlocked'] for l in lessons_data)
-                    module_unlocked = prev_module_progress or any_lesson_unlocked
-                
+                # Weekly module drip: module unlock comes straight from the state map.
+                _mod_state = module_unlock_state.get(module.id, {"unlocked": True, "unlock_date": None})
+                module_unlocked = _mod_state["unlocked"]
+                module_unlock_date = _mod_state.get("unlock_date")
+
                 modules_data.append({
                     'id': module.id,
                     'title': module.title,
@@ -6525,6 +6506,8 @@ class StudentModuleProgressEnhanced(APIView):
                     'completed_lessons': module_completed,
                     'is_completed': module_progress.is_completed,
                     'is_unlocked': module_unlocked,
+                    'is_locked': not module_unlocked,
+                    'unlock_date': module_unlock_date.isoformat() if (not module_unlocked and module_unlock_date) else None,
                     'lessons': lessons_data
                 })
             
@@ -7207,7 +7190,12 @@ class StudentLessonPageData(APIView):
             
             # Get all modules with lessons and progress
             modules = models.Chapter.objects.filter(course=course).order_by('order', 'id')
-            
+
+            # Weekly module-drip unlock state (one module per week from enrollment).
+            module_unlock_state = SubscriptionAccessControl.get_course_module_unlock_state(
+                student_id, course, subscription
+            )
+
             modules_data = []
             total_lessons = 0
             completed_lessons = 0
@@ -7218,11 +7206,16 @@ class StudentLessonPageData(APIView):
             for module_index, module in enumerate(modules):
                 lessons = models.ModuleLesson.objects.filter(module=module).order_by('order', 'id')
                 module_total = lessons.count()
-                
+
                 module_progress, _ = models.ModuleProgress.objects.get_or_create(
                     student=student, module=module
                 )
-                
+
+                # Time-based unlock for this module (client: one module per week).
+                _mstate = module_unlock_state.get(module.id, {"unlocked": True, "unlock_date": None})
+                module_is_locked = not _mstate["unlocked"]
+                module_unlock_date = _mstate.get("unlock_date")
+
                 lessons_data = []
                 module_completed = 0
                 
@@ -7236,18 +7229,16 @@ class StudentLessonPageData(APIView):
                         module_completed += 1
                         completed_lessons += 1
                     
-                    # Determine if lesson is locked (based on previous module completion)
-                    is_locked = False
-                    if module_index > 0:
-                        prev_module = modules[module_index - 1]
-                        prev_module_progress = models.ModuleProgress.objects.filter(
-                            student=student, module=prev_module
-                        ).first()
-                        if prev_module_progress and not prev_module_progress.is_completed:
-                            is_locked = True
+                    # Determine if lesson is locked by the weekly module drip.
+                    # Preview lessons and lessons the student already opened stay open.
+                    already_accessed = lesson_progress is not None
+                    is_locked = module_is_locked and not lesson.is_preview and not already_accessed
+                    lesson_unlock_date = module_unlock_date if is_locked else None
 
-                    lesson_access_allowed = lesson.is_preview
-                    if not lesson_access_allowed:
+                    # Access is allowed when not locked AND the plan permits the lesson
+                    # (access-level / premium / teacher-category checks still apply).
+                    lesson_access_allowed = not is_locked
+                    if lesson_access_allowed and not lesson.is_preview:
                         lesson_access_allowed, _ = subscription.can_access_lesson(lesson)
 
                     can_download_resources = (
@@ -7294,6 +7285,7 @@ class StudentLessonPageData(APIView):
                         'duration_formatted': lesson.duration_formatted,
                         'is_completed': is_completed,
                         'is_locked': is_locked,
+                        'unlock_date': lesson_unlock_date.isoformat() if lesson_unlock_date else None,
                         'is_preview': lesson.is_preview,
                         'is_access_allowed': lesson_access_allowed,
                         'can_download_resources': bool(can_download_resources),
@@ -7331,6 +7323,8 @@ class StudentLessonPageData(APIView):
                     'total_lessons': module_total,
                     'completed_lessons': module_completed,
                     'is_completed': module_progress.is_completed,
+                    'is_locked': module_is_locked,
+                    'unlock_date': module_unlock_date.isoformat() if (module_is_locked and module_unlock_date) else None,
                     'lessons': lessons_data
                 })
             
@@ -7381,8 +7375,10 @@ class StudentLessonPageData(APIView):
                         'title': prev['title'],
                         'module_id': prev['module_id'],
                         'module_title': prev['module_title'],
+                        'is_locked': prev['is_locked'],
+                        'unlock_date': prev['unlock_date'],
                     }
-                
+
                 if current_lesson_index < len(all_lessons) - 1:
                     nxt = all_lessons[current_lesson_index + 1]
                     next_lesson = {
@@ -7390,6 +7386,8 @@ class StudentLessonPageData(APIView):
                         'title': nxt['title'],
                         'module_id': nxt['module_id'],
                         'module_title': nxt['module_title'],
+                        'is_locked': nxt['is_locked'],
+                        'unlock_date': nxt['unlock_date'],
                     }
             
             progress_percentage = (completed_lessons / total_lessons * 100) if total_lessons > 0 else 0

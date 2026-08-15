@@ -1982,36 +1982,20 @@ class Subscription(models.Model):
         return True, "Access granted"
 
     def can_access_lesson(self, lesson=None):
-        """Check if student can access a lesson"""
+        """Check if student can access a lesson.
+
+        Per-lesson usage counters (max_lessons / lessons_per_day / lessons_per_week)
+        are no longer enforced here — course pacing is handled by the weekly module
+        drip in SubscriptionAccessControl.get_course_module_unlock_state(). This
+        method now only verifies the subscription is active and that the lesson's
+        access-level / premium / teacher-category restrictions are satisfied.
+        """
         if not self.plan or not self.is_active_and_paid():
             return False, "No active subscription"
-        
-        # Reset limits if needed
-        self.check_and_reset_limits()
-        
-        # Check total lessons limit
-        if self.lessons_accessed >= self.plan.max_lessons:
-            return False, f"Total lesson limit reached ({self.plan.max_lessons} lessons)"
-        
-        # If the student has previously accessed this lesson, always allow re-viewing
-        if lesson and self.student_id:
-            already_accessed = ModuleLessonProgress.objects.filter(
-                student_id=self.student_id,
-                lesson=lesson
-            ).exists()
-            if already_accessed:
-                return True, "Access granted (previously accessed)"
 
-        # Check daily limit if set
-        if self.plan.lessons_per_day:
-            if self.lessons_used_today >= self.plan.lessons_per_day:
-                return False, f"Daily lesson limit reached ({self.plan.lessons_per_day} lessons/day)"
-        
-        # Check weekly limit if set
-        if self.plan.lessons_per_week:
-            if self.current_week_lessons >= self.plan.lessons_per_week:
-                return False, f"Weekly lesson limit reached ({self.plan.lessons_per_week} lessons/week)"
-        
+        # Keep counters fresh for reporting/analytics, but do not block on them.
+        self.check_and_reset_limits()
+
         if lesson:
             # Check lesson's required access level against plan's access level
             if hasattr(lesson, 'required_access_level') and lesson.required_access_level:

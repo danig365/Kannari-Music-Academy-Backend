@@ -9,6 +9,7 @@ It enforces access rules at the backend level for:
 - Subscription status checks
 """
 
+from datetime import timedelta
 from django.utils import timezone
 from django.http import JsonResponse
 from functools import wraps
@@ -151,6 +152,72 @@ class SubscriptionAccessControl:
         return True, "You can enroll in this course."
     
     @staticmethod
+    def get_course_module_unlock_state(student_id, course, subscription):
+        """
+        Compute the weekly module-drip unlock state for every module in a course.
+
+        Behaviour (client requirement): students unlock ONE module per week
+        (or `plan.modules_per_week`), starting from the course enrollment date.
+        When a module is unlocked, ALL lessons inside it are accessible. The next
+        module unlocks the following week. This is purely time-based — completing
+        the previous module is NOT required.
+
+        Returns a dict keyed by module (Chapter) id:
+            { chapter_id: {"unlocked": bool, "unlock_date": date|None, "week": int} }
+
+        If the plan has no `modules_per_week` (e.g. the Cohort plan) everything is
+        unlocked immediately (no drip).
+        """
+        today = timezone.now().date()
+
+        try:
+            mpw = subscription.plan.modules_per_week if (subscription and subscription.plan) else None
+        except Exception:
+            mpw = None
+
+        modules = list(models.Chapter.objects.filter(course=course).order_by('order', 'id'))
+
+        # No drip configured → everything open.
+        if not mpw:
+            return {m.id: {"unlocked": True, "unlock_date": None, "week": 1} for m in modules}
+
+        mpw = int(mpw)
+
+        # Anchor = per-course enrollment date, fallback to subscription start, then today.
+        enrolled_date = None
+        try:
+            enrollment = models.StudentCourseEnrollment.objects.filter(
+                student_id=student_id, course=course
+            ).order_by('enrolled_time').first()
+            if enrollment and enrollment.enrolled_time:
+                enrolled_date = enrollment.enrolled_time.date()
+        except Exception:
+            enrolled_date = None
+
+        if not enrolled_date and subscription and subscription.start_date:
+            enrolled_date = subscription.start_date
+        if not enrolled_date:
+            enrolled_date = today
+
+        days_since_enroll = max(0, (today - enrolled_date).days)
+        weeks_elapsed = (days_since_enroll // 7) + 1   # first 7 days = week 1
+        allowed_modules = weeks_elapsed * mpw
+
+        state = {}
+        for idx, m in enumerate(modules):
+            order = getattr(m, 'order', idx) or 0
+            # Week (1-based) in which this module becomes available.
+            week_needed = (order // mpw) + 1
+            unlocked = order < allowed_modules
+            unlock_date = enrolled_date + timedelta(weeks=(week_needed - 1))
+            state[m.id] = {
+                "unlocked": unlocked,
+                "unlock_date": None if unlocked else unlock_date,
+                "week": week_needed,
+            }
+        return state
+
+    @staticmethod
     def can_access_lesson(student_id, lesson_id):
         """
         Check if student can access a specific lesson.
@@ -182,84 +249,48 @@ class SubscriptionAccessControl:
         
         if not enrollment:
             return False, "You must enroll in this course to access this lesson.", subscription
-        
-        # If the enrollment was created by a teacher (via TeacherStudent relationship),
-        # bypass plan-level teacher/category restrictions since the teacher explicitly granted access.
-        # Only check subscription usage limits (daily/weekly/total).
+
+        # ------------------ Module-based weekly unlocking ------------------
+        # Students unlock one module per week (plan.modules_per_week) from their
+        # course enrollment date. When a module unlocks, ALL its lessons open.
+        # This pacing applies to EVERY student (teacher-assigned or not) — the
+        # teacher-assignment bypass below only relaxes teacher/category plan
+        # restrictions, never the weekly drip. Previously-accessed lessons stay
+        # accessible even if somehow re-locked.
+        unlock_state = SubscriptionAccessControl.get_course_module_unlock_state(
+            student_id, course, subscription
+        )
+        module_state = unlock_state.get(lesson.module_id, {"unlocked": True, "unlock_date": None})
+        if not module_state["unlocked"]:
+            already_accessed = models.ModuleLessonProgress.objects.filter(
+                student_id=student_id, lesson_id=lesson_id
+            ).exists()
+            if not already_accessed:
+                unlock_date = module_state.get("unlock_date")
+                when = f" It unlocks on {unlock_date.strftime('%b %d, %Y')}." if unlock_date else ""
+                return False, (f"This module is not yet unlocked.{when}"), subscription
+        # ------------------------------------------------------------------
+
+        # If the student is on this course's teacher's roster, the teacher has
+        # explicitly granted access — skip the teacher/category plan restrictions
+        # (but NOT the weekly drip, which was already enforced above).
         teacher_assigned = models.TeacherStudent.objects.filter(
             teacher=course.teacher,
             student_id=student_id,
             status='active'
         ).exists()
-        
         if teacher_assigned:
-            # Still check usage limits but skip teacher/category plan restrictions
             if not subscription.plan or not subscription.is_active_and_paid():
                 return False, "No active subscription", subscription
-            
-            subscription.check_and_reset_limits()
-            
-            if subscription.lessons_accessed >= subscription.plan.max_lessons:
-                return False, f"Total lesson limit reached ({subscription.plan.max_lessons} lessons)", subscription
-            
-            if subscription.plan.lessons_per_day and subscription.lessons_used_today >= subscription.plan.lessons_per_day:
-                # Allow re-access to previously viewed lessons
-                already_accessed = models.ModuleLessonProgress.objects.filter(
-                    student_id=student_id, lesson_id=lesson_id
-                ).exists()
-                if not already_accessed:
-                    return False, f"Daily lesson limit reached ({subscription.plan.lessons_per_day} lessons/day)", subscription
-            
-            if subscription.plan.lessons_per_week and subscription.current_week_lessons >= subscription.plan.lessons_per_week:
-                # Allow re-access to previously viewed lessons
-                already_accessed = models.ModuleLessonProgress.objects.filter(
-                    student_id=student_id, lesson_id=lesson_id
-                ).exists()
-                if not already_accessed:
-                    return False, f"Weekly lesson limit reached ({subscription.plan.lessons_per_week} lessons/week)", subscription
-            
             return True, "Access granted (teacher assigned).", subscription
 
-        # ------------------ Module-based weekly unlocking ------------------
-        # If the subscription plan defines `modules_per_week`, unlock modules progressively
-        # based on weeks since enrollment. When a module is unlocked, all lessons within
-        # that module are available.
-        try:
-            plan_modules_per_week = subscription.plan.modules_per_week if subscription and subscription.plan else None
-        except Exception:
-            plan_modules_per_week = None
-
-        if plan_modules_per_week:
-            # Determine enrollment date (fallback to subscription start_date)
-            today = timezone.now().date()
-            enrolled_date = None
-            try:
-                enrolled_date = enrollment.enrolled_time.date() if enrollment and enrollment.enrolled_time else None
-            except Exception:
-                enrolled_date = None
-
-            if not enrolled_date and subscription and subscription.start_date:
-                enrolled_date = subscription.start_date
-
-            if not enrolled_date:
-                enrolled_date = today
-
-            days_since_enroll = max(0, (today - enrolled_date).days)
-            weeks_elapsed = (days_since_enroll // 7) + 1  # week 1 is the first 7 days
-            allowed_modules = weeks_elapsed * int(plan_modules_per_week)
-
-            # Module ordering uses `order` field (0-based). Allow access if module.order < allowed_modules
-            module_order = getattr(lesson.module, 'order', 0) or 0
-            if module_order >= allowed_modules:
-                return False, (f"This module is not yet unlocked. {allowed_modules} module(s) available so far. "
-                               f"Come back later or contact your teacher."), subscription
-        # ------------------------------------------------------------------
-        
-        # Standard subscription-based lesson access check
+        # Standard subscription-based lesson access check (access level / premium /
+        # teacher-category). Per-lesson weekly/daily/total counters are no longer
+        # enforced — pacing is handled by the module drip above.
         can_access, reason = subscription.can_access_lesson(lesson)
         if not can_access:
             return False, reason, subscription
-        
+
         return True, "Access granted.", subscription
     
     @staticmethod
