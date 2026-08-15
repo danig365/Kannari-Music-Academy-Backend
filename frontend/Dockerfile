@@ -1,11 +1,16 @@
+# syntax=docker/dockerfile:1
+
 # Build stage
 FROM node:18-alpine AS build
 
 WORKDIR /app
 
-# Install dependencies first (separate layer — only rebuilds when package files change)
+# Install dependencies first (separate layer — only rebuilds when package files change).
+# The BuildKit cache mount keeps npm's download cache (~/.npm) persistent ACROSS builds,
+# so even when this layer re-runs, packages are restored from the local cache instead of
+# being re-downloaded from the registry — much faster and far less internet usage.
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 # Copy source (excludes node_modules/, build/, .env — see .dockerignore)
 COPY . .

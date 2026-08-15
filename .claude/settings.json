@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(docker cp *)",
+      "Bash(curl -sk -o /dev/null -w \"HTTP %{http_code}\\\\n\" https://localhost/yt-embed-test.html)",
+      "Bash(curl -sk -o /dev/null -w \"served HTTP %{http_code}\\\\n\" https://localhost/yt-embed-test.html)"
+    ],
+    "additionalDirectories": [
+      "/tmp"
+    ]
+  }
+}

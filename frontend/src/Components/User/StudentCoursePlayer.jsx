@@ -236,7 +236,7 @@ const StudentCoursePlayer = () => {
         setBlocksLoading(true);
         try {
             const res = await axios.get(`${baseUrl}/lesson/${lid}/blocks/`);
-            const blocks = res.data || [];
+            const blocks = res.data.blocks || [];
             setLessonBlocks(blocks);
 
             // Init checklist from localStorage
@@ -481,7 +481,7 @@ const StudentCoursePlayer = () => {
                 const ytId = ytMatch?.[1];
                 return blockCard('bi-play-circle-fill', '#ef4444', <>
                     {ytId ? (
-                        <div style={{ position: 'relative', paddingBottom: '56.25%', background: '#000', borderRadius: 10, overflow: 'hidden' }}>
+                        <div style={{ position: 'relative', paddingBottom: '56.25%', width: '100%', background: '#000', borderRadius: 10, overflow: 'hidden' }}>
                             <iframe style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
                                 src={`https://www.youtube.com/embed/${ytId}`} title={blockTitle || 'Video'} allowFullScreen />
                         </div>
@@ -1520,7 +1520,7 @@ const StudentCoursePlayer = () => {
             return (
                 <div className="content-section-wrapper">
                     <div className="content-player-wrapper">
-                        <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '12px', background: '#000' }}>
+                        <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, width: '100%', overflow: 'hidden', borderRadius: '12px', background: '#000' }}>
                             <iframe
                                 src={youtubeEmbedUrl}
                                 title={title}
@@ -2787,7 +2787,7 @@ const StudentCoursePlayer = () => {
                             </button>
                         </div>
                         {/* YouTube Iframe */}
-                        <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
+                        <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, width: '100%' }}>
                             <iframe
                                 src={getYouTubeEmbedUrl(currentLesson.youtube_url)}
                                 title={`${currentLesson.title} - YouTube`}
