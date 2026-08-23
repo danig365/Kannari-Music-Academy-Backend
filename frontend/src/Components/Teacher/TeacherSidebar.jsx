@@ -115,7 +115,7 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
                style={{ 
                  width: '48px', 
                  height: '48px', 
-                 background: 'linear-gradient(135deg, #4285f4 0%, #3b5998 100%)'
+                 background: 'linear-gradient(135deg, #101C2C 0%, #101C2C 100%)'
                }}>
             <i className="bi bi-person-chalkboard text-white fs-4"></i>
           </div>
@@ -136,7 +136,7 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
             style={{ 
               color: isActive('/teacher/overview') || isActive('/teacher/dashboard') ? '#fff' : '#8b92a7',
               backgroundColor: isActive('/teacher/overview') || isActive('/teacher/dashboard') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher/overview') || isActive('/teacher/dashboard') ? '3px solid #4285f4' : '3px solid transparent',
+              borderLeft: isActive('/teacher/overview') || isActive('/teacher/dashboard') ? '3px solid #101C2C' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
@@ -163,7 +163,7 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
             style={{ 
               color: isActive('/teacher/students') ? '#fff' : '#8b92a7',
               backgroundColor: isActive('/teacher/students') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher/students') ? '3px solid #4285f4' : '3px solid transparent',
+              borderLeft: isActive('/teacher/students') ? '3px solid #101C2C' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
@@ -190,7 +190,7 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
             style={{ 
               color: isActive('/teacher/course-management') || location.pathname.startsWith('/teacher/course-management/') ? '#fff' : '#8b92a7',
               backgroundColor: isActive('/teacher/course-management') || location.pathname.startsWith('/teacher/course-management/') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher/course-management') || location.pathname.startsWith('/teacher/course-management/') ? '3px solid #4285f4' : '3px solid transparent',
+              borderLeft: isActive('/teacher/course-management') || location.pathname.startsWith('/teacher/course-management/') ? '3px solid #101C2C' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
@@ -217,7 +217,7 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
             style={{ 
               color: isActive('/teacher/sessions') ? '#fff' : '#8b92a7',
               backgroundColor: isActive('/teacher/sessions') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher/sessions') ? '3px solid #4285f4' : '3px solid transparent',
+              borderLeft: isActive('/teacher/sessions') ? '3px solid #101C2C' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
@@ -244,7 +244,7 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
             style={{ 
               color: isActive('/teacher/audio-messages') ? '#fff' : '#8b92a7',
               backgroundColor: isActive('/teacher/audio-messages') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher/audio-messages') ? '3px solid #4285f4' : '3px solid transparent',
+              borderLeft: isActive('/teacher/audio-messages') ? '3px solid #101C2C' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
@@ -271,7 +271,7 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
             style={{ 
               color: isActive('/teacher/text-messages') ? '#fff' : '#8b92a7',
               backgroundColor: isActive('/teacher/text-messages') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher/text-messages') ? '3px solid #4285f4' : '3px solid transparent',
+              borderLeft: isActive('/teacher/text-messages') ? '3px solid #101C2C' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
@@ -298,7 +298,7 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
             style={{ 
               color: isActive('/teacher/create-assignments') ? '#fff' : '#8b92a7',
               backgroundColor: isActive('/teacher/create-assignments') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher/create-assignments') ? '3px solid #4285f4' : '3px solid transparent',
+              borderLeft: isActive('/teacher/create-assignments') ? '3px solid #101C2C' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
@@ -325,7 +325,7 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
             style={{ 
               color: isActive('/teacher/office-hours') ? '#fff' : '#8b92a7',
               backgroundColor: isActive('/teacher/office-hours') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher/office-hours') ? '3px solid #4285f4' : '3px solid transparent',
+              borderLeft: isActive('/teacher/office-hours') ? '3px solid #101C2C' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
@@ -352,7 +352,7 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
             style={{ 
               color: isActive('/teacher/assignment-reviews') ? '#fff' : '#8b92a7',
               backgroundColor: isActive('/teacher/assignment-reviews') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher/assignment-reviews') ? '3px solid #4285f4' : '3px solid transparent',
+              borderLeft: isActive('/teacher/assignment-reviews') ? '3px solid #101C2C' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
@@ -379,7 +379,7 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
             style={{ 
               color: isActive('/teacher/progress') ? '#fff' : '#8b92a7',
               backgroundColor: isActive('/teacher/progress') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher/progress') ? '3px solid #4285f4' : '3px solid transparent',
+              borderLeft: isActive('/teacher/progress') ? '3px solid #101C2C' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
@@ -406,7 +406,7 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
             style={{ 
               color: isActive('/teacher/profile-setting') ? '#fff' : '#8b92a7',
               backgroundColor: isActive('/teacher/profile-setting') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher/profile-setting') ? '3px solid #4285f4' : '3px solid transparent',
+              borderLeft: isActive('/teacher/profile-setting') ? '3px solid #101C2C' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
@@ -436,7 +436,7 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
             style={{ 
               color: isActive('/teacher/community') ? '#fff' : '#8b92a7',
               backgroundColor: isActive('/teacher/community') ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
-              borderLeft: isActive('/teacher/community') ? '3px solid #8b5cf6' : '3px solid transparent',
+              borderLeft: isActive('/teacher/community') ? '3px solid #7C9BB8' : '3px solid transparent',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
@@ -510,7 +510,7 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
                    style={{ 
                      width: '40px', 
                      height: '40px', 
-                     background: 'linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%)',
+                     background: 'linear-gradient(135deg, #a855f7 0%, #7C9BB8 100%)',
                      fontSize: '16px',
                      flexShrink: 0
                    }}>
@@ -561,7 +561,7 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
-                e.currentTarget.style.color = '#ef4444';
+                e.currentTarget.style.color = '#D85C4A';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';

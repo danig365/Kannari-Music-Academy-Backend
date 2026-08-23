@@ -248,7 +248,7 @@ const AuditLogsDashboard = () => {
               >
                 <i className="bi bi-chat-dots"></i> Messages
                 {summaryData && summaryData.messages && (
-                  <span className="badge bg-purple ms-2" style={{ backgroundColor: '#7c3aed' }}>
+                  <span className="badge bg-purple ms-2" style={{ backgroundColor: '#7C9BB8' }}>
                     {summaryData.messages.total || 0}
                   </span>
                 )}

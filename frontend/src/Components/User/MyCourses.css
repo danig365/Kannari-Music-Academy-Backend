@@ -28,7 +28,7 @@
 .dashboard-main .page-header h2 {
     font-size: clamp(24px, 4vw, 32px);
     font-weight: 800;
-    color: #1a1a1a !important;
+    color: #101C2C !important;
     margin-bottom: 6px !important;
     letter-spacing: -0.5px;
     line-height: 1.2;
@@ -39,7 +39,7 @@
 }
 
 .dashboard-main .page-header h2 i {
-    color: #3b82f6;
+    color: #101C2C;
     font-size: 1.1em;
 }
 
@@ -66,7 +66,7 @@
 
 .empty-state i {
     font-size: 56px;
-    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    background: linear-gradient(135deg, #101C2C, #7C9BB8);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -75,7 +75,7 @@
 }
 
 .empty-state h5 {
-    color: #1a1a1a;
+    color: #101C2C;
     margin-bottom: 8px;
     font-weight: 700;
     font-size: 20px;
@@ -91,7 +91,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+    background: linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%);
     color: #ffffff;
     padding: 14px 28px;
     border-radius: 10px;
@@ -147,7 +147,7 @@
 .course-image {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+    background: linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -187,16 +187,16 @@
 }
 
 .course-title-link h6 {
-    color: #1a1a1a !important;
+    color: #101C2C !important;
     transition: color 0.2s ease;
 }
 
 .course-title-link:hover h6 {
-    color: #3b82f6 !important;
+    color: #101C2C !important;
 }
 
 .course-title {
-    color: #1a1a1a;
+    color: #101C2C;
     font-weight: 600;
     margin: 0;
     padding: 0;
@@ -234,7 +234,7 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+    background: linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -257,7 +257,7 @@
 }
 
 .instructor-name {
-    color: #1a1a1a;
+    color: #101C2C;
     font-size: 13px;
     margin: 0;
     font-weight: 500;
@@ -287,7 +287,7 @@
     align-items: center;
     gap: 4px;
     background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
-    color: #2563eb;
+    color: #101C2C;
     padding: 5px 14px;
     border-radius: 24px;
     font-size: 12px;
@@ -323,7 +323,7 @@
 }
 
 .btn-continue {
-    background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+    background: linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%);
     color: #ffffff;
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
@@ -347,7 +347,7 @@
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+    background: linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%);
     color: #ffffff;
 }
 
@@ -381,7 +381,7 @@
 
 /* ---- Accessibility ---- */
 .course-card:focus-within {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid #101C2C;
     outline-offset: 2px;
 }
 

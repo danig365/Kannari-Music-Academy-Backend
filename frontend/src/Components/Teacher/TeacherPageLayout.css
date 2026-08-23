@@ -54,7 +54,7 @@
     border-bottom: 1px solid #e5e7eb;
     padding: 16px 24px;
     font-weight: 600;
-    color: #1f2937;
+    color: #101C2C;
     border-radius: 8px 8px 0 0;
 }
 
@@ -73,7 +73,7 @@
 }
 
 .teacher-page-wrapper .table thead th {
-    background: #f9fafb;
+    background: #F7F3EA;
     color: #6b7280;
     font-weight: 600;
     font-size: 12px;
@@ -90,7 +90,7 @@
 }
 
 .teacher-page-wrapper .table tbody tr:hover {
-    background: #f9fafb;
+    background: #F7F3EA;
 }
 
 /* Form styling */
@@ -111,7 +111,7 @@
 
 .teacher-page-wrapper .form-control:focus,
 .teacher-page-wrapper .form-select:focus {
-    border-color: #4285f4;
+    border-color: #101C2C;
     box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
 }
 
@@ -125,8 +125,8 @@
 }
 
 .teacher-page-wrapper .btn-primary {
-    background: #4285f4;
-    border-color: #4285f4;
+    background: #101C2C;
+    border-color: #101C2C;
 }
 
 .teacher-page-wrapper .btn-primary:hover {
@@ -140,8 +140,8 @@
 }
 
 .teacher-page-wrapper .btn-danger {
-    background: #ef4444;
-    border-color: #ef4444;
+    background: #D85C4A;
+    border-color: #D85C4A;
 }
 
 .teacher-page-wrapper .btn-secondary {

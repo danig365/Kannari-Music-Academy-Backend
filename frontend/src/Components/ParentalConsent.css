@@ -81,7 +81,7 @@
 }
 .pc-error h2 {
   margin: 1rem 0 0.5rem;
-  color: #c62828;
+  color: #D85C4A;
   font-size: 1.3rem;
 }
 .pc-error p {
@@ -99,13 +99,13 @@
   font-size: 3.5rem;
 }
 .pc-result-success i { color: #2e7d32; }
-.pc-result-error i { color: #c62828; }
+.pc-result-error i { color: #D85C4A; }
 .pc-result h2 {
   margin: 1rem 0 0.5rem;
   font-size: 1.4rem;
 }
 .pc-result-success h2 { color: #2e7d32; }
-.pc-result-error h2 { color: #c62828; }
+.pc-result-error h2 { color: #D85C4A; }
 .pc-result p {
   color: #555;
   max-width: 400px;
@@ -356,11 +356,11 @@
   padding: 0.75rem 1.25rem;
 }
 .pc-btn-deny-toggle:hover:not(:disabled) {
-  color: #c62828;
-  border-color: #c62828;
+  color: #D85C4A;
+  border-color: #D85C4A;
 }
 .pc-btn-deny {
-  background: #c62828;
+  background: #D85C4A;
   color: #fff;
   flex: 1;
   min-width: 200px;

@@ -99,7 +99,7 @@ const CardStep = ({ studentData, studentId, onBack, onComplete }) => {
                     style={{
                         width: '100%', padding: '12px 16px', fontSize: '15px',
                         border: '1px solid #e5e7eb', borderRadius: '8px', outline: 'none',
-                        boxSizing: 'border-box', color: '#6b7280', background: '#f9fafb',
+                        boxSizing: 'border-box', color: '#6b7280', background: '#F7F3EA',
                     }}
                 />
             </div>
@@ -119,11 +119,11 @@ const CardStep = ({ studentData, studentId, onBack, onComplete }) => {
                             style: {
                                 base: {
                                     fontSize: '15px',
-                                    color: '#1a1a1a',
+                                    color: '#101C2C',
                                     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                                     '::placeholder': { color: '#9ca3af' },
                                 },
-                                invalid: { color: '#dc2626' },
+                                invalid: { color: '#D85C4A' },
                             },
                         }}
                     />
@@ -134,7 +134,7 @@ const CardStep = ({ studentData, studentId, onBack, onComplete }) => {
             {cardError && (
                 <div style={{
                     padding: '12px 16px', background: '#fef2f2', border: '1px solid #fecaca',
-                    borderRadius: '8px', color: '#dc2626', fontSize: '14px',
+                    borderRadius: '8px', color: '#D85C4A', fontSize: '14px',
                 }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px', verticalAlign: 'middle' }}>
                         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -163,7 +163,7 @@ const CardStep = ({ studentData, studentId, onBack, onComplete }) => {
                     disabled={!stripe || cardLoading}
                     style={{
                         flex: 1, padding: '14px 24px',
-                        background: cardLoading ? '#9ca3af' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        background: cardLoading ? '#9ca3af' : 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                         color: 'white', border: 'none', borderRadius: '8px',
                         fontSize: '15px', fontWeight: '600',
                         cursor: (!stripe || cardLoading) ? 'not-allowed' : 'pointer',
@@ -333,7 +333,7 @@ const Register = () => {
     <>
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%)',
+      background: 'linear-gradient(135deg, #F7F3EA 0%, #e8ecf1 100%)',
       padding: '40px 20px',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
     }}>
@@ -349,7 +349,7 @@ const Register = () => {
             background: '#e3f2fd',
             borderRadius: '20px',
             fontSize: '14px',
-            color: '#1976d2',
+            color: '#101C2C',
             fontWeight: '500',
             marginBottom: '20px'
           }}>
@@ -364,7 +364,7 @@ const Register = () => {
           <h1 style={{
             fontSize: '36px',
             fontWeight: '700',
-            color: '#1a1a1a',
+            color: '#101C2C',
             marginBottom: '10px',
             letterSpacing: '-0.5px'
           }}>Create Your Account</h1>
@@ -396,7 +396,7 @@ const Register = () => {
               fontWeight: '500',
               transition: 'color 0.2s'
             }}
-            onMouseEnter={(e) => e.target.style.color = '#1976d2'}
+            onMouseEnter={(e) => e.target.style.color = '#101C2C'}
             onMouseLeave={(e) => e.target.style.color = '#6b7280'}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -408,12 +408,12 @@ const Register = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '32px' }}>
               {[{ n: 1, label: 'Profile' }, { n: 2, label: 'Payment' }].map(({ n, label }, i) => (
                 <React.Fragment key={n}>
-                  {i > 0 && <div style={{ flex: 1, height: '2px', background: step >= n ? '#667eea' : '#e5e7eb', transition: 'background 0.3s' }} />}
+                  {i > 0 && <div style={{ flex: 1, height: '2px', background: step >= n ? '#101C2C' : '#e5e7eb', transition: 'background 0.3s' }} />}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <div style={{
                       width: '28px', height: '28px', borderRadius: '50%', display: 'flex',
                       alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '700',
-                      background: step >= n ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#f3f4f6',
+                      background: step >= n ? 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)' : '#f3f4f6',
                       color: step >= n ? 'white' : '#9ca3af',
                       transition: 'all 0.3s',
                     }}>{n}</div>
@@ -430,7 +430,7 @@ const Register = () => {
               <div style={{
                 width: '56px',
                 height: '56px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                 borderRadius: '12px',
                 display: 'flex',
                 alignItems: 'center',
@@ -446,7 +446,7 @@ const Register = () => {
                 <h2 style={{
                   fontSize: '24px',
                   fontWeight: '600',
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   marginBottom: '4px',
                   letterSpacing: '-0.3px'
                 }}>Student Registration</h2>
@@ -510,19 +510,19 @@ const Register = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: fieldErrors.fullname ? '1px solid #ef4444' : '1px solid #e5e7eb',
+                    border: fieldErrors.fullname ? '1px solid #D85C4A' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box',
-                    color: '#1a1a1a'
+                    color: '#101C2C'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = fieldErrors.fullname ? '#ef4444' : '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.fullname ? '#D85C4A' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
@@ -548,19 +548,19 @@ const Register = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: fieldErrors.email ? '1px solid #ef4444' : '1px solid #e5e7eb',
+                    border: fieldErrors.email ? '1px solid #D85C4A' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box',
-                    color: '#1a1a1a'
+                    color: '#101C2C'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = fieldErrors.email ? '#ef4444' : '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.email ? '#D85C4A' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
@@ -586,19 +586,19 @@ const Register = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: fieldErrors.username ? '1px solid #ef4444' : '1px solid #e5e7eb',
+                    border: fieldErrors.username ? '1px solid #D85C4A' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box',
-                    color: '#1a1a1a'
+                    color: '#101C2C'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = fieldErrors.username ? '#ef4444' : '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.username ? '#D85C4A' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
@@ -624,19 +624,19 @@ const Register = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: fieldErrors.password ? '1px solid #ef4444' : '1px solid #e5e7eb',
+                    border: fieldErrors.password ? '1px solid #D85C4A' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box',
-                    color: '#1a1a1a'
+                    color: '#101C2C'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = fieldErrors.password ? '#ef4444' : '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.password ? '#D85C4A' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
@@ -662,19 +662,19 @@ const Register = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: fieldErrors.date_of_birth ? '1px solid #ef4444' : '1px solid #e5e7eb',
+                    border: fieldErrors.date_of_birth ? '1px solid #D85C4A' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box',
-                    color: '#1a1a1a'
+                    color: '#101C2C'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = fieldErrors.date_of_birth ? '#ef4444' : '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.date_of_birth ? '#D85C4A' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
@@ -698,8 +698,8 @@ const Register = () => {
                   value={studentData.phone_number}
                   onChange={handleChange}
                   placeholder="+1 (555) 000-0000"
-                  style={{ width: '100%', padding: '12px 16px', border: '1px solid #e5e7eb', borderRadius: '10px', fontSize: '15px', outline: 'none', boxSizing: 'border-box', background: '#fff', color: '#111827' }}
-                  onFocus={e => { e.target.style.borderColor='#3b82f6'; e.target.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'; }}
+                  style={{ width: '100%', padding: '12px 16px', border: '1px solid #e5e7eb', borderRadius: '10px', fontSize: '15px', outline: 'none', boxSizing: 'border-box', background: '#fff', color: '#101C2C' }}
+                  onFocus={e => { e.target.style.borderColor='#101C2C'; e.target.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'; }}
                   onBlur={e => { e.target.style.borderColor='#e5e7eb'; e.target.style.boxShadow='none'; }}
                 />
               </div>
@@ -715,8 +715,8 @@ const Register = () => {
                   onChange={handleChange}
                   placeholder="Street, City, State, ZIP"
                   rows={3}
-                  style={{ width: '100%', padding: '12px 16px', border: '1px solid #e5e7eb', borderRadius: '10px', fontSize: '15px', outline: 'none', boxSizing: 'border-box', background: '#fff', color: '#111827', resize: 'vertical' }}
-                  onFocus={e => { e.target.style.borderColor='#3b82f6'; e.target.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'; }}
+                  style={{ width: '100%', padding: '12px 16px', border: '1px solid #e5e7eb', borderRadius: '10px', fontSize: '15px', outline: 'none', boxSizing: 'border-box', background: '#fff', color: '#101C2C', resize: 'vertical' }}
+                  onFocus={e => { e.target.style.borderColor='#101C2C'; e.target.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'; }}
                   onBlur={e => { e.target.style.borderColor='#e5e7eb'; e.target.style.boxShadow='none'; }}
                 />
               </div>
@@ -727,7 +727,7 @@ const Register = () => {
                   <div style={{
                     padding: '16px',
                     background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-                    border: '1px solid #f59e0b',
+                    border: '1px solid #C9A66B',
                     borderRadius: '12px',
                     display: 'flex',
                     gap: '12px',
@@ -735,7 +735,7 @@ const Register = () => {
                   }}>
                     <div style={{
                       width: '36px', height: '36px', borderRadius: '50%',
-                      background: '#f59e0b', display: 'flex', alignItems: 'center',
+                      background: '#C9A66B', display: 'flex', alignItems: 'center',
                       justifyContent: 'center', flexShrink: 0
                     }}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5">
@@ -769,9 +769,9 @@ const Register = () => {
                       style={{
                         width: '100%', padding: '12px 16px', fontSize: '15px',
                         border: '1px solid #e5e7eb', borderRadius: '8px', outline: 'none',
-                        transition: 'all 0.2s', boxSizing: 'border-box', color: '#1a1a1a'
+                        transition: 'all 0.2s', boxSizing: 'border-box', color: '#101C2C'
                       }}
-                      onFocus={(e) => { e.target.style.borderColor = '#f59e0b'; e.target.style.boxShadow = '0 0 0 3px rgba(245, 158, 11, 0.1)'; }}
+                      onFocus={(e) => { e.target.style.borderColor = '#C9A66B'; e.target.style.boxShadow = '0 0 0 3px rgba(245, 158, 11, 0.1)'; }}
                       onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.boxShadow = 'none'; }}
                     />
                   </div>
@@ -781,7 +781,7 @@ const Register = () => {
                     <label style={{
                       display: 'block', fontSize: '14px', fontWeight: '500',
                       color: '#374151', marginBottom: '8px'
-                    }}>Parent/Guardian Email <span style={{ color: '#dc2626', fontWeight: '600' }}>*</span></label>
+                    }}>Parent/Guardian Email <span style={{ color: '#D85C4A', fontWeight: '600' }}>*</span></label>
                     <input
                       type="email"
                       onChange={handleChange}
@@ -791,13 +791,13 @@ const Register = () => {
                       required
                       style={{
                         width: '100%', padding: '12px 16px', fontSize: '15px',
-                        border: fieldErrors.parent_email ? '1px solid #ef4444' : `1px solid ${studentData.parent_email.trim() ? '#e5e7eb' : '#fbbf24'}`,
+                        border: fieldErrors.parent_email ? '1px solid #D85C4A' : `1px solid ${studentData.parent_email.trim() ? '#e5e7eb' : '#C9A66B'}`,
                         borderRadius: '8px', outline: 'none',
-                        transition: 'all 0.2s', boxSizing: 'border-box', color: '#1a1a1a',
+                        transition: 'all 0.2s', boxSizing: 'border-box', color: '#101C2C',
                         backgroundColor: '#fffbeb'
                       }}
-                      onFocus={(e) => { e.target.style.borderColor = '#f59e0b'; e.target.style.boxShadow = '0 0 0 3px rgba(245, 158, 11, 0.1)'; }}
-                      onBlur={(e) => { e.target.style.borderColor = fieldErrors.parent_email ? '#ef4444' : (studentData.parent_email.trim() ? '#e5e7eb' : '#fbbf24'); e.target.style.boxShadow = 'none'; }}
+                      onFocus={(e) => { e.target.style.borderColor = '#C9A66B'; e.target.style.boxShadow = '0 0 0 3px rgba(245, 158, 11, 0.1)'; }}
+                      onBlur={(e) => { e.target.style.borderColor = fieldErrors.parent_email ? '#D85C4A' : (studentData.parent_email.trim() ? '#e5e7eb' : '#C9A66B'); e.target.style.boxShadow = 'none'; }}
                     />
                     <FieldError error={fieldErrors.parent_email} />
                     <p style={{ fontSize: '12px', color: '#b45309', marginTop: '6px', marginBottom: 0 }}>
@@ -833,10 +833,10 @@ const Register = () => {
                     boxSizing: 'border-box',
                     resize: 'vertical',
                     fontFamily: 'inherit',
-                    color: '#1a1a1a'
+                    color: '#101C2C'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
@@ -860,7 +860,7 @@ const Register = () => {
                 style={{
                   width: '100%',
                   padding: '14px 24px',
-                  background: loading ? '#9ca3af' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: loading ? '#9ca3af' : 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                   color: 'white',
                   border: 'none',
                   borderRadius: '8px',
@@ -936,8 +936,8 @@ const Register = () => {
                   width: '100%',
                   padding: '14px 24px',
                   background: 'white',
-                  color: '#667eea',
-                  border: '2px solid #667eea',
+                  color: '#101C2C',
+                  border: '2px solid #101C2C',
                   borderRadius: '8px',
                   fontSize: '15px',
                   fontWeight: '600',
@@ -969,7 +969,7 @@ const Register = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '28px' }}>
                   <div style={{
                     width: '56px', height: '56px',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                     borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                   }}>
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
@@ -977,7 +977,7 @@ const Register = () => {
                     </svg>
                   </div>
                   <div>
-                    <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#1a1a1a', marginBottom: '4px', letterSpacing: '-0.3px' }}>
+                    <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#101C2C', marginBottom: '4px', letterSpacing: '-0.3px' }}>
                       Payment Information
                     </h2>
                     <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>

@@ -143,7 +143,7 @@ const Login = () => {
   <>
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%)',
+      background: 'linear-gradient(135deg, #F7F3EA 0%, #e8ecf1 100%)',
       padding: '40px 20px',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
       display: 'flex',
@@ -162,7 +162,7 @@ const Login = () => {
             background: '#e3f2fd',
             borderRadius: '20px',
             fontSize: '14px',
-            color: '#1976d2',
+            color: '#101C2C',
             fontWeight: '500',
             marginBottom: '20px'
           }}>
@@ -175,7 +175,7 @@ const Login = () => {
           <h1 style={{
             fontSize: '36px',
             fontWeight: '700',
-            color: '#1a1a1a',
+            color: '#101C2C',
             marginBottom: '10px',
             letterSpacing: '-0.5px'
           }}>Sign In to Your Account</h1>
@@ -207,7 +207,7 @@ const Login = () => {
               fontWeight: '500',
               transition: 'color 0.2s'
             }}
-            onMouseEnter={(e) => e.target.style.color = '#1976d2'}
+            onMouseEnter={(e) => e.target.style.color = '#101C2C'}
             onMouseLeave={(e) => e.target.style.color = '#6b7280'}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -220,7 +220,7 @@ const Login = () => {
               <div style={{
                 width: '56px',
                 height: '56px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                 borderRadius: '12px',
                 display: 'flex',
                 alignItems: 'center',
@@ -236,7 +236,7 @@ const Login = () => {
                 <h2 style={{
                   fontSize: '24px',
                   fontWeight: '600',
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   marginBottom: '4px',
                   letterSpacing: '-0.3px'
                 }}>Student Sign In</h2>
@@ -273,7 +273,7 @@ const Login = () => {
                 border: '1px solid #bfdbfe',
                 borderRadius: '8px'
               }}>
-                <p style={{ margin: '0 0 10px', fontSize: '13px', color: '#1e3a8a' }}>
+                <p style={{ margin: '0 0 10px', fontSize: '13px', color: '#101C2C' }}>
                   Didn't receive the verification email? Click below to resend.
                 </p>
                 <button
@@ -283,7 +283,7 @@ const Login = () => {
                   style={{
                     width: '100%',
                     padding: '10px 12px',
-                    background: resendingVerification ? '#93c5fd' : '#2563eb',
+                    background: resendingVerification ? '#7C9BB8' : '#101C2C',
                     color: 'white',
                     border: 'none',
                     borderRadius: '8px',
@@ -319,19 +319,19 @@ const Login = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: fieldErrors.email ? '1px solid #ef4444' : '1px solid #e5e7eb',
+                    border: fieldErrors.email ? '1px solid #D85C4A' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box',
-                    color: '#1a1a1a'
+                    color: '#101C2C'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = fieldErrors.email ? '#ef4444' : '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.email ? '#D85C4A' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
@@ -357,19 +357,19 @@ const Login = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: fieldErrors.password ? '1px solid #ef4444' : '1px solid #e5e7eb',
+                    border: fieldErrors.password ? '1px solid #D85C4A' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box',
-                    color: '#1a1a1a'
+                    color: '#101C2C'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = fieldErrors.password ? '#ef4444' : '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.password ? '#D85C4A' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
@@ -377,7 +377,7 @@ const Login = () => {
                 <div style={{ marginTop: '8px', textAlign: 'right' }}>
                   <Link
                     to="/student/forgot-password"
-                    style={{ fontSize: '13px', color: '#667eea', textDecoration: 'none', fontWeight: '500' }}
+                    style={{ fontSize: '13px', color: '#101C2C', textDecoration: 'none', fontWeight: '500' }}
                   >
                     Forgot password?
                   </Link>
@@ -392,7 +392,7 @@ const Login = () => {
                 style={{
                   width: '100%',
                   padding: '14px 24px',
-                  background: loading ? '#9ca3af' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: loading ? '#9ca3af' : 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                   color: 'white',
                   border: 'none',
                   borderRadius: '8px',
@@ -468,8 +468,8 @@ const Login = () => {
                   width: '100%',
                   padding: '14px 24px',
                   background: 'white',
-                  color: '#667eea',
-                  border: '2px solid #667eea',
+                  color: '#101C2C',
+                  border: '2px solid #101C2C',
                   borderRadius: '8px',
                   fontSize: '15px',
                   fontWeight: '600',

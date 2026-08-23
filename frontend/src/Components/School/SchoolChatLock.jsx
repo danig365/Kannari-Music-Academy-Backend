@@ -91,8 +91,8 @@ const SchoolChatLock = () => {
     const getAgeTierBadge = (tier) => {
         switch (tier) {
             case '18_plus': return { label: '18+', color: '#10b981', bg: 'rgba(16,185,129,0.12)' };
-            case '13_17': return { label: '13-17', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' };
-            case '4_12': return { label: '4-12', color: '#ef4444', bg: 'rgba(239,68,68,0.12)' };
+            case '13_17': return { label: '13-17', color: '#C9A66B', bg: 'rgba(245,158,11,0.12)' };
+            case '4_12': return { label: '4-12', color: '#D85C4A', bg: 'rgba(239,68,68,0.12)' };
             default: return { label: 'Unknown', color: '#6b7280', bg: 'rgba(107,114,128,0.12)' };
         }
     };
@@ -112,7 +112,7 @@ const SchoolChatLock = () => {
         if (allowed) {
             return { label: 'Chat Open', color: '#10b981', icon: 'bi-unlock-fill' };
         }
-        return { label: 'Chat Locked', color: '#ef4444', icon: 'bi-lock-fill' };
+        return { label: 'Chat Locked', color: '#D85C4A', icon: 'bi-lock-fill' };
     };
 
     const stats = {
@@ -139,8 +139,8 @@ const SchoolChatLock = () => {
             {/* Header */}
             <div className="d-flex flex-wrap align-items-center justify-content-between mb-4">
                 <div>
-                    <h4 className="fw-bold mb-1" style={{ color: '#1e293b' }}>
-                        <i className="bi bi-shield-lock me-2" style={{ color: '#6366f1' }}></i>
+                    <h4 className="fw-bold mb-1" style={{ color: '#101C2C' }}>
+                        <i className="bi bi-shield-lock me-2" style={{ color: '#7C9BB8' }}></i>
                         Chat Lock Management
                     </h4>
                     <p className="text-muted mb-0" style={{ fontSize: '14px' }}>
@@ -168,11 +168,11 @@ const SchoolChatLock = () => {
             {/* Stats Row */}
             <div className="row g-3 mb-4">
                 {[
-                    { label: 'Total Pairs', value: stats.total, icon: 'bi-people', color: '#6366f1' },
-                    { label: 'Currently Locked', value: stats.locked, icon: 'bi-lock-fill', color: '#ef4444' },
+                    { label: 'Total Pairs', value: stats.total, icon: 'bi-people', color: '#7C9BB8' },
+                    { label: 'Currently Locked', value: stats.locked, icon: 'bi-lock-fill', color: '#D85C4A' },
                     { label: 'Currently Open', value: stats.unlocked, icon: 'bi-unlock-fill', color: '#10b981' },
-                    { label: 'Ages 4-12', value: stats.minors, icon: 'bi-shield-exclamation', color: '#f59e0b' },
-                    { label: 'Ages 13-17', value: stats.teens, icon: 'bi-shield-check', color: '#3b82f6' },
+                    { label: 'Ages 4-12', value: stats.minors, icon: 'bi-shield-exclamation', color: '#C9A66B' },
+                    { label: 'Ages 13-17', value: stats.teens, icon: 'bi-shield-check', color: '#101C2C' },
                 ].map((stat, i) => (
                     <div className="col-6 col-md" key={i}>
                         <div className="rounded-3 p-3 text-center" style={{
@@ -181,7 +181,7 @@ const SchoolChatLock = () => {
                             boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
                         }}>
                             <i className={`bi ${stat.icon} d-block mb-1`} style={{ fontSize: '20px', color: stat.color }}></i>
-                            <div className="fw-bold" style={{ fontSize: '22px', color: '#1e293b' }}>{stat.value}</div>
+                            <div className="fw-bold" style={{ fontSize: '22px', color: '#101C2C' }}>{stat.value}</div>
                             <div style={{ fontSize: '12px', color: '#6b7280' }}>{stat.label}</div>
                         </div>
                     </div>
@@ -226,7 +226,7 @@ const SchoolChatLock = () => {
 
             {/* Policies Table */}
             {filteredPolicies.length === 0 ? (
-                <div className="text-center py-5" style={{ backgroundColor: '#f9fafb', borderRadius: '12px' }}>
+                <div className="text-center py-5" style={{ backgroundColor: '#F7F3EA', borderRadius: '12px' }}>
                     <i className="bi bi-shield-check d-block mb-2" style={{ fontSize: '40px', color: '#d1d5db' }}></i>
                     <p className="text-muted mb-0">
                         {searchTerm ? 'No matching records found' : 'No chat lock policies found'}
@@ -237,7 +237,7 @@ const SchoolChatLock = () => {
                     <div className="table-responsive">
                         <table className="table table-hover mb-0" style={{ fontSize: '14px' }}>
                             <thead>
-                                <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid #e5e7eb' }}>
+                                <tr style={{ backgroundColor: '#F7F3EA', borderBottom: '2px solid #e5e7eb' }}>
                                     <th className="py-3 px-3" style={{ color: '#64748b', fontWeight: 600, fontSize: '12px', textTransform: 'uppercase' }}>Student</th>
                                     <th className="py-3 px-3" style={{ color: '#64748b', fontWeight: 600, fontSize: '12px', textTransform: 'uppercase' }}>Parent</th>
                                     <th className="py-3 px-3" style={{ color: '#64748b', fontWeight: 600, fontSize: '12px', textTransform: 'uppercase' }}>Teacher(s)</th>
@@ -255,11 +255,11 @@ const SchoolChatLock = () => {
                                     return (
                                         <tr key={policy.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                                             <td className="py-3 px-3">
-                                                <div className="fw-medium" style={{ color: '#1e293b' }}>{policy.student_name || '—'}</div>
+                                                <div className="fw-medium" style={{ color: '#101C2C' }}>{policy.student_name || '—'}</div>
                                                 <div style={{ fontSize: '12px', color: '#94a3b8' }}>{policy.student_email || ''}</div>
                                             </td>
                                             <td className="py-3 px-3">
-                                                <div className="fw-medium" style={{ color: '#1e293b' }}>{policy.parent_name || '—'}</div>
+                                                <div className="fw-medium" style={{ color: '#101C2C' }}>{policy.parent_name || '—'}</div>
                                                 <div style={{ fontSize: '12px', color: '#94a3b8' }}>
                                                     {policy.parent_email || ''} 
                                                     {policy.relationship && <span className="ms-1 text-capitalize">({policy.relationship})</span>}
@@ -270,7 +270,7 @@ const SchoolChatLock = () => {
                                                     policy.teacher_names.map((name, i) => (
                                                         <span key={i} className="badge me-1 mb-1" style={{
                                                             backgroundColor: 'rgba(99,102,241,0.1)',
-                                                            color: '#6366f1',
+                                                            color: '#7C9BB8',
                                                             fontWeight: 500,
                                                             fontSize: '12px'
                                                         }}>{name}</span>
@@ -300,7 +300,7 @@ const SchoolChatLock = () => {
                                             </td>
                                             <td className="py-3 px-3">
                                                 {policy.unlock_expires_at ? (
-                                                    <div style={{ fontSize: '13px', color: '#f59e0b', fontWeight: 500 }}>
+                                                    <div style={{ fontSize: '13px', color: '#C9A66B', fontWeight: 500 }}>
                                                         <i className="bi bi-clock me-1"></i>
                                                         {new Date(policy.unlock_expires_at).toLocaleString()}
                                                     </div>
@@ -316,7 +316,7 @@ const SchoolChatLock = () => {
                                                         className="btn btn-sm px-3 py-1"
                                                         style={{
                                                             backgroundColor: 'rgba(239,68,68,0.1)',
-                                                            color: '#ef4444',
+                                                            color: '#D85C4A',
                                                             border: '1px solid rgba(239,68,68,0.2)',
                                                             fontWeight: 500,
                                                             fontSize: '12px'
@@ -351,15 +351,15 @@ const SchoolChatLock = () => {
             )}
 
             {/* Legend */}
-            <div className="mt-3 p-3 rounded-3" style={{ backgroundColor: '#f8fafc', border: '1px solid #e5e7eb', fontSize: '13px' }}>
+            <div className="mt-3 p-3 rounded-3" style={{ backgroundColor: '#F7F3EA', border: '1px solid #e5e7eb', fontSize: '13px' }}>
                 <div className="fw-medium mb-2" style={{ color: '#475569' }}><i className="bi bi-info-circle me-1"></i> Chat Lock Rules</div>
                 <div className="row g-2">
                     <div className="col-md-4">
-                        <span className="badge me-1" style={{ backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444' }}>Ages 4-12</span>
+                        <span className="badge me-1" style={{ backgroundColor: 'rgba(239,68,68,0.12)', color: '#D85C4A' }}>Ages 4-12</span>
                         Chat locked by default. Only unlocked during live sessions or by admin.
                     </div>
                     <div className="col-md-4">
-                        <span className="badge me-1" style={{ backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b' }}>Ages 13-17</span>
+                        <span className="badge me-1" style={{ backgroundColor: 'rgba(245,158,11,0.12)', color: '#C9A66B' }}>Ages 13-17</span>
                         Allowed during teacher office hours and live sessions.
                     </div>
                     <div className="col-md-4">
@@ -375,7 +375,7 @@ const SchoolChatLock = () => {
                     <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '16px' }}>
                             <div className="modal-header border-0 pb-0 px-4 pt-4">
-                                <h5 className="modal-title fw-bold" style={{ color: '#1e293b' }}>
+                                <h5 className="modal-title fw-bold" style={{ color: '#101C2C' }}>
                                     {actionModal.action === 'lock' ? (
                                         <><i className="bi bi-lock-fill text-danger me-2"></i>Lock Chat</>
                                     ) : (
@@ -385,7 +385,7 @@ const SchoolChatLock = () => {
                                 <button className="btn-close" onClick={() => setActionModal(null)}></button>
                             </div>
                             <div className="modal-body px-4 py-3">
-                                <div className="mb-3 p-3 rounded-3" style={{ backgroundColor: '#f8fafc', border: '1px solid #e5e7eb' }}>
+                                <div className="mb-3 p-3 rounded-3" style={{ backgroundColor: '#F7F3EA', border: '1px solid #e5e7eb' }}>
                                     <div className="d-flex justify-content-between mb-1">
                                         <span style={{ color: '#64748b', fontSize: '13px' }}>Student:</span>
                                         <span className="fw-medium" style={{ fontSize: '13px' }}>{actionModal.policy.student_name}</span>

@@ -227,8 +227,8 @@ const TeacherOfficeHours = () => {
   };
 
   const dayColors = {
-    Monday: '#3b82f6', Tuesday: '#8b5cf6', Wednesday: '#10b981',
-    Thursday: '#f59e0b', Friday: '#ef4444', Saturday: '#06b6d4', Sunday: '#ec4899'
+    Monday: '#101C2C', Tuesday: '#7C9BB8', Wednesday: '#10b981',
+    Thursday: '#C9A66B', Friday: '#D85C4A', Saturday: '#7C9BB8', Sunday: '#D85C4A'
   };
 
   return (
@@ -236,15 +236,15 @@ const TeacherOfficeHours = () => {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h2 style={{ margin: 0, fontWeight: '700', color: '#1e293b', fontSize: '22px' }}>
-            <i className="bi bi-clock me-2" style={{ color: '#6366f1' }}></i>Office Hours
+          <h2 style={{ margin: 0, fontWeight: '700', color: '#101C2C', fontSize: '22px' }}>
+            <i className="bi bi-clock me-2" style={{ color: '#7C9BB8' }}></i>Office Hours
           </h2>
           <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px' }}>
             Set your weekly availability for parent/student messaging
           </p>
         </div>
         <button onClick={openAddForm}
-          style={{ padding: '10px 20px', backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          style={{ padding: '10px 20px', backgroundColor: '#7C9BB8', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <i className="bi bi-plus-lg"></i> Add Hours
         </button>
       </div>
@@ -252,7 +252,7 @@ const TeacherOfficeHours = () => {
       {/* Summary */}
       <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
         <div style={{ padding: '12px 20px', backgroundColor: '#eff6ff', borderRadius: '10px', flex: '1', minWidth: '140px', textAlign: 'center' }}>
-          <div style={{ fontSize: '24px', fontWeight: '700', color: '#3b82f6' }}>{hours.length}</div>
+          <div style={{ fontSize: '24px', fontWeight: '700', color: '#101C2C' }}>{hours.length}</div>
           <div style={{ fontSize: '12px', color: '#64748b' }}>Total Slots</div>
         </div>
         <div style={{ padding: '12px 20px', backgroundColor: '#f0fdf4', borderRadius: '10px', flex: '1', minWidth: '140px', textAlign: 'center' }}>
@@ -260,7 +260,7 @@ const TeacherOfficeHours = () => {
           <div style={{ fontSize: '12px', color: '#64748b' }}>Active</div>
         </div>
         <div style={{ padding: '12px 20px', backgroundColor: '#fef2f2', borderRadius: '10px', flex: '1', minWidth: '140px', textAlign: 'center' }}>
-          <div style={{ fontSize: '24px', fontWeight: '700', color: '#ef4444' }}>{hours.filter(h => !h.is_active).length}</div>
+          <div style={{ fontSize: '24px', fontWeight: '700', color: '#D85C4A' }}>{hours.filter(h => !h.is_active).length}</div>
           <div style={{ fontSize: '12px', color: '#64748b' }}>Inactive</div>
         </div>
       </div>
@@ -268,10 +268,10 @@ const TeacherOfficeHours = () => {
       {/* Form panel */}
       {showForm && (
         <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', marginBottom: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
-          <h5 style={{ margin: '0 0 16px', fontWeight: '600', color: '#1e293b' }}>
+          <h5 style={{ margin: '0 0 16px', fontWeight: '600', color: '#101C2C' }}>
             {editItem ? 'Edit Office Hours' : 'Add Office Hours'}
           </h5>
-          {error && <div style={{ padding: '10px', backgroundColor: '#fef2f2', color: '#dc2626', borderRadius: '8px', marginBottom: '12px', fontSize: '13px' }}>{error}</div>}
+          {error && <div style={{ padding: '10px', backgroundColor: '#fef2f2', color: '#D85C4A', borderRadius: '8px', marginBottom: '12px', fontSize: '13px' }}>{error}</div>}
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '12px' }}>
             <div>
@@ -317,7 +317,7 @@ const TeacherOfficeHours = () => {
               Cancel
             </button>
             <button onClick={handleSave} disabled={saving}
-              style={{ padding: '8px 20px', backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px', opacity: saving ? 0.6 : 1 }}>
+              style={{ padding: '8px 20px', backgroundColor: '#7C9BB8', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px', opacity: saving ? 0.6 : 1 }}>
               {saving ? 'Saving...' : (editItem ? 'Update' : 'Create')}
             </button>
           </div>
@@ -335,7 +335,7 @@ const TeacherOfficeHours = () => {
           <h5 style={{ color: '#64748b', marginTop: '16px' }}>No office hours set</h5>
           <p style={{ color: '#94a3b8', fontSize: '14px' }}>Add your weekly availability so parents know when you're available for messaging.</p>
           <button onClick={openAddForm}
-            style={{ padding: '10px 24px', backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', marginTop: '8px' }}>
+            style={{ padding: '10px 24px', backgroundColor: '#7C9BB8', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', marginTop: '8px' }}>
             <i className="bi bi-plus-lg me-1"></i> Add Your First Slot
           </button>
         </div>
@@ -348,7 +348,7 @@ const TeacherOfficeHours = () => {
               <div key={day} style={{ backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
                 <div style={{ padding: '10px 16px', backgroundColor: `${dayColors[day]}10`, borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: dayColors[day] }}></div>
-                  <span style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>{day}</span>
+                  <span style={{ fontWeight: '600', color: '#101C2C', fontSize: '14px' }}>{day}</span>
                   <span style={{ fontSize: '12px', color: '#64748b' }}>({slots.length} slot{slots.length > 1 ? 's' : ''})</span>
                 </div>
                 {slots.map(slot => (
@@ -361,19 +361,19 @@ const TeacherOfficeHours = () => {
                         {formatTime(slot.start_time)} — {formatTime(slot.end_time)}
                       </div>
                       {slot.notes && <span style={{ fontSize: '13px', color: '#64748b' }}>{slot.notes}</span>}
-                      {!slot.is_active && <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: '600' }}>INACTIVE</span>}
+                      {!slot.is_active && <span style={{ fontSize: '11px', color: '#D85C4A', fontWeight: '600' }}>INACTIVE</span>}
                     </div>
                     <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
                       <button onClick={() => toggleActive(slot)} title={slot.is_active ? 'Deactivate' : 'Activate'}
-                        style={{ width: '32px', height: '32px', borderRadius: '6px', border: '1px solid #e2e8f0', backgroundColor: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', color: slot.is_active ? '#10b981' : '#ef4444' }}>
+                        style={{ width: '32px', height: '32px', borderRadius: '6px', border: '1px solid #e2e8f0', backgroundColor: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', color: slot.is_active ? '#10b981' : '#D85C4A' }}>
                         <i className={`bi ${slot.is_active ? 'bi-toggle-on' : 'bi-toggle-off'}`}></i>
                       </button>
                       <button onClick={() => openEditForm(slot)} title="Edit"
-                        style={{ width: '32px', height: '32px', borderRadius: '6px', border: '1px solid #e2e8f0', backgroundColor: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', color: '#6366f1' }}>
+                        style={{ width: '32px', height: '32px', borderRadius: '6px', border: '1px solid #e2e8f0', backgroundColor: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', color: '#7C9BB8' }}>
                         <i className="bi bi-pencil"></i>
                       </button>
                       <button onClick={() => handleDelete(slot.id)} title="Delete"
-                        style={{ width: '32px', height: '32px', borderRadius: '6px', border: '1px solid #e2e8f0', backgroundColor: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', color: '#ef4444' }}>
+                        style={{ width: '32px', height: '32px', borderRadius: '6px', border: '1px solid #e2e8f0', backgroundColor: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', color: '#D85C4A' }}>
                         <i className="bi bi-trash"></i>
                       </button>
                     </div>

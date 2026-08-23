@@ -166,11 +166,11 @@ const TeacherSessions = () => {
   // ============= VIDEO ROOM (Jitsi embed) =============
   if (showVideoRoom) {
     return (
-      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#0f172a' }}>
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#101C2C' }}>
         {/* Video room header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 24px', backgroundColor: '#1e293b', borderBottom: '1px solid #334155' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 24px', backgroundColor: '#101C2C', borderBottom: '1px solid #334155' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '10px', height: '10px', backgroundColor: '#ef4444', borderRadius: '50%', animation: 'pulse 2s infinite' }}></div>
+            <div style={{ width: '10px', height: '10px', backgroundColor: '#D85C4A', borderRadius: '50%', animation: 'pulse 2s infinite' }}></div>
             <span style={{ color: '#fff', fontWeight: '600' }}>LIVE</span>
             <span style={{ color: '#94a3b8' }}>— {showVideoRoom.title}</span>
           </div>
@@ -178,7 +178,7 @@ const TeacherSessions = () => {
             <span style={{ color: '#94a3b8', fontSize: '14px' }}>
               with {showVideoRoom.student_name || 'Student'}
             </span>
-            <button onClick={() => handleEndSession(showVideoRoom.id)} style={{ padding: '8px 20px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>
+            <button onClick={() => handleEndSession(showVideoRoom.id)} style={{ padding: '8px 20px', backgroundColor: '#D85C4A', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>
               End Session
             </button>
           </div>
@@ -201,10 +201,10 @@ const TeacherSessions = () => {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
         <div>
-          <h2 style={{ margin: 0, color: '#1e293b', fontWeight: '700' }}>Sessions</h2>
+          <h2 style={{ margin: 0, color: '#101C2C', fontWeight: '700' }}>Sessions</h2>
           <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px' }}>Schedule and manage live video sessions with your students</p>
         </div>
-        <button onClick={() => setShowModal(true)} style={{ padding: '10px 24px', backgroundColor: '#3b82f6', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+        <button onClick={() => setShowModal(true)} style={{ padding: '10px 24px', backgroundColor: '#101C2C', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
           <i className="bi bi-plus-lg"></i> Schedule Session
         </button>
       </div>
@@ -216,7 +216,7 @@ const TeacherSessions = () => {
           { key: 'past', label: 'Past', count: past.length },
           { key: 'cancelled', label: 'Cancelled', count: cancelled.length }
         ].map(tab => (
-          <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{ flex: 1, padding: '10px 16px', borderRadius: '8px', border: 'none', fontWeight: '500', fontSize: '14px', cursor: 'pointer', backgroundColor: activeTab === tab.key ? '#fff' : 'transparent', color: activeTab === tab.key ? '#1e293b' : '#64748b', boxShadow: activeTab === tab.key ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.2s' }}>
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{ flex: 1, padding: '10px 16px', borderRadius: '8px', border: 'none', fontWeight: '500', fontSize: '14px', cursor: 'pointer', backgroundColor: activeTab === tab.key ? '#fff' : 'transparent', color: activeTab === tab.key ? '#101C2C' : '#64748b', boxShadow: activeTab === tab.key ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.2s' }}>
             {tab.label} ({tab.count})
           </button>
         ))}
@@ -226,7 +226,7 @@ const TeacherSessions = () => {
       {loading ? (
         <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>Loading sessions...</div>
       ) : displayed.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px', backgroundColor: '#f8fafc', borderRadius: '16px', border: '2px dashed #e2e8f0' }}>
+        <div style={{ textAlign: 'center', padding: '60px', backgroundColor: '#F7F3EA', borderRadius: '16px', border: '2px dashed #e2e8f0' }}>
           <i className="bi bi-camera-video" style={{ fontSize: '48px', color: '#cbd5e1', display: 'block', marginBottom: '16px' }}></i>
           <h4 style={{ color: '#64748b', fontWeight: '600' }}>No {activeTab} sessions</h4>
           <p style={{ color: '#94a3b8', fontSize: '14px' }}>
@@ -241,12 +241,12 @@ const TeacherSessions = () => {
                  onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <div style={{ width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: session.is_live ? '#fef2f2' : session.session_type === 'video_call' ? '#eff6ff' : '#f0fdf4' }}>
-                  <i className={session.is_live ? 'bi bi-broadcast' : session.session_type === 'video_call' ? 'bi bi-camera-video' : session.session_type === 'audio_call' ? 'bi bi-telephone' : 'bi bi-person'} style={{ fontSize: '20px', color: session.is_live ? '#ef4444' : session.session_type === 'video_call' ? '#3b82f6' : '#22c55e' }}></i>
+                  <i className={session.is_live ? 'bi bi-broadcast' : session.session_type === 'video_call' ? 'bi bi-camera-video' : session.session_type === 'audio_call' ? 'bi bi-telephone' : 'bi bi-person'} style={{ fontSize: '20px', color: session.is_live ? '#D85C4A' : session.session_type === 'video_call' ? '#101C2C' : '#22c55e' }}></i>
                 </div>
                 <div>
-                  <div style={{ fontWeight: '600', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ fontWeight: '600', color: '#101C2C', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     {session.title}
-                    {session.is_live && <span style={{ fontSize: '11px', backgroundColor: '#ef4444', color: '#fff', padding: '2px 8px', borderRadius: '20px', fontWeight: '600' }}>LIVE</span>}
+                    {session.is_live && <span style={{ fontSize: '11px', backgroundColor: '#D85C4A', color: '#fff', padding: '2px 8px', borderRadius: '20px', fontWeight: '600' }}>LIVE</span>}
                   </div>
                   <div style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
                     with {session.student_name || 'Student'} • {formatDate(session.scheduled_date)} at {session.formatted_time || session.scheduled_time} • {session.duration_minutes} min
@@ -256,13 +256,13 @@ const TeacherSessions = () => {
               <div style={{ display: 'flex', gap: '8px' }}>
                 {session.is_live ? (
                   <>
-                    <button onClick={() => setShowVideoRoom(session)} style={{ padding: '8px 16px', backgroundColor: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '500', fontSize: '13px', cursor: 'pointer' }}>
+                    <button onClick={() => setShowVideoRoom(session)} style={{ padding: '8px 16px', backgroundColor: '#101C2C', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '500', fontSize: '13px', cursor: 'pointer' }}>
                       <i className="bi bi-box-arrow-up-right me-1"></i> Rejoin
                     </button>
-                    <button onClick={() => handleEndSession(session.id)} style={{ padding: '8px 16px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '500', fontSize: '13px', cursor: 'pointer' }}>
+                    <button onClick={() => handleEndSession(session.id)} style={{ padding: '8px 16px', backgroundColor: '#D85C4A', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '500', fontSize: '13px', cursor: 'pointer' }}>
                       End
                     </button>
-                    <button onClick={() => handleReportSession(session)} style={{ padding: '8px 12px', backgroundColor: '#fff', color: '#ef4444', border: '1px solid #fecaca', borderRadius: '8px', fontWeight: '500', fontSize: '13px', cursor: 'pointer' }}>
+                    <button onClick={() => handleReportSession(session)} style={{ padding: '8px 12px', backgroundColor: '#fff', color: '#D85C4A', border: '1px solid #fecaca', borderRadius: '8px', fontWeight: '500', fontSize: '13px', cursor: 'pointer' }}>
                       <i className="bi bi-flag"></i>
                     </button>
                   </>
@@ -274,17 +274,17 @@ const TeacherSessions = () => {
                     <button onClick={() => handleCancel(session)} style={{ padding: '8px 16px', backgroundColor: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', borderRadius: '8px', fontWeight: '500', fontSize: '13px', cursor: 'pointer' }}>
                       Cancel
                     </button>
-                    <button onClick={() => handleUpdateRecording(session, !session.recording_enabled)} style={{ padding: '8px 12px', backgroundColor: '#fff', color: session.recording_enabled ? '#d97706' : '#16a34a', border: '1px solid #e2e8f0', borderRadius: '8px', fontWeight: '500', fontSize: '13px', cursor: 'pointer' }}>
+                    <button onClick={() => handleUpdateRecording(session, !session.recording_enabled)} style={{ padding: '8px 12px', backgroundColor: '#fff', color: session.recording_enabled ? '#C9A66B' : '#16a34a', border: '1px solid #e2e8f0', borderRadius: '8px', fontWeight: '500', fontSize: '13px', cursor: 'pointer' }}>
                       <i className={`bi ${session.recording_enabled ? 'bi-stop-circle' : 'bi-record-circle'}`}></i>
                     </button>
-                    <button onClick={() => handleReportSession(session)} style={{ padding: '8px 12px', backgroundColor: '#fff', color: '#ef4444', border: '1px solid #fecaca', borderRadius: '8px', fontWeight: '500', fontSize: '13px', cursor: 'pointer' }}>
+                    <button onClick={() => handleReportSession(session)} style={{ padding: '8px 12px', backgroundColor: '#fff', color: '#D85C4A', border: '1px solid #fecaca', borderRadius: '8px', fontWeight: '500', fontSize: '13px', cursor: 'pointer' }}>
                       <i className="bi bi-flag"></i>
                     </button>
                   </>
                 ) : (
                   <span style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: '600',
                     backgroundColor: session.status === 'completed' ? '#f0fdf4' : '#fef2f2',
-                    color: session.status === 'completed' ? '#16a34a' : '#ef4444'
+                    color: session.status === 'completed' ? '#16a34a' : '#D85C4A'
                   }}>
                     {session.status === 'completed' ? 'Completed' : 'Cancelled'}
                   </span>
@@ -300,7 +300,7 @@ const TeacherSessions = () => {
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowModal(false)}>
           <div style={{ backgroundColor: '#fff', borderRadius: '16px', padding: '32px', maxWidth: '520px', width: '90%', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h3 style={{ margin: 0, fontWeight: '700', color: '#1e293b' }}>Schedule Session</h3>
+              <h3 style={{ margin: 0, fontWeight: '700', color: '#101C2C' }}>Schedule Session</h3>
               <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px', color: '#94a3b8' }}>×</button>
             </div>
 
@@ -355,7 +355,7 @@ const TeacherSessions = () => {
                 </div>
               </div>
 
-              <button type="submit" style={{ width: '100%', padding: '12px', backgroundColor: '#3b82f6', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '600', fontSize: '15px', cursor: 'pointer' }}>
+              <button type="submit" style={{ width: '100%', padding: '12px', backgroundColor: '#101C2C', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '600', fontSize: '15px', cursor: 'pointer' }}>
                 Schedule Session
               </button>
             </form>

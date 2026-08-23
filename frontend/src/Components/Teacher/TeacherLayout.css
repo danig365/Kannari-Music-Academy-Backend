@@ -50,7 +50,7 @@
 }
 
 .teacher-mobile-title {
-    color: #1a2332;
+    color: #101C2C;
     font-size: 18px;
     font-weight: 600;
     margin-left: 16px;
@@ -63,7 +63,7 @@
     height: 60px;
     background: transparent;
     border: none;
-    color: #3b82f6;
+    color: #101C2C;
     font-size: 24px;
     cursor: pointer;
     align-items: center;
@@ -78,7 +78,7 @@
 
 .teacher-sidebar-toggle:hover {
     background: rgba(59, 130, 246, 0.08);
-    color: #2563eb;
+    color: #101C2C;
 }
 
 .teacher-sidebar-toggle:active {
@@ -86,7 +86,7 @@
 }
 
 .teacher-sidebar-toggle i {
-    color: #3b82f6;
+    color: #101C2C;
     font-size: 24px;
     display: block;
     pointer-events: none;

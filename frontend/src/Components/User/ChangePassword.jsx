@@ -74,18 +74,18 @@ const ChangePassword = () => {
       <h3 style={{
         fontSize: '18px',
         fontWeight: 600,
-        color: '#1a2332',
+        color: '#101C2C',
         marginBottom: '20px',
         display: 'flex',
         alignItems: 'center',
         gap: '8px'
       }}>
-        <i className="bi bi-lock" style={{color: '#ef4444'}}></i>
+        <i className="bi bi-lock" style={{color: '#D85C4A'}}></i>
         Change Password
       </h3>
 
       <div style={{marginBottom: '20px'}}>
-        <label style={{display: 'block', fontWeight: 500, color: '#1a2332', marginBottom: '6px', fontSize: '14px'}}>
+        <label style={{display: 'block', fontWeight: 500, color: '#101C2C', marginBottom: '6px', fontSize: '14px'}}>
           <i className='bi bi-key me-2'></i>New Password
         </label>
         <input 
@@ -114,7 +114,7 @@ const ChangePassword = () => {
         onClick={submitForm} 
         style={{
           width: '100%',
-          background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+          background: 'linear-gradient(135deg, #D85C4A 0%, #D85C4A 100%)',
           color: '#fff',
           border: 'none',
           borderRadius: '8px',

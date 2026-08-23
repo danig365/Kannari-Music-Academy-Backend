@@ -80,7 +80,7 @@ const ActivityLogs = () => {
             <div className="activity-logs-container">
                 <div className="logs-header">
                     <h2>
-                        <i className="bi bi-clock-history" style={{color: '#2563eb'}}></i>
+                        <i className="bi bi-clock-history" style={{color: '#101C2C'}}></i>
                         Activity Logs
                     </h2>
                     <p>
@@ -105,7 +105,7 @@ const ActivityLogs = () => {
                                             border: '1px solid #e5e7eb',
                                             borderRadius: '6px',
                                             fontSize: '14px',
-                                            backgroundColor: '#f9fafb'
+                                            backgroundColor: '#F7F3EA'
                                         }}
                                     >
                                         <option value="">All Actions</option>
@@ -143,19 +143,19 @@ const ActivityLogs = () => {
                                     create: '#dbeafe',
                                     update: '#e0f2fe',
                                     delete: '#fee2e2',
-                                    view: '#f9fafb',
+                                    view: '#F7F3EA',
                                     export: '#f3e8ff',
                                     import: '#dbeafe'
                                 };
                                 const actionTextColors = {
                                     login: '#15803d',
                                     logout: '#4b5563',
-                                    create: '#1e40af',
+                                    create: '#101C2C',
                                     update: '#0369a1',
-                                    delete: '#b91c1c',
+                                    delete: '#D85C4A',
                                     view: '#374151',
                                     export: '#6b21a8',
-                                    import: '#1e40af'
+                                    import: '#101C2C'
                                 };
                                 const bgColor = actionColors[log.action] || '#f3f4f6';
                                 const textColor = actionTextColors[log.action] || '#4b5563';

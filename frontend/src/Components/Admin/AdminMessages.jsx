@@ -11,13 +11,13 @@ import {
 } from '../../services/messagingService';
 
 const TYPE_COLORS = {
-  teacher: { bg: '#6366f1', light: '#eff6ff', badge: '#eef2ff', text: '#4338ca', label: 'Teacher' },
-  student: { bg: '#3b82f6', light: '#eff6ff', badge: '#dbeafe', text: '#1d4ed8', label: 'Student' },
+  teacher: { bg: '#7C9BB8', light: '#eff6ff', badge: '#eef2ff', text: '#4338ca', label: 'Teacher' },
+  student: { bg: '#101C2C', light: '#eff6ff', badge: '#dbeafe', text: '#101C2C', label: 'Student' },
   school:  { bg: '#0891b2', light: '#ecfeff', badge: '#cffafe', text: '#0e7490', label: 'School'  },
-  parent:  { bg: '#8b5cf6', light: '#f5f3ff', badge: '#ede9fe', text: '#7c3aed', label: 'Parent'  },
+  parent:  { bg: '#7C9BB8', light: '#f5f3ff', badge: '#ede9fe', text: '#7C9BB8', label: 'Parent'  },
 };
 
-const typeInfo = (type) => TYPE_COLORS[type] || { bg: '#64748b', light: '#f8fafc', badge: '#f1f5f9', text: '#475569', label: type };
+const typeInfo = (type) => TYPE_COLORS[type] || { bg: '#64748b', light: '#F7F3EA', badge: '#f1f5f9', text: '#475569', label: type };
 
 const timeAgo = (dateStr) => {
   const now = new Date();
@@ -305,13 +305,13 @@ const AdminMessages = () => {
       {/* Header */}
       <div style={{ padding: '16px', borderBottom: '1px solid #e2e8f0' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-          <h4 style={{ margin: 0, fontWeight: '700', color: '#1e293b', fontSize: '16px' }}>
-            <i className="bi bi-chat-dots me-2" style={{ color: '#4285f4' }}></i>
+          <h4 style={{ margin: 0, fontWeight: '700', color: '#101C2C', fontSize: '16px' }}>
+            <i className="bi bi-chat-dots me-2" style={{ color: '#101C2C' }}></i>
             Messages
             {totalUnread > 0 && (
               <span style={{
                 marginLeft: '8px', padding: '2px 7px', borderRadius: '10px',
-                backgroundColor: '#ef4444', color: '#fff', fontSize: '11px', fontWeight: '700'
+                backgroundColor: '#D85C4A', color: '#fff', fontSize: '11px', fontWeight: '700'
               }}>{totalUnread}</span>
             )}
           </h4>
@@ -319,7 +319,7 @@ const AdminMessages = () => {
             <button
               onClick={openComposeModal}
               title="Start new conversation"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4285f4', fontSize: '18px', padding: '4px' }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#101C2C', fontSize: '18px', padding: '4px' }}
             >
               <i className="bi bi-pencil-square"></i>
             </button>
@@ -354,7 +354,7 @@ const AdminMessages = () => {
             <button key={t} onClick={() => setFilterType(t)} style={{
               padding: '4px 10px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '12px',
               fontWeight: filterType === t ? '600' : '400',
-              backgroundColor: filterType === t ? '#1e293b' : '#f1f5f9',
+              backgroundColor: filterType === t ? '#101C2C' : '#f1f5f9',
               color: filterType === t ? '#fff' : '#64748b',
               textTransform: 'capitalize',
             }}>{t}</button>
@@ -388,7 +388,7 @@ const AdminMessages = () => {
                   borderBottom: '1px solid #f1f5f9',
                   cursor: 'pointer',
                   backgroundColor: isActive ? '#eff6ff' : '#fff',
-                  borderLeft: isActive ? '3px solid #4285f4' : '3px solid transparent',
+                  borderLeft: isActive ? '3px solid #101C2C' : '3px solid transparent',
                   transition: 'all 0.15s',
                 }}
               >
@@ -407,7 +407,7 @@ const AdminMessages = () => {
                   )}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontWeight: '600', color: '#1e293b', fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <span style={{ fontWeight: '600', color: '#101C2C', fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {conv.display_name}
                       </span>
                       <span style={{ fontSize: '10px', color: '#94a3b8', flexShrink: 0, marginLeft: '6px' }}>
@@ -421,7 +421,7 @@ const AdminMessages = () => {
                       }}>{ti.label}</span>
                       {conv.unread_count > 0 && (
                         <span style={{
-                          width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#ef4444',
+                          width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#D85C4A',
                           color: '#fff', fontSize: '10px', fontWeight: '700',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>{conv.unread_count}</span>
@@ -444,7 +444,7 @@ const AdminMessages = () => {
   const renderRightPanel = () => {
     if (!activeConv) {
       return (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', backgroundColor: '#f8fafc' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', backgroundColor: '#F7F3EA' }}>
           <i className="bi bi-chat-square-text" style={{ fontSize: '64px', color: '#cbd5e1' }}></i>
           <p style={{ color: '#64748b', marginTop: '16px', fontSize: '16px', fontWeight: '500' }}>Select a conversation</p>
           <p style={{ color: '#94a3b8', fontSize: '13px', margin: '4px 0 0' }}>Reply to students, teachers and schools</p>
@@ -455,7 +455,7 @@ const AdminMessages = () => {
     const ti = typeInfo(activeConv.user_type);
 
     return (
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc', overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#F7F3EA', overflow: 'hidden' }}>
         {/* Thread header */}
         <div style={{
           padding: '12px 16px', borderBottom: '1px solid #e2e8f0',
@@ -479,7 +479,7 @@ const AdminMessages = () => {
             </div>
           )}
           <div>
-            <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>{activeConv.display_name}</div>
+            <div style={{ fontWeight: '600', color: '#101C2C', fontSize: '14px' }}>{activeConv.display_name}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
               <span style={{
                 padding: '1px 8px', borderRadius: '8px', fontSize: '11px', fontWeight: '600',
@@ -493,7 +493,7 @@ const AdminMessages = () => {
                   href="/admin-panel/users-management"
                   style={{
                     padding: '2px 9px', borderRadius: '8px', fontSize: '11px', fontWeight: '700',
-                    backgroundColor: '#fef3c7', color: '#d97706',
+                    backgroundColor: '#fef3c7', color: '#C9A66B',
                     textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px',
                   }}
                   title="View safety reports for this user"
@@ -511,7 +511,7 @@ const AdminMessages = () => {
             style={{
               marginLeft: 'auto', background: '#fef2f2', border: '1px solid #fecaca',
               borderRadius: '8px', padding: '6px 12px', cursor: 'pointer',
-              color: '#ef4444', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px',
+              color: '#D85C4A', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px',
               flexShrink: 0,
             }}
           >
@@ -540,15 +540,15 @@ const AdminMessages = () => {
                 >
                   {isMine && hoveredMsgId === msg.id && (
                     <button onClick={() => handleDelete(msg.id)} title="Delete message"
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '13px', padding: '2px', flexShrink: 0, opacity: 0.8 }}>
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#D85C4A', fontSize: '13px', padding: '2px', flexShrink: 0, opacity: 0.8 }}>
                       <i className="bi bi-trash3"></i>
                     </button>
                   )}
                   <div style={{
                     maxWidth: '70%', padding: '10px 14px',
                     borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                    backgroundColor: isMine ? '#4285f4' : '#fff',
-                    color: isMine ? '#fff' : '#1e293b',
+                    backgroundColor: isMine ? '#101C2C' : '#fff',
+                    color: isMine ? '#fff' : '#101C2C',
                     fontSize: '14px',
                     boxShadow: '0 1px 3px rgba(0,0,0,0.07)',
                     border: isMine ? 'none' : '1px solid #e2e8f0',
@@ -593,7 +593,7 @@ const AdminMessages = () => {
             disabled={!newMessage.trim() || sending}
             style={{
               width: '38px', height: '38px', borderRadius: '50%', border: 'none', flexShrink: 0,
-              backgroundColor: newMessage.trim() ? '#4285f4' : '#e2e8f0',
+              backgroundColor: newMessage.trim() ? '#101C2C' : '#e2e8f0',
               color: '#fff', cursor: newMessage.trim() ? 'pointer' : 'default',
               display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px',
               transition: 'background 0.2s',
@@ -607,7 +607,7 @@ const AdminMessages = () => {
   };
 
   return (
-    <div style={{ display: 'flex', height: 'calc(100vh - 60px)', overflow: 'hidden', backgroundColor: '#f8fafc' }}>
+    <div style={{ display: 'flex', height: 'calc(100vh - 60px)', overflow: 'hidden', backgroundColor: '#F7F3EA' }}>
       {renderLeftPanel()}
       {renderRightPanel()}
 
@@ -633,8 +633,8 @@ const AdminMessages = () => {
               padding: '16px 20px', borderBottom: '1px solid #e2e8f0',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
-              <h5 style={{ margin: 0, fontWeight: '700', color: '#1e293b', fontSize: '15px' }}>
-                <i className="bi bi-pencil-square me-2" style={{ color: '#4285f4' }}></i>
+              <h5 style={{ margin: 0, fontWeight: '700', color: '#101C2C', fontSize: '15px' }}>
+                <i className="bi bi-pencil-square me-2" style={{ color: '#101C2C' }}></i>
                 New Conversation
               </h5>
               <button
@@ -666,7 +666,7 @@ const AdminMessages = () => {
                   <button key={t} onClick={() => handleComposeTypeChange(t)} style={{
                     padding: '4px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '12px',
                     fontWeight: composeUserType === t ? '600' : '400',
-                    backgroundColor: composeUserType === t ? '#1e293b' : '#f1f5f9',
+                    backgroundColor: composeUserType === t ? '#101C2C' : '#f1f5f9',
                     color: composeUserType === t ? '#fff' : '#64748b',
                     textTransform: 'capitalize',
                   }}>{t}</button>
@@ -694,11 +694,11 @@ const AdminMessages = () => {
                       key={`${user.type}-${user.id}`}
                       onClick={() => selectComposeUser(user)}
                       style={{
-                        padding: '12px 20px', cursor: 'pointer', borderBottom: '1px solid #f8fafc',
+                        padding: '12px 20px', cursor: 'pointer', borderBottom: '1px solid #F7F3EA',
                         display: 'flex', alignItems: 'center', gap: '12px',
                         transition: 'background 0.1s',
                       }}
-                      onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f8fafc'}
+                      onMouseEnter={e => e.currentTarget.style.backgroundColor = '#F7F3EA'}
                       onMouseLeave={e => e.currentTarget.style.backgroundColor = ''}
                     >
                       {user.profile_img ? (
@@ -713,7 +713,7 @@ const AdminMessages = () => {
                         </div>
                       )}
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <div style={{ fontWeight: '600', color: '#101C2C', fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {user.name}
                         </div>
                         <div style={{ fontSize: '11px', color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

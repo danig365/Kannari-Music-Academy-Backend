@@ -64,7 +64,7 @@
 .downloadables-section {
     margin-top: 12px;
     padding: 20px;
-    background: linear-gradient(135deg, #f8fafc 0%, #f0f9ff 100%);
+    background: linear-gradient(135deg, #F7F3EA 0%, #f0f9ff 100%);
     border-radius: 12px;
     border: 2px solid #bfdbfe;
     box-shadow: 0 2px 8px rgba(59, 130, 246, 0.08);
@@ -72,7 +72,7 @@
 }
 
 .downloadables-title {
-    color: #1e40af;
+    color: #101C2C;
     font-weight: 700;
     font-size: 15px;
     margin: 0 0 14px 0;
@@ -102,7 +102,7 @@
 
 .downloadable-card:hover {
     background: white;
-    border-color: #3b82f6;
+    border-color: #101C2C;
     transform: translateY(-3px);
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
 }
@@ -120,7 +120,7 @@
 
 .downloadable-icon i {
     font-size: 20px;
-    color: #3b82f6;
+    color: #101C2C;
 }
 
 .download-action {

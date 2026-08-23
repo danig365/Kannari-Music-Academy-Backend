@@ -6,8 +6,8 @@ import { API_BASE_URL } from '../../config';
 const baseUrl = API_BASE_URL;
 
 const MONTH_COLOR = [
-    '#4285f4', '#0ea5e9', '#10b981', '#f59e0b',
-    '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6',
+    '#101C2C', '#0ea5e9', '#10b981', '#C9A66B',
+    '#D85C4A', '#7C9BB8', '#D85C4A', '#14b8a6',
 ];
 
 const emptyForm = {
@@ -143,7 +143,7 @@ const AdminLearningPaths = () => {
             text: `"${path.title}" and all its course entries will be removed. Enrollments will also be deleted.`,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#ef4444',
+            confirmButtonColor: '#D85C4A',
             confirmButtonText: 'Yes, delete',
         });
         if (!result.isConfirmed) return;
@@ -204,7 +204,7 @@ const AdminLearningPaths = () => {
             text: `Remove "${courseTitle}" from this path?`,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#ef4444',
+            confirmButtonColor: '#D85C4A',
             confirmButtonText: 'Remove',
         });
         if (!result.isConfirmed) return;
@@ -261,7 +261,7 @@ const AdminLearningPaths = () => {
                     )}
                     <div>
                         <h4 className="mb-0 fw-bold text-white d-flex align-items-center gap-2">
-                            <i className="bi bi-map" style={{ color: '#4285f4' }} />
+                            <i className="bi bi-map" style={{ color: '#101C2C' }} />
                             {view === 'list' ? 'Learning Paths' : selectedPath?.title}
                         </h4>
                         <p className="mb-0 mt-1" style={{ fontSize: '13px', color: '#64748b' }}>
@@ -275,7 +275,7 @@ const AdminLearningPaths = () => {
                     <button
                         onClick={openCreateForm}
                         className="btn d-flex align-items-center gap-2"
-                        style={{ background: '#4285f4', color: '#fff', border: 'none', borderRadius: '10px', padding: '8px 18px', fontWeight: 600 }}
+                        style={{ background: '#101C2C', color: '#fff', border: 'none', borderRadius: '10px', padding: '8px 18px', fontWeight: 600 }}
                     >
                         <i className="bi bi-plus-lg" /> New Learning Path
                     </button>
@@ -284,7 +284,7 @@ const AdminLearningPaths = () => {
                         <button
                             onClick={() => openEditForm(selectedPath)}
                             className="btn btn-sm"
-                            style={{ background: 'rgba(66,133,244,0.15)', color: '#4285f4', border: '1px solid rgba(66,133,244,0.3)', borderRadius: '8px' }}
+                            style={{ background: 'rgba(66,133,244,0.15)', color: '#101C2C', border: '1px solid rgba(66,133,244,0.3)', borderRadius: '8px' }}
                         >
                             <i className="bi bi-pencil me-1" />Edit Info
                         </button>
@@ -293,7 +293,7 @@ const AdminLearningPaths = () => {
                             className="btn btn-sm"
                             style={{
                                 background: selectedPath?.is_active ? 'rgba(239,68,68,0.12)' : 'rgba(16,185,129,0.12)',
-                                color: selectedPath?.is_active ? '#ef4444' : '#10b981',
+                                color: selectedPath?.is_active ? '#D85C4A' : '#10b981',
                                 border: `1px solid ${selectedPath?.is_active ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`,
                                 borderRadius: '8px',
                             }}
@@ -316,7 +316,7 @@ const AdminLearningPaths = () => {
                             <button
                                 onClick={openCreateForm}
                                 className="btn mt-2"
-                                style={{ background: '#4285f4', color: '#fff', border: 'none', borderRadius: '10px', padding: '8px 20px' }}
+                                style={{ background: '#101C2C', color: '#fff', border: 'none', borderRadius: '10px', padding: '8px 20px' }}
                             >
                                 <i className="bi bi-plus-lg me-2" />Create First Path
                             </button>
@@ -344,7 +344,7 @@ const AdminLearningPaths = () => {
                                                 className="rounded-2 d-flex align-items-center justify-content-center"
                                                 style={{ width: 40, height: 40, background: 'rgba(66,133,244,0.15)' }}
                                             >
-                                                <i className="bi bi-map" style={{ color: '#4285f4', fontSize: '18px' }} />
+                                                <i className="bi bi-map" style={{ color: '#101C2C', fontSize: '18px' }} />
                                             </div>
                                             <span
                                                 className="badge"
@@ -373,7 +373,7 @@ const AdminLearningPaths = () => {
                                                 style={{
                                                     fontSize: '12px',
                                                     background: path.is_active ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)',
-                                                    color: path.is_active ? '#ef4444' : '#10b981',
+                                                    color: path.is_active ? '#D85C4A' : '#10b981',
                                                     border: 'none', borderRadius: '7px',
                                                 }}
                                             >
@@ -382,7 +382,7 @@ const AdminLearningPaths = () => {
                                             <button
                                                 onClick={() => deletePath(path)}
                                                 className="btn btn-sm"
-                                                style={{ fontSize: '12px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'none', borderRadius: '7px' }}
+                                                style={{ fontSize: '12px', background: 'rgba(239,68,68,0.1)', color: '#D85C4A', border: 'none', borderRadius: '7px' }}
                                             >
                                                 <i className="bi bi-trash" />
                                             </button>
@@ -425,12 +425,12 @@ const AdminLearningPaths = () => {
                     {/* month-by-month timeline */}
                     <div className="d-flex align-items-center justify-content-between mb-3">
                         <h6 className="fw-bold text-white mb-0">
-                            <i className="bi bi-list-ol me-2" style={{ color: '#4285f4' }} />Course Sequence
+                            <i className="bi bi-list-ol me-2" style={{ color: '#101C2C' }} />Course Sequence
                         </h6>
                         <button
                             onClick={() => setShowAddCourse(true)}
                             className="btn btn-sm"
-                            style={{ background: 'rgba(66,133,244,0.15)', color: '#4285f4', border: '1px solid rgba(66,133,244,0.3)', borderRadius: '8px', fontSize: '13px' }}
+                            style={{ background: 'rgba(66,133,244,0.15)', color: '#101C2C', border: '1px solid rgba(66,133,244,0.3)', borderRadius: '8px', fontSize: '13px' }}
                         >
                             <i className="bi bi-plus-lg me-1" />Add Course
                         </button>
@@ -443,7 +443,7 @@ const AdminLearningPaths = () => {
                         >
                             <i className="bi bi-collection" style={{ fontSize: '36px', color: '#334155', display: 'block', marginBottom: '12px' }} />
                             <p style={{ color: '#475569', fontSize: '14px', marginBottom: 0 }}>
-                                No courses added yet. Click <strong style={{ color: '#4285f4' }}>Add Course</strong> to build the path.
+                                No courses added yet. Click <strong style={{ color: '#101C2C' }}>Add Course</strong> to build the path.
                             </p>
                         </div>
                     ) : (
@@ -504,7 +504,7 @@ const AdminLearningPaths = () => {
                                             <button
                                                 onClick={() => removeCourseFromPath(lpc.id, lpc.course_title)}
                                                 className="btn btn-sm"
-                                                style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'none', borderRadius: '6px', padding: '4px 8px' }}
+                                                style={{ background: 'rgba(239,68,68,0.1)', color: '#D85C4A', border: 'none', borderRadius: '6px', padding: '4px 8px' }}
                                                 title="Remove"
                                             >
                                                 <i className="bi bi-trash" />
@@ -546,7 +546,7 @@ const AdminLearningPaths = () => {
                         <div className="d-flex flex-column gap-3">
                             <div>
                                 <label className="form-label" style={{ color: '#94a3b8', fontSize: '13px', fontWeight: 600 }}>
-                                    Path Title <span style={{ color: '#ef4444' }}>*</span>
+                                    Path Title <span style={{ color: '#D85C4A' }}>*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -602,7 +602,7 @@ const AdminLearningPaths = () => {
                                     className="rounded-2 d-flex align-items-center justify-content-center"
                                     style={{
                                         width: 40, height: 22, cursor: 'pointer',
-                                        background: pathForm.is_active ? '#4285f4' : 'rgba(255,255,255,0.1)',
+                                        background: pathForm.is_active ? '#101C2C' : 'rgba(255,255,255,0.1)',
                                         transition: 'background 0.2s',
                                         position: 'relative',
                                     }}
@@ -633,7 +633,7 @@ const AdminLearningPaths = () => {
                                 onClick={savePath}
                                 disabled={savingPath}
                                 className="btn flex-fill fw-semibold"
-                                style={{ background: '#4285f4', color: '#fff', border: 'none', borderRadius: '10px' }}
+                                style={{ background: '#101C2C', color: '#fff', border: 'none', borderRadius: '10px' }}
                             >
                                 {savingPath ? <span className="spinner-border spinner-border-sm me-2" /> : null}
                                 {editingPath ? 'Save Changes' : 'Create Path'}
@@ -669,7 +669,7 @@ const AdminLearningPaths = () => {
                         <div className="d-flex flex-column gap-3">
                             <div>
                                 <label className="form-label" style={{ color: '#94a3b8', fontSize: '13px', fontWeight: 600 }}>
-                                    Course <span style={{ color: '#ef4444' }}>*</span>
+                                    Course <span style={{ color: '#D85C4A' }}>*</span>
                                 </label>
                                 <select
                                     className="form-select"
@@ -740,7 +740,7 @@ const AdminLearningPaths = () => {
                                 onClick={addCourseToPAth}
                                 disabled={addingCourse || !addCourseForm.course}
                                 className="btn flex-fill fw-semibold"
-                                style={{ background: '#4285f4', color: '#fff', border: 'none', borderRadius: '10px' }}
+                                style={{ background: '#101C2C', color: '#fff', border: 'none', borderRadius: '10px' }}
                             >
                                 {addingCourse ? <span className="spinner-border spinner-border-sm me-2" /> : null}
                                 Add to Path

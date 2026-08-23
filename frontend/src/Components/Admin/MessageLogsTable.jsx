@@ -90,7 +90,7 @@ const MessageLogsTable = () => {
   };
 
   const senderBadge = (type) => {
-    const colors = { teacher: '#6366f1', parent: '#8b5cf6', student: '#3b82f6', admin: '#ef4444' };
+    const colors = { teacher: '#7C9BB8', parent: '#7C9BB8', student: '#101C2C', admin: '#D85C4A' };
     return (
       <span style={{ padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '600',
         backgroundColor: `${colors[type] || '#94a3b8'}15`, color: colors[type] || '#64748b' }}>
@@ -177,7 +177,7 @@ const MessageLogsTable = () => {
       ) : (
         <div className="table-responsive">
           <table className="table table-hover" style={{ fontSize: '13px' }}>
-            <thead style={{ backgroundColor: '#f8fafc' }}>
+            <thead style={{ backgroundColor: '#F7F3EA' }}>
               <tr>
                 <th style={{ fontWeight: '600', color: '#64748b', width: '50px' }}>#</th>
                 <th style={{ fontWeight: '600', color: '#64748b' }}>Date</th>
@@ -202,7 +202,7 @@ const MessageLogsTable = () => {
                     {msg.is_read ? (
                       <span style={{ color: '#10b981' }}><i className="bi bi-check-circle-fill"></i></span>
                     ) : (
-                      <span style={{ color: '#f59e0b' }}><i className="bi bi-circle-fill" style={{ fontSize: '8px' }}></i></span>
+                      <span style={{ color: '#C9A66B' }}><i className="bi bi-circle-fill" style={{ fontSize: '8px' }}></i></span>
                     )}
                   </td>
                   <td>
@@ -215,7 +215,7 @@ const MessageLogsTable = () => {
 
           {/* Expanded message detail */}
           {selectedMsg && (
-            <div className="card mb-3" style={{ border: '1px solid #e2e8f0', backgroundColor: '#f8fafc' }}>
+            <div className="card mb-3" style={{ border: '1px solid #e2e8f0', backgroundColor: '#F7F3EA' }}>
               <div className="card-body" style={{ padding: '16px' }}>
                 <div className="row">
                   <div className="col-md-6">

@@ -59,7 +59,7 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                          style={{ 
                              width: '48px', 
                              height: '48px', 
-                             background: 'linear-gradient(135deg, #4285f4 0%, #3b5998 100%)'
+                             background: 'linear-gradient(135deg, #101C2C 0%, #101C2C 100%)'
                          }}>
                         <i className="bi bi-music-note-beamed text-white fs-4"></i>
                     </div>
@@ -80,7 +80,7 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                         style={{ 
                             color: isActive('/admin-panel/dashboard') ? '#fff' : '#8b92a7',
                             backgroundColor: isActive('/admin-panel/dashboard') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-                            borderLeft: isActive('/admin-panel/dashboard') ? '3px solid #4285f4' : '3px solid transparent',
+                            borderLeft: isActive('/admin-panel/dashboard') ? '3px solid #101C2C' : '3px solid transparent',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
@@ -107,7 +107,7 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                         style={{ 
                             color: isActive('/admin-panel/users-management') ? '#fff' : '#8b92a7',
                             backgroundColor: isActive('/admin-panel/users-management') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-                            borderLeft: isActive('/admin-panel/users-management') ? '3px solid #4285f4' : '3px solid transparent',
+                            borderLeft: isActive('/admin-panel/users-management') ? '3px solid #101C2C' : '3px solid transparent',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
@@ -134,7 +134,7 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                         style={{ 
                             color: isActive('/admin-panel/lesson-management') || location.pathname.startsWith('/admin-panel/lesson-management') ? '#fff' : '#8b92a7',
                             backgroundColor: isActive('/admin-panel/lesson-management') || location.pathname.startsWith('/admin-panel/lesson-management') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-                            borderLeft: isActive('/admin-panel/lesson-management') || location.pathname.startsWith('/admin-panel/lesson-management') ? '3px solid #4285f4' : '3px solid transparent',
+                            borderLeft: isActive('/admin-panel/lesson-management') || location.pathname.startsWith('/admin-panel/lesson-management') ? '3px solid #101C2C' : '3px solid transparent',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
@@ -161,7 +161,7 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                         style={{ 
                             color: isActive('/admin-panel/activity-logs') ? '#fff' : '#8b92a7',
                             backgroundColor: isActive('/admin-panel/activity-logs') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-                            borderLeft: isActive('/admin-panel/activity-logs') ? '3px solid #4285f4' : '3px solid transparent',
+                            borderLeft: isActive('/admin-panel/activity-logs') ? '3px solid #101C2C' : '3px solid transparent',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
@@ -188,7 +188,7 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                         style={{ 
                             color: isActive('/admin-panel/subscriptions') ? '#fff' : '#8b92a7',
                             backgroundColor: isActive('/admin-panel/subscriptions') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-                            borderLeft: isActive('/admin-panel/subscriptions') ? '3px solid #4285f4' : '3px solid transparent',
+                            borderLeft: isActive('/admin-panel/subscriptions') ? '3px solid #101C2C' : '3px solid transparent',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
@@ -215,7 +215,7 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                         style={{ 
                             color: isActive('/admin-panel/games-analytics') ? '#fff' : '#8b92a7',
                             backgroundColor: isActive('/admin-panel/games-analytics') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-                            borderLeft: isActive('/admin-panel/games-analytics') ? '3px solid #4285f4' : '3px solid transparent',
+                            borderLeft: isActive('/admin-panel/games-analytics') ? '3px solid #101C2C' : '3px solid transparent',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
@@ -242,7 +242,7 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                         style={{ 
                             color: isActive('/admin-panel/learning-paths') ? '#fff' : '#8b92a7',
                             backgroundColor: isActive('/admin-panel/learning-paths') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-                            borderLeft: isActive('/admin-panel/learning-paths') ? '3px solid #4285f4' : '3px solid transparent',
+                            borderLeft: isActive('/admin-panel/learning-paths') ? '3px solid #101C2C' : '3px solid transparent',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
@@ -269,7 +269,7 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                         style={{ 
                             color: isActive('/admin-panel/audit-logs') ? '#fff' : '#8b92a7',
                             backgroundColor: isActive('/admin-panel/audit-logs') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-                            borderLeft: isActive('/admin-panel/audit-logs') ? '3px solid #4285f4' : '3px solid transparent',
+                            borderLeft: isActive('/admin-panel/audit-logs') ? '3px solid #101C2C' : '3px solid transparent',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
@@ -296,7 +296,7 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                         style={{ 
                             color: isActive('/admin-panel/chat-oversight') ? '#fff' : '#8b92a7',
                             backgroundColor: isActive('/admin-panel/chat-oversight') ? 'rgba(245, 158, 11, 0.15)' : 'transparent',
-                            borderLeft: isActive('/admin-panel/chat-oversight') ? '3px solid #f59e0b' : '3px solid transparent',
+                            borderLeft: isActive('/admin-panel/chat-oversight') ? '3px solid #C9A66B' : '3px solid transparent',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
@@ -323,7 +323,7 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                         style={{ 
                             color: isActive('/admin-panel/messages') ? '#fff' : '#8b92a7',
                             backgroundColor: isActive('/admin-panel/messages') ? 'rgba(66, 133, 244, 0.15)' : 'transparent',
-                            borderLeft: isActive('/admin-panel/messages') ? '3px solid #4285f4' : '3px solid transparent',
+                            borderLeft: isActive('/admin-panel/messages') ? '3px solid #101C2C' : '3px solid transparent',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
@@ -353,7 +353,7 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                              style={{ 
                                  width: '40px', 
                                  height: '40px', 
-                                 background: 'linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%)',
+                                 background: 'linear-gradient(135deg, #a855f7 0%, #7C9BB8 100%)',
                                  fontSize: '16px'
                              }}>
                             {adminName ? adminName.substring(0, 2).toUpperCase() : 'AD'}
@@ -402,7 +402,7 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
-                                e.currentTarget.style.color = '#ef4444';
+                                e.currentTarget.style.color = '#D85C4A';
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';

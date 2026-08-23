@@ -9,9 +9,9 @@ import './AdminGamesAnalytics.css';
 /* ─── helpers ─── */
 const GAME_ICONS = { note_ninja: '🎵', rhythm_rush: '🥁', music_challenge: '⚡' };
 const GAME_COLORS = {
-  note_ninja: { bg: 'rgba(99,102,241,0.12)', fg: '#6366f1' },
-  rhythm_rush: { bg: 'rgba(236,72,153,0.12)', fg: '#ec4899' },
-  music_challenge: { bg: 'rgba(245,158,11,0.12)', fg: '#f59e0b' },
+  note_ninja: { bg: 'rgba(99,102,241,0.12)', fg: '#7C9BB8' },
+  rhythm_rush: { bg: 'rgba(236,72,153,0.12)', fg: '#D85C4A' },
+  music_challenge: { bg: 'rgba(245,158,11,0.12)', fg: '#C9A66B' },
 };
 const BADGE_ICONS = { note_master: '🎵', rhythm_king: '🥁', theory_champion: '⚡' };
 const rankClass = (i) => (i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal');
@@ -101,7 +101,7 @@ const AdminGamesAnalytics = () => {
       {/* ── Platform Totals ── */}
       <div className="aga-totals-row">
         <div className="aga-total-card">
-          <div className="aga-total-icon" style={{ background: 'rgba(66,133,244,0.12)', color: '#4285f4' }}>
+          <div className="aga-total-icon" style={{ background: 'rgba(66,133,244,0.12)', color: '#101C2C' }}>
             👥
           </div>
           <div>
@@ -119,7 +119,7 @@ const AdminGamesAnalytics = () => {
           </div>
         </div>
         <div className="aga-total-card">
-          <div className="aga-total-icon" style={{ background: 'rgba(234,179,8,0.12)', color: '#eab308' }}>
+          <div className="aga-total-icon" style={{ background: 'rgba(234,179,8,0.12)', color: '#C9A66B' }}>
             💰
           </div>
           <div>
@@ -128,7 +128,7 @@ const AdminGamesAnalytics = () => {
           </div>
         </div>
         <div className="aga-total-card">
-          <div className="aga-total-icon" style={{ background: 'rgba(139,92,246,0.12)', color: '#8b5cf6' }}>
+          <div className="aga-total-icon" style={{ background: 'rgba(139,92,246,0.12)', color: '#7C9BB8' }}>
             🏅
           </div>
           <div>
@@ -252,7 +252,7 @@ const AdminGamesAnalytics = () => {
         <div className="aga-panel">
           <div className="aga-panel-header">
             <h5>🏆 Top Students</h5>
-            <span className="aga-panel-badge" style={{ background: 'rgba(66,133,244,0.1)', color: '#4285f4' }}>
+            <span className="aga-panel-badge" style={{ background: 'rgba(66,133,244,0.1)', color: '#101C2C' }}>
               Top {topStudents.length}
             </span>
           </div>
@@ -295,7 +295,7 @@ const AdminGamesAnalytics = () => {
         <div className="aga-panel">
           <div className="aga-panel-header">
             <h5>🏅 Badge Distribution</h5>
-            <span className="aga-panel-badge" style={{ background: 'rgba(139,92,246,0.1)', color: '#8b5cf6' }}>
+            <span className="aga-panel-badge" style={{ background: 'rgba(139,92,246,0.1)', color: '#7C9BB8' }}>
               {data.total_badges_awarded} total
             </span>
           </div>
@@ -313,7 +313,7 @@ const AdminGamesAnalytics = () => {
                       className="aga-badge-icon-circle"
                       style={{
                         background: 'rgba(139,92,246,0.1)',
-                        color: '#8b5cf6',
+                        color: '#7C9BB8',
                       }}
                     >
                       {BADGE_ICONS[b.badge__badge_key] || '🏅'}

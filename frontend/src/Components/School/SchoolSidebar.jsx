@@ -56,7 +56,7 @@ const SchoolSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onN
                         style={{
                             width: '48px',
                             height: '48px',
-                            background: 'linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%)'
+                            background: 'linear-gradient(135deg, #101C2C 0%, #0a58ca 100%)'
                         }}>
                         <i className="bi bi-building text-white fs-4"></i>
                     </div>
@@ -79,7 +79,7 @@ const SchoolSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onN
                             style={{
                                 color: isActive(item.path) ? '#fff' : '#8b92a7',
                                 backgroundColor: isActive(item.path) ? 'rgba(13, 110, 253, 0.15)' : 'transparent',
-                                borderLeft: isActive(item.path) ? '3px solid #0d6efd' : '3px solid transparent',
+                                borderLeft: isActive(item.path) ? '3px solid #101C2C' : '3px solid transparent',
                                 transition: 'all 0.2s ease'
                             }}
                             onMouseEnter={(e) => {
@@ -110,7 +110,7 @@ const SchoolSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onN
                             style={{
                                 width: '40px',
                                 height: '40px',
-                                background: 'linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%)',
+                                background: 'linear-gradient(135deg, #101C2C 0%, #0a58ca 100%)',
                                 fontSize: '16px'
                             }}>
                             {schoolName ? schoolName.substring(0, 2).toUpperCase() : 'SC'}
@@ -159,7 +159,7 @@ const SchoolSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onN
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
-                                e.currentTarget.style.color = '#ef4444';
+                                e.currentTarget.style.color = '#D85C4A';
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';

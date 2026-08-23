@@ -154,9 +154,9 @@ const TeacherStudents = () => {
 
   const getProgressColor = (p) => {
     if (p >= 80) return '#22c55e'
-    if (p >= 60) return '#3b82f6'
-    if (p >= 40) return '#f59e0b'
-    return '#ef4444'
+    if (p >= 60) return '#101C2C'
+    if (p >= 40) return '#C9A66B'
+    return '#D85C4A'
   }
 
   const getProgressClass = (p) => {
@@ -169,8 +169,8 @@ const TeacherStudents = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'active': return { bg: '#dcfce7', color: '#16a34a' }
-      case 'warning': return { bg: '#fef3c7', color: '#d97706' }
-      case 'inactive': return { bg: '#fee2e2', color: '#dc2626' }
+      case 'warning': return { bg: '#fef3c7', color: '#C9A66B' }
+      case 'inactive': return { bg: '#fee2e2', color: '#D85C4A' }
       default: return { bg: '#f1f5f9', color: '#64748b' }
     }
   }
@@ -212,7 +212,7 @@ const TeacherStudents = () => {
       html: `Remove <strong>${student.student_name}</strong> from your students list?<br><small class="text-muted">This won't delete their account or course enrollments.</small>`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#ef4444',
+      confirmButtonColor: '#D85C4A',
       confirmButtonText: 'Yes, Remove',
       cancelButtonText: 'Cancel'
     }).then(async (result) => {
@@ -299,7 +299,7 @@ const TeacherStudents = () => {
       text: 'This will remove the student from this course.',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#ef4444',
+      confirmButtonColor: '#D85C4A',
       confirmButtonText: 'Remove',
     })
     if (!result.isConfirmed) return
@@ -337,7 +337,7 @@ const TeacherStudents = () => {
           <h1 style={{
             fontSize: 'clamp(28px, 5vw, 42px)',
             fontWeight: 700,
-            color: '#1a1a1a',
+            color: '#101C2C',
             marginBottom: '12px',
             letterSpacing: '-0.5px'
           }}>My Students</h1>
@@ -359,8 +359,8 @@ const TeacherStudents = () => {
             style={{
               padding: '12px 20px',
               background: 'white',
-              color: '#667eea',
-              border: '2px solid #667eea',
+              color: '#101C2C',
+              border: '2px solid #101C2C',
               borderRadius: '10px',
               fontSize: '15px',
               fontWeight: 600,
@@ -387,7 +387,7 @@ const TeacherStudents = () => {
             onClick={() => setShowAddModal(true)}
             style={{
               padding: '12px 20px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
               color: 'white',
               border: 'none',
               borderRadius: '10px',
@@ -450,7 +450,7 @@ const TeacherStudents = () => {
             justifyContent: 'center',
             marginBottom: '20px',
             fontSize: '28px',
-            color: '#667eea'
+            color: '#101C2C'
           }}>
             <i className="bi bi-people-fill"></i>
           </div>
@@ -458,7 +458,7 @@ const TeacherStudents = () => {
           <div style={{
             fontSize: 'clamp(24px, 4vw, 32px)',
             fontWeight: 700,
-            color: '#1a1a1a',
+            color: '#101C2C',
             marginBottom: '12px',
             letterSpacing: '-0.5px'
           }}>{students.length}</div>
@@ -490,7 +490,7 @@ const TeacherStudents = () => {
             justifyContent: 'center',
             marginBottom: '20px',
             fontSize: '28px',
-            color: '#667eea'
+            color: '#101C2C'
           }}>
             <i className="bi bi-person-check-fill"></i>
           </div>
@@ -498,7 +498,7 @@ const TeacherStudents = () => {
           <div style={{
             fontSize: 'clamp(24px, 4vw, 32px)',
             fontWeight: 700,
-            color: '#1a1a1a',
+            color: '#101C2C',
             marginBottom: '12px',
             letterSpacing: '-0.5px'
           }}>{students.filter(s => s.status === 'active').length}</div>
@@ -530,7 +530,7 @@ const TeacherStudents = () => {
             justifyContent: 'center',
             marginBottom: '20px',
             fontSize: '28px',
-            color: '#667eea'
+            color: '#101C2C'
           }}>
             <i className="bi bi-exclamation-triangle-fill"></i>
           </div>
@@ -538,7 +538,7 @@ const TeacherStudents = () => {
           <div style={{
             fontSize: 'clamp(24px, 4vw, 32px)',
             fontWeight: 700,
-            color: '#1a1a1a',
+            color: '#101C2C',
             marginBottom: '12px',
             letterSpacing: '-0.5px'
           }}>{students.filter(s => s.status === 'warning' || s.status === 'inactive').length}</div>
@@ -570,7 +570,7 @@ const TeacherStudents = () => {
             justifyContent: 'center',
             marginBottom: '20px',
             fontSize: '28px',
-            color: '#667eea'
+            color: '#101C2C'
           }}>
             <i className="bi bi-graph-up-arrow"></i>
           </div>
@@ -578,7 +578,7 @@ const TeacherStudents = () => {
           <div style={{
             fontSize: 'clamp(24px, 4vw, 32px)',
             fontWeight: 700,
-            color: '#1a1a1a',
+            color: '#101C2C',
             marginBottom: '12px',
             letterSpacing: '-0.5px'
           }}>
@@ -624,10 +624,10 @@ const TeacherStudents = () => {
                 fontWeight: 400,
                 outline: 'none',
                 transition: 'all 0.2s ease',
-                color: '#1a1a1a'
+                color: '#101C2C'
               }}
               onFocus={(e) => {
-                e.target.style.borderColor = '#667eea';
+                e.target.style.borderColor = '#101C2C';
                 e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
               }}
               onBlur={(e) => {
@@ -647,10 +647,10 @@ const TeacherStudents = () => {
               background: '#ffffff',
               cursor: 'pointer',
               fontWeight: 500,
-              color: '#1a1a1a',
+              color: '#101C2C',
               transition: 'all 0.2s ease'
             }}
-            onFocus={(e) => e.target.style.borderColor = '#667eea'}
+            onFocus={(e) => e.target.style.borderColor = '#101C2C'}
             onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
           >
             <option value="">All Instruments</option>
@@ -667,10 +667,10 @@ const TeacherStudents = () => {
               background: '#ffffff',
               cursor: 'pointer',
               fontWeight: 500,
-              color: '#1a1a1a',
+              color: '#101C2C',
               transition: 'all 0.2s ease'
             }}
-            onFocus={(e) => e.target.style.borderColor = '#667eea'}
+            onFocus={(e) => e.target.style.borderColor = '#101C2C'}
             onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
           >
             <option value="">All Levels</option>
@@ -689,10 +689,10 @@ const TeacherStudents = () => {
               background: '#ffffff',
               cursor: 'pointer',
               fontWeight: 500,
-              color: '#1a1a1a',
+              color: '#101C2C',
               transition: 'all 0.2s ease'
             }}
-            onFocus={(e) => e.target.style.borderColor = '#667eea'}
+            onFocus={(e) => e.target.style.borderColor = '#101C2C'}
             onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
           >
             <option value="">All Statuses</option>
@@ -713,7 +713,7 @@ const TeacherStudents = () => {
                 borderRadius: '10px',
                 border: '2px solid #fee2e2',
                 background: '#fef2f2',
-                color: '#ef4444',
+                color: '#D85C4A',
                 fontSize: '14px',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -766,7 +766,7 @@ const TeacherStudents = () => {
             <h4 style={{
               fontSize: 'clamp(20px, 3vw, 24px)',
               fontWeight: 700,
-              color: '#1a1a1a',
+              color: '#101C2C',
               marginBottom: '8px',
               letterSpacing: '-0.5px'
             }}>No Students Yet</h4>
@@ -780,7 +780,7 @@ const TeacherStudents = () => {
               onClick={() => setShowAddModal(true)}
               style={{
                 padding: '12px 28px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '10px',
@@ -814,21 +814,21 @@ const TeacherStudents = () => {
             }}>
               <thead>
                 <tr style={{
-                  background: '#f8fafc',
+                  background: '#F7F3EA',
                   borderBottom: '2px solid #e5e7eb'
                 }}>
                   <th onClick={() => handleSort('student_name')} style={{
                     padding: '16px 20px',
                     fontSize: '13px',
                     fontWeight: 600,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     textAlign: 'left',
                     cursor: 'pointer',
                     userSelect: 'none',
                     transition: 'all 0.2s ease'
                   }}
-                    onMouseEnter={e => e.currentTarget.style.color = '#667eea'}
-                    onMouseLeave={e => e.currentTarget.style.color = '#1a1a1a'}
+                    onMouseEnter={e => e.currentTarget.style.color = '#101C2C'}
+                    onMouseLeave={e => e.currentTarget.style.color = '#101C2C'}
                   >
                     Student <i className={`bi ${getSortIcon('student_name')} ms-1`}></i>
                   </th>
@@ -836,14 +836,14 @@ const TeacherStudents = () => {
                     padding: '16px 20px',
                     fontSize: '13px',
                     fontWeight: 600,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     textAlign: 'left',
                     cursor: 'pointer',
                     userSelect: 'none',
                     transition: 'all 0.2s ease'
                   }}
-                    onMouseEnter={e => e.currentTarget.style.color = '#667eea'}
-                    onMouseLeave={e => e.currentTarget.style.color = '#1a1a1a'}
+                    onMouseEnter={e => e.currentTarget.style.color = '#101C2C'}
+                    onMouseLeave={e => e.currentTarget.style.color = '#101C2C'}
                   >
                     Instrument <i className={`bi ${getSortIcon('instrument')} ms-1`}></i>
                   </th>
@@ -851,14 +851,14 @@ const TeacherStudents = () => {
                     padding: '16px 20px',
                     fontSize: '13px',
                     fontWeight: 600,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     textAlign: 'left',
                     cursor: 'pointer',
                     userSelect: 'none',
                     transition: 'all 0.2s ease'
                   }}
-                    onMouseEnter={e => e.currentTarget.style.color = '#667eea'}
-                    onMouseLeave={e => e.currentTarget.style.color = '#1a1a1a'}
+                    onMouseEnter={e => e.currentTarget.style.color = '#101C2C'}
+                    onMouseLeave={e => e.currentTarget.style.color = '#101C2C'}
                   >
                     Level <i className={`bi ${getSortIcon('level')} ms-1`}></i>
                   </th>
@@ -866,14 +866,14 @@ const TeacherStudents = () => {
                     padding: '16px 20px',
                     fontSize: '13px',
                     fontWeight: 600,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     textAlign: 'left',
                     cursor: 'pointer',
                     userSelect: 'none',
                     transition: 'all 0.2s ease'
                   }}
-                    onMouseEnter={e => e.currentTarget.style.color = '#667eea'}
-                    onMouseLeave={e => e.currentTarget.style.color = '#1a1a1a'}
+                    onMouseEnter={e => e.currentTarget.style.color = '#101C2C'}
+                    onMouseLeave={e => e.currentTarget.style.color = '#101C2C'}
                   >
                     Progress <i className={`bi ${getSortIcon('progress_percentage')} ms-1`}></i>
                   </th>
@@ -881,21 +881,21 @@ const TeacherStudents = () => {
                     padding: '16px 20px',
                     fontSize: '13px',
                     fontWeight: 600,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     textAlign: 'left'
                   }}>Courses</th>
                   <th onClick={() => handleSort('status')} style={{
                     padding: '16px 20px',
                     fontSize: '13px',
                     fontWeight: 600,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     textAlign: 'left',
                     cursor: 'pointer',
                     userSelect: 'none',
                     transition: 'all 0.2s ease'
                   }}
-                    onMouseEnter={e => e.currentTarget.style.color = '#667eea'}
-                    onMouseLeave={e => e.currentTarget.style.color = '#1a1a1a'}
+                    onMouseEnter={e => e.currentTarget.style.color = '#101C2C'}
+                    onMouseLeave={e => e.currentTarget.style.color = '#101C2C'}
                   >
                     Status <i className={`bi ${getSortIcon('status')} ms-1`}></i>
                   </th>
@@ -903,14 +903,14 @@ const TeacherStudents = () => {
                     padding: '16px 20px',
                     fontSize: '13px',
                     fontWeight: 600,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     textAlign: 'left'
                   }}>Last Active</th>
                   <th style={{
                     padding: '16px 20px',
                     fontSize: '13px',
                     fontWeight: 600,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     textAlign: 'center'
                   }}>Actions</th>
                 </tr>
@@ -968,7 +968,7 @@ const TeacherStudents = () => {
                         <td onClick={(e) => e.stopPropagation()}>
                           <div className='d-flex gap-1'>
                             <button title='Assign Course' onClick={() => openAssignModal(student)}
-                              style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', color: '#3b82f6' }}>
+                              style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', color: '#101C2C' }}>
                               <i className="bi bi-journal-plus"></i>
                             </button>
                             <button title='Edit Student' onClick={() => openEditModal(student)}
@@ -976,7 +976,7 @@ const TeacherStudents = () => {
                               <i className="bi bi-pencil"></i>
                             </button>
                             <button title='Remove Student' onClick={() => handleRemoveStudent(student)}
-                              style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', color: '#ef4444' }}>
+                              style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', color: '#D85C4A' }}>
                               <i className="bi bi-trash3"></i>
                             </button>
                           </div>
@@ -986,7 +986,7 @@ const TeacherStudents = () => {
                       {isExpanded && (
                         <tr>
                           <td colSpan={8} style={{ padding: 0, border: 'none' }}>
-                            <div style={{ background: '#f8fafc', padding: '20px 24px', borderBottom: '2px solid #e2e8f0' }}>
+                            <div style={{ background: '#F7F3EA', padding: '20px 24px', borderBottom: '2px solid #e2e8f0' }}>
                               <div className='row g-4'>
                                 <div className='col-md-4'>
                                   <h6 style={{ color: '#475569', marginBottom: 12 }}>
@@ -1001,7 +1001,7 @@ const TeacherStudents = () => {
                                   <h6 style={{ color: '#475569', marginBottom: 12 }}>
                                     <i className="bi bi-journal-bookmark me-2"></i>Enrolled Courses
                                     <button className='ms-2' onClick={(e) => { e.stopPropagation(); openAssignModal(student) }}
-                                      style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 6, padding: '2px 8px', cursor: 'pointer', color: '#3b82f6', fontSize: 12 }}>
+                                      style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 6, padding: '2px 8px', cursor: 'pointer', color: '#101C2C', fontSize: 12 }}>
                                       <i className="bi bi-plus me-1"></i>Assign
                                     </button>
                                   </h6>
@@ -1083,12 +1083,12 @@ const TeacherStudents = () => {
                 margin: 0,
                 fontSize: '18px',
                 fontWeight: 700,
-                color: '#1a1a1a'
+                color: '#101C2C'
               }}><i className="bi bi-person-plus me-2"></i>Add Student</h3>
               <button 
                 onClick={() => setShowAddModal(false)}
                 style={{
-                  background: '#f5f7fa',
+                  background: '#F7F3EA',
                   border: 'none',
                   width: '32px',
                   height: '32px',
@@ -1103,10 +1103,10 @@ const TeacherStudents = () => {
                 }}
                 onMouseEnter={e => {
                   e.target.style.background = '#fee2e2';
-                  e.target.style.color = '#ef4444';
+                  e.target.style.color = '#D85C4A';
                 }}
                 onMouseLeave={e => {
-                  e.target.style.background = '#f5f7fa';
+                  e.target.style.background = '#F7F3EA';
                   e.target.style.color = '#6b7280';
                 }}
               ><i className="bi bi-x-lg"></i></button>
@@ -1122,7 +1122,7 @@ const TeacherStudents = () => {
                   display: 'block',
                   fontSize: '14px',
                   fontWeight: 600,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   marginBottom: '8px'
                 }}>Search Student</label>
                 <div style={{ position: 'relative' }}>
@@ -1143,10 +1143,10 @@ const TeacherStudents = () => {
                       fontSize: '14px',
                       outline: 'none',
                       transition: 'all 0.2s ease',
-                      color: '#1a1a1a'
+                      color: '#101C2C'
                     }}
                     onFocus={(e) => {
-                      e.target.style.borderColor = '#667eea';
+                      e.target.style.borderColor = '#101C2C';
                       e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                     }}
                     onBlur={(e) => {
@@ -1181,7 +1181,7 @@ const TeacherStudents = () => {
                           background: addForm.student?.id === s.id ? '#f0f9ff' : '#fff',
                           transition: 'all 0.2s ease'
                         }}
-                        onMouseEnter={e => e.currentTarget.style.background = '#f5f7fa'}
+                        onMouseEnter={e => e.currentTarget.style.background = '#F7F3EA'}
                         onMouseLeave={e => e.currentTarget.style.background = addForm.student?.id === s.id ? '#f0f9ff' : '#fff'}
                       >
                         {s.profile_img ? (
@@ -1197,7 +1197,7 @@ const TeacherStudents = () => {
                             width: '36px',
                             height: '36px',
                             borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -1210,7 +1210,7 @@ const TeacherStudents = () => {
                           </div>
                         )}
                         <div>
-                          <div style={{ fontSize: '14px', fontWeight: 600, color: '#1a1a1a' }}>{s.fullname}</div>
+                          <div style={{ fontSize: '14px', fontWeight: 600, color: '#101C2C' }}>{s.fullname}</div>
                           <div style={{ fontSize: '12px', color: '#6b7280' }}>{s.email}</div>
                         </div>
                       </div>
@@ -1237,7 +1237,7 @@ const TeacherStudents = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                     <i className="bi bi-check-circle-fill" style={{ color: '#10b981', fontSize: '16px', flexShrink: 0 }}></i>
                     <div style={{ minWidth: 0 }}>
-                      <strong style={{ color: '#1a1a1a', fontSize: '14px' }}>{addForm.student.fullname}</strong>
+                      <strong style={{ color: '#101C2C', fontSize: '14px' }}>{addForm.student.fullname}</strong>
                       <span style={{ color: '#6b7280', fontSize: '12px', marginLeft: '4px' }}>({addForm.student.email})</span>
                     </div>
                   </div>
@@ -1251,7 +1251,7 @@ const TeacherStudents = () => {
                       fontSize: '16px',
                       flexShrink: 0
                     }}
-                    onMouseEnter={e => e.target.style.color = '#ef4444'}
+                    onMouseEnter={e => e.target.style.color = '#D85C4A'}
                     onMouseLeave={e => e.target.style.color = '#6b7280'}
                   >
                     <i className="bi bi-x-lg"></i>
@@ -1271,7 +1271,7 @@ const TeacherStudents = () => {
                     display: 'block',
                     fontSize: '14px',
                     fontWeight: 600,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     marginBottom: '8px'
                   }}>Instrument</label>
                   <select value={addForm.instrument} onChange={e => setAddForm({ ...addForm, instrument: e.target.value })}
@@ -1284,11 +1284,11 @@ const TeacherStudents = () => {
                       background: '#fff',
                       cursor: 'pointer',
                       fontWeight: 400,
-                      color: '#1a1a1a',
+                      color: '#101C2C',
                       transition: 'all 0.2s ease'
                     }}
                     onFocus={(e) => {
-                      e.target.style.borderColor = '#667eea';
+                      e.target.style.borderColor = '#101C2C';
                       e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                     }}
                     onBlur={(e) => {
@@ -1311,7 +1311,7 @@ const TeacherStudents = () => {
                     display: 'block',
                     fontSize: '14px',
                     fontWeight: 600,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     marginBottom: '8px'
                   }}>Level</label>
                   <select value={addForm.level} onChange={e => setAddForm({ ...addForm, level: e.target.value })}
@@ -1324,11 +1324,11 @@ const TeacherStudents = () => {
                       background: '#fff',
                       cursor: 'pointer',
                       fontWeight: 400,
-                      color: '#1a1a1a',
+                      color: '#101C2C',
                       transition: 'all 0.2s ease'
                     }}
                     onFocus={(e) => {
-                      e.target.style.borderColor = '#667eea';
+                      e.target.style.borderColor = '#101C2C';
                       e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                     }}
                     onBlur={(e) => {
@@ -1349,7 +1349,7 @@ const TeacherStudents = () => {
                   display: 'block',
                   fontSize: '14px',
                   fontWeight: 600,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   marginBottom: '8px'
                 }}>Notes (optional)</label>
                 <textarea value={addForm.notes} onChange={e => setAddForm({ ...addForm, notes: e.target.value })}
@@ -1364,11 +1364,11 @@ const TeacherStudents = () => {
                     resize: 'vertical',
                     outline: 'none',
                     fontFamily: 'inherit',
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     transition: 'all 0.2s ease'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#667eea';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                   }}
                   onBlur={(e) => {
@@ -1396,11 +1396,11 @@ const TeacherStudents = () => {
                   cursor: 'pointer',
                   fontWeight: 600,
                   fontSize: '14px',
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   transition: 'all 0.2s ease'
                 }}
                 onMouseEnter={e => {
-                  e.target.style.background = '#f5f7fa';
+                  e.target.style.background = '#F7F3EA';
                   e.target.style.borderColor = '#cbd5e1';
                 }}
                 onMouseLeave={e => {
@@ -1417,7 +1417,7 @@ const TeacherStudents = () => {
                   padding: '10px 20px',
                   borderRadius: '10px',
                   border: 'none',
-                  background: addForm.student ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#9ca3af',
+                  background: addForm.student ? 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)' : '#9ca3af',
                   color: '#fff',
                   cursor: addForm.student ? 'pointer' : 'not-allowed',
                   fontWeight: 600,
@@ -1484,12 +1484,12 @@ const TeacherStudents = () => {
                 margin: 0,
                 fontSize: '18px',
                 fontWeight: 700,
-                color: '#1a1a1a'
+                color: '#101C2C'
               }}><i className="bi bi-journal-plus me-2"></i>Assign Course to {assignStudent.student_name}</h3>
               <button 
                 onClick={() => setShowAssignModal(false)}
                 style={{
-                  background: '#f5f7fa',
+                  background: '#F7F3EA',
                   border: 'none',
                   width: '32px',
                   height: '32px',
@@ -1504,10 +1504,10 @@ const TeacherStudents = () => {
                 }}
                 onMouseEnter={e => {
                   e.target.style.background = '#fee2e2';
-                  e.target.style.color = '#ef4444';
+                  e.target.style.color = '#D85C4A';
                 }}
                 onMouseLeave={e => {
-                  e.target.style.background = '#f5f7fa';
+                  e.target.style.background = '#F7F3EA';
                   e.target.style.color = '#6b7280';
                 }}
               ><i className="bi bi-x-lg"></i></button>
@@ -1539,7 +1539,7 @@ const TeacherStudents = () => {
                   <p style={{ color: '#6b7280', marginBottom: '20px', fontSize: '15px' }}>You don't have any courses yet.</p>
                   <Link to='/teacher/course-management' style={{
                     padding: '10px 20px',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                     color: 'white',
                     border: 'none',
                     borderRadius: '10px',
@@ -1582,7 +1582,7 @@ const TeacherStudents = () => {
                       }}
                       onMouseEnter={e => {
                         if (!course.is_enrolled) {
-                          e.currentTarget.style.borderColor = '#667eea';
+                          e.currentTarget.style.borderColor = '#101C2C';
                           e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.1)';
                         }
                       }}
@@ -1607,7 +1607,7 @@ const TeacherStudents = () => {
                             width: '48px',
                             height: '36px',
                             borderRadius: '8px',
-                            background: '#f5f7fa',
+                            background: '#F7F3EA',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -1621,7 +1621,7 @@ const TeacherStudents = () => {
                           <div style={{
                             fontSize: '14px',
                             fontWeight: 600,
-                            color: '#1a1a1a',
+                            color: '#101C2C',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap'
@@ -1652,7 +1652,7 @@ const TeacherStudents = () => {
                               borderRadius: '8px',
                               padding: '6px 10px',
                               cursor: 'pointer',
-                              color: '#ef4444',
+                              color: '#D85C4A',
                               fontSize: '14px',
                               fontWeight: 600,
                               transition: 'all 0.2s ease'
@@ -1660,7 +1660,7 @@ const TeacherStudents = () => {
                             title='Remove enrollment'
                             onMouseEnter={e => {
                               e.target.style.background = '#fee2e2';
-                              e.target.style.borderColor = '#f87171';
+                              e.target.style.borderColor = '#D85C4A';
                             }}
                             onMouseLeave={e => {
                               e.target.style.background = '#fef2f2';
@@ -1677,7 +1677,7 @@ const TeacherStudents = () => {
                             padding: '8px 16px',
                             borderRadius: '8px',
                             border: 'none',
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                             color: '#fff',
                             cursor: 'pointer',
                             fontWeight: 600,
@@ -1725,11 +1725,11 @@ const TeacherStudents = () => {
                   cursor: 'pointer',
                   fontWeight: 600,
                   fontSize: '14px',
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   transition: 'all 0.2s ease'
                 }}
                 onMouseEnter={e => {
-                  e.target.style.background = '#f5f7fa';
+                  e.target.style.background = '#F7F3EA';
                   e.target.style.borderColor = '#cbd5e1';
                 }}
                 onMouseLeave={e => {
@@ -1780,12 +1780,12 @@ const TeacherStudents = () => {
                 margin: 0,
                 fontSize: '18px',
                 fontWeight: 700,
-                color: '#1a1a1a'
+                color: '#101C2C'
               }}><i className="bi bi-pencil-square me-2"></i>Edit Student</h3>
               <button 
                 onClick={() => setShowEditModal(false)}
                 style={{
-                  background: '#f5f7fa',
+                  background: '#F7F3EA',
                   border: 'none',
                   width: '32px',
                   height: '32px',
@@ -1800,10 +1800,10 @@ const TeacherStudents = () => {
                 }}
                 onMouseEnter={e => {
                   e.target.style.background = '#fee2e2';
-                  e.target.style.color = '#ef4444';
+                  e.target.style.color = '#D85C4A';
                 }}
                 onMouseLeave={e => {
-                  e.target.style.background = '#f5f7fa';
+                  e.target.style.background = '#F7F3EA';
                   e.target.style.color = '#6b7280';
                 }}
               ><i className="bi bi-x-lg"></i></button>
@@ -1824,7 +1824,7 @@ const TeacherStudents = () => {
                     display: 'block',
                     fontSize: '14px',
                     fontWeight: 600,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     marginBottom: '8px'
                   }}>Instrument</label>
                   <select value={editForm.instrument} onChange={e => setEditForm({ ...editForm, instrument: e.target.value })}
@@ -1837,11 +1837,11 @@ const TeacherStudents = () => {
                       background: '#fff',
                       cursor: 'pointer',
                       fontWeight: 400,
-                      color: '#1a1a1a',
+                      color: '#101C2C',
                       transition: 'all 0.2s ease'
                     }}
                     onFocus={(e) => {
-                      e.target.style.borderColor = '#667eea';
+                      e.target.style.borderColor = '#101C2C';
                       e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                     }}
                     onBlur={(e) => {
@@ -1864,7 +1864,7 @@ const TeacherStudents = () => {
                     display: 'block',
                     fontSize: '14px',
                     fontWeight: 600,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     marginBottom: '8px'
                   }}>Level</label>
                   <select value={editForm.level} onChange={e => setEditForm({ ...editForm, level: e.target.value })}
@@ -1877,11 +1877,11 @@ const TeacherStudents = () => {
                       background: '#fff',
                       cursor: 'pointer',
                       fontWeight: 400,
-                      color: '#1a1a1a',
+                      color: '#101C2C',
                       transition: 'all 0.2s ease'
                     }}
                     onFocus={(e) => {
-                      e.target.style.borderColor = '#667eea';
+                      e.target.style.borderColor = '#101C2C';
                       e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                     }}
                     onBlur={(e) => {
@@ -1900,7 +1900,7 @@ const TeacherStudents = () => {
                   display: 'block',
                   fontSize: '14px',
                   fontWeight: 600,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   marginBottom: '8px'
                 }}>Status</label>
                 <select value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value })}
@@ -1913,11 +1913,11 @@ const TeacherStudents = () => {
                     background: '#fff',
                     cursor: 'pointer',
                     fontWeight: 400,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     transition: 'all 0.2s ease'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#667eea';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                   }}
                   onBlur={(e) => {
@@ -1935,7 +1935,7 @@ const TeacherStudents = () => {
                   display: 'block',
                   fontSize: '14px',
                   fontWeight: 600,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   marginBottom: '8px'
                 }}>Notes</label>
                 <textarea value={editForm.notes} onChange={e => setEditForm({ ...editForm, notes: e.target.value })}
@@ -1950,11 +1950,11 @@ const TeacherStudents = () => {
                     resize: 'vertical',
                     outline: 'none',
                     fontFamily: 'inherit',
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     transition: 'all 0.2s ease'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#667eea';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                   }}
                   onBlur={(e) => {
@@ -1982,11 +1982,11 @@ const TeacherStudents = () => {
                   cursor: 'pointer',
                   fontWeight: 600,
                   fontSize: '14px',
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   transition: 'all 0.2s ease'
                 }}
                 onMouseEnter={e => {
-                  e.target.style.background = '#f5f7fa';
+                  e.target.style.background = '#F7F3EA';
                   e.target.style.borderColor = '#cbd5e1';
                 }}
                 onMouseLeave={e => {
@@ -2002,7 +2002,7 @@ const TeacherStudents = () => {
                   padding: '10px 20px',
                   borderRadius: '10px',
                   border: 'none',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                   color: '#fff',
                   cursor: 'pointer',
                   fontWeight: 600,

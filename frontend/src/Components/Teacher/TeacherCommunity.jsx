@@ -147,13 +147,13 @@ const TeacherCommunity = () => {
     };
 
     const teacherColors = [
-        ['#4285f4', '#3b5998'],
-        ['#8b5cf6', '#7c3aed'],
+        ['#101C2C', '#101C2C'],
+        ['#7C9BB8', '#7C9BB8'],
         ['#10b981', '#059669'],
-        ['#f59e0b', '#d97706'],
-        ['#ef4444', '#dc2626'],
-        ['#ec4899', '#db2777'],
-        ['#06b6d4', '#0891b2'],
+        ['#C9A66B', '#C9A66B'],
+        ['#D85C4A', '#D85C4A'],
+        ['#D85C4A', '#db2777'],
+        ['#7C9BB8', '#0891b2'],
         ['#f97316', '#ea580c'],
     ];
 
@@ -179,7 +179,7 @@ const TeacherCommunity = () => {
                 {/* Header */}
                 <div style={{
                     padding: '1rem 1.5rem',
-                    background: '#f8fafc',
+                    background: '#F7F3EA',
                     borderBottom: '1px solid #e5e7eb',
                     display: 'flex',
                     alignItems: 'center',
@@ -189,13 +189,13 @@ const TeacherCommunity = () => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <div style={{
                             width: '42px', height: '42px', borderRadius: '12px',
-                            background: 'linear-gradient(135deg, #4285f4, #3b5998)',
+                            background: 'linear-gradient(135deg, #101C2C, #101C2C)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
                             <i className="bi bi-chat-dots-fill" style={{ color: '#fff', fontSize: '1.15rem' }}></i>
                         </div>
                         <div>
-                            <h5 style={{ margin: 0, color: '#1f2937', fontSize: '1.05rem', fontWeight: 600 }}>
+                            <h5 style={{ margin: 0, color: '#101C2C', fontSize: '1.05rem', fontWeight: 600 }}>
                                 Teacher Lounge
                             </h5>
                             <small style={{ color: '#6b7280', fontSize: '0.78rem' }}>
@@ -240,7 +240,7 @@ const TeacherCommunity = () => {
                                 fontSize: '0.8rem', color: '#4b5563', padding: '2px 0',
                                 display: 'flex', gap: '6px', alignItems: 'baseline',
                             }}>
-                                <strong style={{ color: '#2563eb', flexShrink: 0, fontSize: '0.78rem', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={pm.teacher_name || 'Teacher'}>
+                                <strong style={{ color: '#101C2C', flexShrink: 0, fontSize: '0.78rem', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={pm.teacher_name || 'Teacher'}>
                                     {truncateName(pm.teacher_name || 'Teacher', 18)}:
                                 </strong>
                                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -263,7 +263,7 @@ const TeacherCommunity = () => {
                         flexDirection: 'column',
                         gap: '2px',
                         minHeight: 0,
-                        background: '#f9fafb',
+                        background: '#F7F3EA',
                     }}
                 >
                     {loading ? (
@@ -284,7 +284,7 @@ const TeacherCommunity = () => {
                                 background: 'rgba(66,133,244,0.1)', display: 'flex',
                                 alignItems: 'center', justifyContent: 'center',
                             }}>
-                                <i className="bi bi-chat-dots" style={{ fontSize: '1.5rem', color: '#4285f4' }}></i>
+                                <i className="bi bi-chat-dots" style={{ fontSize: '1.5rem', color: '#101C2C' }}></i>
                             </div>
                             <div>
                                 <h6 style={{ color: '#374151', marginBottom: '4px', fontWeight: 600 }}>
@@ -364,7 +364,7 @@ const TeacherCommunity = () => {
                                                     }}>
                                                         <span style={{
                                                             fontSize: '0.82rem', fontWeight: 600,
-                                                            color: isOwn ? '#93c5fd' : c1,
+                                                            color: isOwn ? '#7C9BB8' : c1,
                                                             maxWidth: '170px',
                                                             overflow: 'hidden',
                                                             textOverflow: 'ellipsis',
@@ -393,7 +393,7 @@ const TeacherCommunity = () => {
                                                             ? '14px 14px 4px 14px'
                                                             : '14px 14px 14px 4px',
                                                         padding: '10px 14px',
-                                                        color: '#1f2937',
+                                                        color: '#101C2C',
                                                         fontSize: '0.88rem',
                                                         lineHeight: '1.5',
                                                         position: 'relative',
@@ -459,7 +459,7 @@ const TeacherCommunity = () => {
                                                                 title="Delete"
                                                                 style={{
                                                                     background: 'transparent', border: 'none',
-                                                                    color: '#ef4444', cursor: 'pointer',
+                                                                    color: '#D85C4A', cursor: 'pointer',
                                                                     padding: '4px 6px', borderRadius: '6px',
                                                                     fontSize: '0.78rem', lineHeight: 1,
                                                                 }}
@@ -541,7 +541,7 @@ const TeacherCommunity = () => {
                                     border: '1px solid #d1d5db',
                                     borderRadius: '12px',
                                     padding: '10px 14px',
-                                    color: '#1f2937',
+                                    color: '#101C2C',
                                     fontSize: '0.88rem',
                                     resize: 'none',
                                     outline: 'none',
@@ -550,7 +550,7 @@ const TeacherCommunity = () => {
                                     transition: 'border-color 0.2s',
                                     boxSizing: 'border-box',
                                 }}
-                                onFocus={(e) => e.target.style.borderColor = '#93c5fd'}
+                                onFocus={(e) => e.target.style.borderColor = '#7C9BB8'}
                                 onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                             />
                         </div>
@@ -579,7 +579,7 @@ const TeacherCommunity = () => {
                             disabled={!newMessage.trim() || sending}
                             style={{
                                 background: newMessage.trim()
-                                    ? 'linear-gradient(135deg, #4285f4, #3b5998)'
+                                    ? 'linear-gradient(135deg, #101C2C, #101C2C)'
                                     : '#f3f4f6',
                                 border: newMessage.trim()
                                     ? '1px solid rgba(66,133,244,0.3)'

@@ -5,9 +5,9 @@ import { API_BASE_URL } from '../../config';
 const baseUrl = API_BASE_URL;
 
 const PRIORITY_META = {
-  urgent: { label: 'Urgent', color: '#ef4444', icon: 'bi-exclamation-triangle-fill' },
-  high:   { label: 'High',   color: '#f59e0b', icon: 'bi-exclamation-circle-fill' },
-  normal: { label: 'Normal', color: '#3b82f6', icon: 'bi-info-circle-fill' },
+  urgent: { label: 'Urgent', color: '#D85C4A', icon: 'bi-exclamation-triangle-fill' },
+  high:   { label: 'High',   color: '#C9A66B', icon: 'bi-exclamation-circle-fill' },
+  normal: { label: 'Normal', color: '#101C2C', icon: 'bi-info-circle-fill' },
   low:    { label: 'Low',    color: '#6b7280', icon: 'bi-dash-circle' },
 };
 
@@ -46,7 +46,7 @@ const GroupAnnouncements = ({ groupId }) => {
   return (
     <div>
       {announcements.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '56px', backgroundColor: '#f8fafc', borderRadius: '16px', border: '2px dashed #e2e8f0', color: '#64748b' }}>
+        <div style={{ textAlign: 'center', padding: '56px', backgroundColor: '#F7F3EA', borderRadius: '16px', border: '2px dashed #e2e8f0', color: '#64748b' }}>
           <i className="bi bi-megaphone" style={{ fontSize: '36px', display: 'block', marginBottom: '10px', color: '#cbd5e1' }}></i>
           No announcements yet.
         </div>
@@ -55,7 +55,7 @@ const GroupAnnouncements = ({ groupId }) => {
           {/* Pinned first */}
           {pinnedAnnouncements.length > 0 && (
             <div style={{ marginBottom: '4px' }}>
-              <div style={{ fontSize: '12px', fontWeight: '700', color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
+              <div style={{ fontSize: '12px', fontWeight: '700', color: '#C9A66B', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
                 <i className="bi bi-pin-fill me-1"></i>Pinned
               </div>
               {pinnedAnnouncements.map(a => renderAnnouncement(a, expandedId, setExpandedId))}
@@ -105,7 +105,7 @@ const renderAnnouncement = (a, expandedId, setExpandedId) => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
-            <h6 style={{ margin: 0, fontWeight: '700', color: '#1e293b', fontSize: '15px' }}>{a.title}</h6>
+            <h6 style={{ margin: 0, fontWeight: '700', color: '#101C2C', fontSize: '15px' }}>{a.title}</h6>
             {a.priority !== 'normal' && (
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: '3px',
@@ -117,7 +117,7 @@ const renderAnnouncement = (a, expandedId, setExpandedId) => {
                 {meta.label}
               </span>
             )}
-            {a.is_pinned && <i className="bi bi-pin-fill" style={{ color: '#f59e0b', fontSize: '14px' }}></i>}
+            {a.is_pinned && <i className="bi bi-pin-fill" style={{ color: '#C9A66B', fontSize: '14px' }}></i>}
           </div>
 
           <div style={{ fontSize: '14px', color: '#475569', lineHeight: '1.6', marginTop: '6px', whiteSpace: 'pre-wrap' }}>
@@ -127,7 +127,7 @@ const renderAnnouncement = (a, expandedId, setExpandedId) => {
           {isLong && (
             <button
               onClick={() => setExpandedId(isExpanded ? null : a.id)}
-              style={{ background: 'none', border: 'none', color: '#6366f1', fontSize: '13px', fontWeight: '600', cursor: 'pointer', padding: '4px 0', marginTop: '4px' }}
+              style={{ background: 'none', border: 'none', color: '#7C9BB8', fontSize: '13px', fontWeight: '600', cursor: 'pointer', padding: '4px 0', marginTop: '4px' }}
             >
               {isExpanded ? 'Show less' : 'Read more'}
             </button>
@@ -145,7 +145,7 @@ const renderAnnouncement = (a, expandedId, setExpandedId) => {
             style={{
               display: 'inline-flex', alignItems: 'center', gap: '6px',
               padding: '6px 14px', backgroundColor: '#f1f5f9', borderRadius: '8px',
-              color: '#2563eb', fontSize: '13px', fontWeight: '600', textDecoration: 'none'
+              color: '#101C2C', fontSize: '13px', fontWeight: '600', textDecoration: 'none'
             }}
           >
             <i className="bi bi-paperclip"></i>Attached File

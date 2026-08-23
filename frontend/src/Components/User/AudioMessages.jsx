@@ -121,16 +121,16 @@ const AudioMessages = () => {
         <div style={{
           padding: '20px 24px', marginBottom: '24px', borderRadius: '12px',
           background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-          border: '1px solid #f59e0b', display: 'flex', alignItems: 'center', gap: '16px'
+          border: '1px solid #C9A66B', display: 'flex', alignItems: 'center', gap: '16px'
         }}>
-          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#C9A66B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <i className="bi bi-shield-lock-fill" style={{ fontSize: '20px', color: '#fff' }}></i>
           </div>
           <div>
             <h4 style={{ margin: '0 0 4px', fontWeight: '700', color: '#92400e', fontSize: '15px' }}>Parent Approval Required</h4>
             <p style={{ margin: 0, fontSize: '13px', color: '#78350f', lineHeight: '1.5' }}>
               Messaging features are restricted for students under 18 until a parent or guardian approves your account.
-              Ask your parent to check their email for the consent link, or have them visit the <a href="/parent/login" style={{ color: '#7c3aed', fontWeight: '600' }}>Parent Portal</a>.
+              Ask your parent to check their email for the consent link, or have them visit the <a href="/parent/login" style={{ color: '#7C9BB8', fontWeight: '600' }}>Parent Portal</a>.
             </p>
           </div>
         </div>
@@ -139,7 +139,7 @@ const AudioMessages = () => {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
         <div>
-          <h2 style={{ margin: 0, color: '#1e293b', fontWeight: '700' }}>Messages</h2>
+          <h2 style={{ margin: 0, color: '#101C2C', fontWeight: '700' }}>Messages</h2>
           <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px' }}>Audio messages from your teachers</p>
         </div>
         {unreadCount > 0 && (
@@ -152,7 +152,7 @@ const AudioMessages = () => {
       {loading ? (
         <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>Loading messages...</div>
       ) : messages.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px', backgroundColor: '#f8fafc', borderRadius: '16px', border: '2px dashed #e2e8f0' }}>
+        <div style={{ textAlign: 'center', padding: '60px', backgroundColor: '#F7F3EA', borderRadius: '16px', border: '2px dashed #e2e8f0' }}>
           <i className="bi bi-envelope-open" style={{ fontSize: '48px', color: '#cbd5e1', display: 'block', marginBottom: '16px' }}></i>
           <h4 style={{ color: '#64748b', fontWeight: '600' }}>No messages yet</h4>
           <p style={{ color: '#94a3b8', fontSize: '14px' }}>Your teachers will send you audio feedback here</p>
@@ -174,14 +174,14 @@ const AudioMessages = () => {
                   {msg.teacher_profile_img ? (
                     <img src={msg.teacher_profile_img} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                   ) : (
-                    <div style={{ width: '40px', height: '40px', backgroundColor: '#3b82f6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '600', fontSize: '14px' }}>
+                    <div style={{ width: '40px', height: '40px', backgroundColor: '#101C2C', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '600', fontSize: '14px' }}>
                       {(msg.teacher_name || 'T').substring(0, 2).toUpperCase()}
                     </div>
                   )}
                   <div>
-                    <div style={{ fontWeight: '600', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ fontWeight: '600', color: '#101C2C', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       {msg.teacher_name || 'Teacher'}
-                      {!msg.is_read && <span style={{ width: '8px', height: '8px', backgroundColor: '#3b82f6', borderRadius: '50%', display: 'inline-block' }}></span>}
+                      {!msg.is_read && <span style={{ width: '8px', height: '8px', backgroundColor: '#101C2C', borderRadius: '50%', display: 'inline-block' }}></span>}
                     </div>
                     <div style={{ fontSize: '12px', color: '#64748b' }}>{timeAgo(msg.created_at)}</div>
                   </div>
@@ -211,7 +211,7 @@ const AudioMessages = () => {
               <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'flex-end' }}>
                 <button
                   onClick={() => handleReportAudioMessage(msg)}
-                  style={{ padding: '6px 12px', backgroundColor: '#fff', border: '1px solid #fecaca', color: '#ef4444', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                  style={{ padding: '6px 12px', backgroundColor: '#fff', border: '1px solid #fecaca', color: '#D85C4A', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
                 >
                   <i className="bi bi-flag me-1"></i> Report
                 </button>

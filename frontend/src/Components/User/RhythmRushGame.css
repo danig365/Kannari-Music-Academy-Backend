@@ -205,7 +205,7 @@
 }
 
 .rr-level-active {
-  background: linear-gradient(135deg, #7c3aed, #a78bfa) !important;
+  background: linear-gradient(135deg, #7C9BB8, #a78bfa) !important;
   border-color: #a78bfa !important;
   color: #fff !important;
   box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
@@ -219,12 +219,12 @@
 
 .rr-level-gated {
   border-color: rgba(251, 191, 36, 0.4) !important;
-  color: #fbbf24 !important;
+  color: #C9A66B !important;
   font-size: 0.75rem;
 }
 
 .rr-play-btn {
-  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  background: linear-gradient(135deg, #7C9BB8, #6d28d9);
   color: #fff;
   border: none;
   border-radius: 14px;
@@ -251,13 +251,13 @@
   border-radius: 16px;
 }
 .rr-subscribe-prompt .rr-subscribe-icon { font-size: 2.5rem; margin-bottom: 8px; }
-.rr-subscribe-prompt h4 { color: #fbbf24; margin: 0 0 6px; font-size: 1.15rem; }
+.rr-subscribe-prompt h4 { color: #C9A66B; margin: 0 0 6px; font-size: 1.15rem; }
 .rr-subscribe-prompt p { color: #94a3b8; margin: 0 0 16px; font-size: 0.9rem; }
 .rr-subscribe-btn {
   display: inline-block;
   padding: 12px 32px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: linear-gradient(135deg, #C9A66B, #C9A66B);
   color: #fff;
   font-weight: 700;
   font-size: 1rem;
@@ -356,7 +356,7 @@
 
 /* ─── Count-in (4-beat metronome intro) ──────────────────────── */
 .rr-phase-countin {
-  color: #fbbf24;
+  color: #C9A66B;
   background: rgba(251, 191, 36, 0.1);
   border: 1px solid rgba(251, 191, 36, 0.2);
   animation: rr-countin-glow 1s ease-in-out infinite;
@@ -376,7 +376,7 @@
 }
 
 .rr-phase-yourturn {
-  color: #fbbf24;
+  color: #C9A66B;
   background: rgba(251, 191, 36, 0.12);
   border: 1px solid rgba(251, 191, 36, 0.4);
   animation: rr-yourturn-pulse 0.6s ease-in-out infinite;
@@ -494,7 +494,7 @@
 
 /* Preview: currently playing dot */
 .rr-beat-dot-pulse {
-  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  background: linear-gradient(135deg, #7C9BB8, #a78bfa);
   border-color: #a78bfa;
   transform: scale(1.25);
   box-shadow: 0 0 28px rgba(139, 92, 246, 0.6), 0 0 56px rgba(139, 92, 246, 0.2);
@@ -586,7 +586,7 @@
 }
 
 .rr-countin-dot-current {
-  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  background: linear-gradient(135deg, #7C9BB8, #a78bfa);
   border-color: #a78bfa;
   transform: scale(1.2);
   box-shadow: 0 0 30px rgba(139, 92, 246, 0.6), 0 0 60px rgba(139, 92, 246, 0.2);
@@ -648,7 +648,7 @@
 
 .rr-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+  background: linear-gradient(90deg, #7C9BB8, #a78bfa);
   border-radius: 3px;
   transition: width 0.4s ease;
 }
@@ -940,7 +940,7 @@
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  background: linear-gradient(135deg, #7C9BB8, #a78bfa);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1061,8 +1061,8 @@
 }
 
 .rr-fb-perfect .rr-feedback-text { color: #22c55e; }
-.rr-fb-good .rr-feedback-text { color: #fbbf24; }
-.rr-fb-try_again .rr-feedback-text { color: #ef4444; }
+.rr-fb-good .rr-feedback-text { color: #C9A66B; }
+.rr-fb-try_again .rr-feedback-text { color: #D85C4A; }
 
 .rr-feedback-points {
   font-size: 1.1rem;
@@ -1096,7 +1096,7 @@
 }
 
 .rr-level-up-banner {
-  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  background: linear-gradient(135deg, #7C9BB8, #a78bfa);
   color: #fff;
   border-radius: 12px;
   padding: 12px 24px;
@@ -1141,7 +1141,7 @@
 }
 
 .rr-summary-coins .rr-ss-val {
-  color: #fbbf24;
+  color: #C9A66B;
 }
 
 .rr-summary-breakdown {
@@ -1153,7 +1153,7 @@
 }
 
 .rr-sb-correct { color: #22c55e; }
-.rr-sb-wrong { color: #ef4444; }
+.rr-sb-wrong { color: #D85C4A; }
 .rr-sb-total { color: #64748b; }
 
 .rr-badges-section {
@@ -1167,12 +1167,12 @@
 .rr-badges-section h5 {
   font-size: 1rem;
   margin-bottom: 8px;
-  color: #fbbf24;
+  color: #C9A66B;
 }
 
 .rr-badge-item {
   font-size: 0.9rem;
-  color: #fbbf24;
+  color: #C9A66B;
   padding: 4px 0;
 }
 

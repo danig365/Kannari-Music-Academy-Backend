@@ -63,7 +63,7 @@ const CourseDetail = () => {
           title: 'Login Required',
           text: 'Please login to view course details',
           icon: 'warning',
-          confirmButtonColor: '#4285f4'
+          confirmButtonColor: '#101C2C'
         }).then(() => {
           navigate('/student/login');
         });
@@ -410,7 +410,7 @@ const CourseDetail = () => {
                         width: '40px',
                         height: '40px',
                         borderRadius: '50%',
-                        background: '#ef4444',
+                        background: '#D85C4A',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -434,7 +434,7 @@ const CourseDetail = () => {
                       <div
                         className="course-btn course-btn-enroll"
                         style={{
-                          background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0',
+                          background: '#F7F3EA', color: '#475569', border: '1px solid #e2e8f0',
                           cursor: 'default', display: 'flex', alignItems: 'center', gap: '8px',
                           fontSize: '14px', fontWeight: 500, lineHeight: 1.3
                         }}
@@ -446,7 +446,7 @@ const CourseDetail = () => {
                       <Link
                         to='/student/subscriptions'
                         className='course-btn course-btn-enroll'
-                        style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}
+                        style={{ background: 'linear-gradient(135deg, #C9A66B 0%, #C9A66B 100%)' }}
                       >
                         <i className='bi bi-star-fill'></i> Subscribe
                       </Link>
@@ -607,7 +607,7 @@ const CourseDetail = () => {
               {enrolledStatus=='success' && userLoginStatus=='success' && (
                 <div className="course-rating-card">
                   <h3 className="course-card-title">
-                    <i className='bi bi-star-fill course-card-icon' style={{color: '#f59e0b'}}></i>
+                    <i className='bi bi-star-fill course-card-icon' style={{color: '#C9A66B'}}></i>
                     Course Rating
                   </h3>
 

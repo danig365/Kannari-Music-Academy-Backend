@@ -88,16 +88,16 @@ const ParentLogin = () => {
       <div style={{ width: '100%', maxWidth: '420px' }}>
         {/* Logo area */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ width: '64px', height: '64px', margin: '0 auto 16px', background: 'linear-gradient(135deg, #7c3aed, #6d28d9)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '64px', height: '64px', margin: '0 auto 16px', background: 'linear-gradient(135deg, #7C9BB8, #6d28d9)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <i className="bi bi-people-fill" style={{ fontSize: '28px', color: '#fff' }}></i>
           </div>
-          <h2 style={{ margin: 0, fontWeight: '700', color: '#1e293b', fontSize: '24px' }}>Parent Portal</h2>
+          <h2 style={{ margin: 0, fontWeight: '700', color: '#101C2C', fontSize: '24px' }}>Parent Portal</h2>
           <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px' }}>Kannari Music Academy</p>
         </div>
 
         {/* Card */}
         <div style={{ backgroundColor: '#fff', borderRadius: '16px', padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
-          <h3 style={{ margin: '0 0 4px', fontWeight: '600', fontSize: '18px', color: '#1e293b' }}>
+          <h3 style={{ margin: '0 0 4px', fontWeight: '600', fontSize: '18px', color: '#101C2C' }}>
             {step === 'email' ? 'Sign In' : 'Enter Verification Code'}
           </h3>
           <p style={{ margin: '0 0 24px', color: '#64748b', fontSize: '13px' }}>
@@ -107,7 +107,7 @@ const ParentLogin = () => {
           </p>
 
           {error && (
-            <div style={{ padding: '10px 14px', backgroundColor: '#fef2f2', color: '#dc2626', borderRadius: '8px', marginBottom: '16px', fontSize: '13px' }}>
+            <div style={{ padding: '10px 14px', backgroundColor: '#fef2f2', color: '#D85C4A', borderRadius: '8px', marginBottom: '16px', fontSize: '13px' }}>
               <i className="bi bi-exclamation-circle me-1"></i>{error}
             </div>
           )}
@@ -123,7 +123,7 @@ const ParentLogin = () => {
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Email Address</label>
                 <input type="email" value={email} onChange={e => { setEmail(e.target.value); setFieldErrors({}); }}
                   placeholder="parent@example.com" required autoFocus
-                  style={{ width: '100%', padding: '12px 14px', border: fieldErrors.email ? '1px solid #ef4444' : '1px solid #e2e8f0', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
+                  style={{ width: '100%', padding: '12px 14px', border: fieldErrors.email ? '1px solid #D85C4A' : '1px solid #e2e8f0', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
                 <FieldError error={fieldErrors.email} />
               </div>
             ) : (
@@ -131,12 +131,12 @@ const ParentLogin = () => {
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Verification Code</label>
                 <input type="text" value={verificationCode} onChange={e => { setVerificationCode(e.target.value); setFieldErrors({}); }}
                   placeholder="Enter 6-digit code" required autoFocus maxLength="6"
-                  style={{ width: '100%', padding: '12px 14px', border: fieldErrors.code ? '1px solid #ef4444' : '1px solid #e2e8f0', borderRadius: '10px', fontSize: '18px', textAlign: 'center', letterSpacing: '4px', outline: 'none', boxSizing: 'border-box', fontWeight: '600' }} />
+                  style={{ width: '100%', padding: '12px 14px', border: fieldErrors.code ? '1px solid #D85C4A' : '1px solid #e2e8f0', borderRadius: '10px', fontSize: '18px', textAlign: 'center', letterSpacing: '4px', outline: 'none', boxSizing: 'border-box', fontWeight: '600' }} />
                 <FieldError error={fieldErrors.code} />
                 <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '8px', textAlign: 'center' }}>
                   Didn't receive it?{' '}
                   <button type="button" onClick={() => { setStep('email'); setError(''); setMessage(''); setVerificationCode(''); }}
-                    style={{ background: 'none', border: 'none', color: '#7c3aed', cursor: 'pointer', fontWeight: '600', padding: 0 }}>
+                    style={{ background: 'none', border: 'none', color: '#7C9BB8', cursor: 'pointer', fontWeight: '600', padding: 0 }}>
                     Try again
                   </button>
                 </p>
@@ -144,7 +144,7 @@ const ParentLogin = () => {
             )}
 
             <button type="submit" disabled={loading}
-              style={{ width: '100%', padding: '12px', backgroundColor: '#7c3aed', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', opacity: loading ? 0.6 : 1 }}>
+              style={{ width: '100%', padding: '12px', backgroundColor: '#7C9BB8', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', opacity: loading ? 0.6 : 1 }}>
               {loading ? (
                 <><div className="spinner-border spinner-border-sm me-2" role="status"></div>Please wait...</>
               ) : step === 'email' ? 'Send Verification Code' : 'Verify & Sign In'}

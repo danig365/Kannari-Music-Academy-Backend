@@ -153,7 +153,7 @@ const MyProgress = () => {
                     <div className="stats-grid">
                         <div className="stat-card">
                             <div className="stat-icon" style={{ backgroundColor: '#eff6ff' }}>
-                                <i className="bi bi-music-note-list" style={{ color: '#3b82f6' }} aria-hidden="true"></i>
+                                <i className="bi bi-music-note-list" style={{ color: '#101C2C' }} aria-hidden="true"></i>
                             </div>
                             <div className="stat-content">
                                 <h4>{stats.total}</h4>
@@ -173,7 +173,7 @@ const MyProgress = () => {
 
                         <div className="stat-card">
                             <div className="stat-icon" style={{ backgroundColor: '#fffbeb' }}>
-                                <i className="bi bi-clock-history" style={{ color: '#f59e0b' }} aria-hidden="true"></i>
+                                <i className="bi bi-clock-history" style={{ color: '#C9A66B' }} aria-hidden="true"></i>
                             </div>
                             <div className="stat-content">
                                 <h4>{formatTime(stats.totalTime)}</h4>
@@ -183,7 +183,7 @@ const MyProgress = () => {
 
                         <div className="stat-card">
                             <div className="stat-icon" style={{ backgroundColor: '#f0f9ff' }}>
-                                <i className="bi bi-trophy" style={{ color: '#06b6d4' }} aria-hidden="true"></i>
+                                <i className="bi bi-trophy" style={{ color: '#7C9BB8' }} aria-hidden="true"></i>
                             </div>
                             <div className="stat-content">
                                 <h4>{stats.avgProgress}%</h4>

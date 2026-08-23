@@ -92,15 +92,15 @@ const SchoolMessages = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 60px)', backgroundColor: '#f8fafc' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 60px)', backgroundColor: '#F7F3EA' }}>
       {/* Header */}
       <div style={{ padding: '14px 20px', borderBottom: '1px solid #e2e8f0', backgroundColor: '#fff', display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{ width: '40px', height: '40px', backgroundColor: '#4285f4', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '18px' }}>
+        <div style={{ width: '40px', height: '40px', backgroundColor: '#101C2C', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '18px' }}>
           <i className="bi bi-shield-check"></i>
         </div>
         <div>
-          <div style={{ fontWeight: '700', color: '#1e293b', fontSize: '16px' }}>Admin Support</div>
-          <div style={{ fontSize: '12px', color: '#4285f4' }}>Platform admin — here to help</div>
+          <div style={{ fontWeight: '700', color: '#101C2C', fontSize: '16px' }}>Admin Support</div>
+          <div style={{ fontSize: '12px', color: '#101C2C' }}>Platform admin — here to help</div>
         </div>
       </div>
 
@@ -124,7 +124,7 @@ const SchoolMessages = () => {
               >
                 {isMine && hoveredMsgId === msg.id && (
                   <button onClick={() => handleDelete(msg.id)} title="Delete message"
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '13px', padding: '2px', flexShrink: 0, opacity: 0.8 }}>
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#D85C4A', fontSize: '13px', padding: '2px', flexShrink: 0, opacity: 0.8 }}>
                     <i className="bi bi-trash3"></i>
                   </button>
                 )}
@@ -132,7 +132,7 @@ const SchoolMessages = () => {
                   maxWidth: '70%', padding: '10px 14px',
                   borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
                   backgroundColor: isMine ? '#0891b2' : '#fff',
-                  color: isMine ? '#fff' : '#1e293b',
+                  color: isMine ? '#fff' : '#101C2C',
                   fontSize: '14px',
                   boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                   border: isMine ? 'none' : '1px solid #e2e8f0',

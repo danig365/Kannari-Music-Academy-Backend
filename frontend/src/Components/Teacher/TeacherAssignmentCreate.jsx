@@ -6,15 +6,15 @@ import Swal from 'sweetalert2';
 const baseUrl = API_BASE_URL;
 
 const SUBMISSION_TYPES = [
-  { value: 'audio', label: 'Audio Recording', icon: 'bi-mic-fill', color: '#8b5cf6' },
-  { value: 'video', label: 'Video Recording', icon: 'bi-camera-video-fill', color: '#ec4899' },
-  { value: 'file_upload', label: 'File Upload', icon: 'bi-file-earmark-arrow-up-fill', color: '#f59e0b' },
-  { value: 'discussion', label: 'Discussion', icon: 'bi-chat-left-text-fill', color: '#06b6d4' },
-  { value: 'multiple_choice', label: 'Multiple Choice', icon: 'bi-list-check', color: '#3b82f6' },
+  { value: 'audio', label: 'Audio Recording', icon: 'bi-mic-fill', color: '#7C9BB8' },
+  { value: 'video', label: 'Video Recording', icon: 'bi-camera-video-fill', color: '#D85C4A' },
+  { value: 'file_upload', label: 'File Upload', icon: 'bi-file-earmark-arrow-up-fill', color: '#C9A66B' },
+  { value: 'discussion', label: 'Discussion', icon: 'bi-chat-left-text-fill', color: '#7C9BB8' },
+  { value: 'multiple_choice', label: 'Multiple Choice', icon: 'bi-list-check', color: '#101C2C' },
 ];
 
 const STATUS_BADGES = {
-  assigned:  { label: 'Assigned',  bg: '#dbeafe', color: '#1d4ed8', icon: 'bi-clipboard' },
+  assigned:  { label: 'Assigned',  bg: '#dbeafe', color: '#101C2C', icon: 'bi-clipboard' },
   submitted: { label: 'Submitted', bg: '#fef3c7', color: '#92400e', icon: 'bi-check-circle' },
   late:      { label: 'Late',      bg: '#fee2e2', color: '#991b1b', icon: 'bi-clock-history' },
   graded:    { label: 'Graded',    bg: '#dcfce7', color: '#166534', icon: 'bi-award' },
@@ -254,7 +254,7 @@ const TeacherAssignmentCreate = () => {
       text: 'This template will be removed permanently.',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#ef4444',
+      confirmButtonColor: '#D85C4A',
       confirmButtonText: 'Yes, delete it',
     });
     if (!result.isConfirmed) return;
@@ -342,7 +342,7 @@ const TeacherAssignmentCreate = () => {
       text: 'This will permanently delete this assignment and all its submissions.',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#ef4444',
+      confirmButtonColor: '#D85C4A',
       confirmButtonText: 'Yes, delete it',
     });
     if (!result.isConfirmed) return;
@@ -359,12 +359,12 @@ const TeacherAssignmentCreate = () => {
     <div style={{ padding: '24px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h3 style={{ margin: 0, fontWeight: '700', color: '#1e293b' }}>
+          <h3 style={{ margin: 0, fontWeight: '700', color: '#101C2C' }}>
             <i className="bi bi-journal-bookmark me-2"></i>Assignments
           </h3>
           <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px' }}>Create and manage multi-type assignments for your students</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} style={{ padding: '10px 20px', backgroundColor: showForm ? '#ef4444' : '#6366f1', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '600', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s' }}>
+        <button onClick={() => setShowForm(!showForm)} style={{ padding: '10px 20px', backgroundColor: showForm ? '#D85C4A' : '#7C9BB8', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '600', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s' }}>
           <i className={`bi ${showForm ? 'bi-x-lg' : 'bi-plus-lg'} me-2`}></i>{showForm ? 'Cancel' : 'New Assignment'}
         </button>
       </div>
@@ -372,8 +372,8 @@ const TeacherAssignmentCreate = () => {
       <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginBottom: templates.length > 0 ? '12px' : 0, flexWrap: 'wrap' }}>
           <div>
-            <div style={{ fontWeight: '700', color: '#1e293b', fontSize: '14px' }}>
-              <i className="bi bi-collection me-2" style={{ color: '#6366f1' }}></i>Assignment Templates
+            <div style={{ fontWeight: '700', color: '#101C2C', fontSize: '14px' }}>
+              <i className="bi bi-collection me-2" style={{ color: '#7C9BB8' }}></i>Assignment Templates
             </div>
             <div style={{ color: '#64748b', fontSize: '12px' }}>Save reusable templates, then apply and assign quickly.</div>
           </div>
@@ -391,7 +391,7 @@ const TeacherAssignmentCreate = () => {
               return (
                 <div key={template.id} style={{ border: '1px solid #e2e8f0', borderRadius: '10px', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                   <div>
-                    <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ fontWeight: '600', color: '#101C2C', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       {template.title}
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: '700', backgroundColor: `${templateMeta.color}15`, color: templateMeta.color }}>
                         <i className={`bi ${templateMeta.icon}`}></i>{templateMeta.label}
@@ -431,8 +431,8 @@ const TeacherAssignmentCreate = () => {
       {/* ============== Create Form ============== */}
       {showForm && (
         <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '24px', marginBottom: '24px' }}>
-          <h5 style={{ fontWeight: '600', color: '#1e293b', marginBottom: '16px' }}>
-            <i className="bi bi-plus-circle me-2" style={{ color: '#6366f1' }}></i>Create New Assignment
+          <h5 style={{ fontWeight: '600', color: '#101C2C', marginBottom: '16px' }}>
+            <i className="bi bi-plus-circle me-2" style={{ color: '#7C9BB8' }}></i>Create New Assignment
           </h5>
           <div className="row g-3">
             <div className="col-md-8">
@@ -569,13 +569,13 @@ const TeacherAssignmentCreate = () => {
 
           {/* ============== MC Questions Builder ============== */}
           {form.submission_type === 'multiple_choice' && (
-            <div style={{ marginTop: '20px', padding: '18px', backgroundColor: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+            <div style={{ marginTop: '20px', padding: '18px', backgroundColor: '#F7F3EA', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                <h6 style={{ margin: 0, fontWeight: '600', color: '#1e293b' }}>
-                  <i className="bi bi-list-check me-2" style={{ color: '#3b82f6' }}></i>
+                <h6 style={{ margin: 0, fontWeight: '600', color: '#101C2C' }}>
+                  <i className="bi bi-list-check me-2" style={{ color: '#101C2C' }}></i>
                   Multiple Choice Questions ({mcQuestions.length})
                 </h6>
-                <button onClick={addMcQuestion} type="button" style={{ padding: '6px 14px', backgroundColor: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', cursor: 'pointer' }}>
+                <button onClick={addMcQuestion} type="button" style={{ padding: '6px 14px', backgroundColor: '#101C2C', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', cursor: 'pointer' }}>
                   <i className="bi bi-plus me-1"></i>Add Question
                 </button>
               </div>
@@ -587,11 +587,11 @@ const TeacherAssignmentCreate = () => {
               {mcQuestions.map((q, qIdx) => (
                 <div key={qIdx} style={{ marginBottom: '16px', padding: '16px', backgroundColor: '#fff', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>Question {qIdx + 1}</span>
+                    <span style={{ fontWeight: '600', color: '#101C2C', fontSize: '14px' }}>Question {qIdx + 1}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <label style={{ fontSize: '12px', color: '#64748b' }}>Points:</label>
                       <input type="number" min="1" style={{ width: '60px', padding: '2px 6px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '13px' }} value={q.points} onChange={(e) => updateMcQuestion(qIdx, 'points', parseInt(e.target.value) || 1)} />
-                      <button onClick={() => removeMcQuestion(qIdx)} type="button" style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '16px' }}>
+                      <button onClick={() => removeMcQuestion(qIdx)} type="button" style={{ background: 'none', border: 'none', color: '#D85C4A', cursor: 'pointer', fontSize: '16px' }}>
                         <i className="bi bi-trash"></i>
                       </button>
                     </div>
@@ -648,7 +648,7 @@ const TeacherAssignmentCreate = () => {
       {loading ? (
         <div style={{ textAlign: 'center', padding: '48px', color: '#64748b' }}>Loading...</div>
       ) : assignments.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '56px', backgroundColor: '#f8fafc', borderRadius: '16px', border: '2px dashed #e2e8f0' }}>
+        <div style={{ textAlign: 'center', padding: '56px', backgroundColor: '#F7F3EA', borderRadius: '16px', border: '2px dashed #e2e8f0' }}>
           <i className="bi bi-journal-plus" style={{ fontSize: '40px', color: '#cbd5e1', display: 'block', marginBottom: '12px' }}></i>
           <p style={{ color: '#64748b', fontSize: '14px' }}>No assignments created yet</p>
         </div>
@@ -662,7 +662,7 @@ const TeacherAssignmentCreate = () => {
               <div key={a.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', borderLeft: `4px solid ${meta.color}` }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                   <div>
-                    <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '15px' }}>
+                    <div style={{ fontWeight: '600', color: '#101C2C', fontSize: '15px' }}>
                       <i className={`bi ${meta.icon} me-2`} style={{ color: meta.color }}></i>
                       {a.display_title || a.title || a.lesson_title || 'Untitled'}
                     </div>
@@ -686,7 +686,7 @@ const TeacherAssignmentCreate = () => {
                     </span>
                     <button
                       onClick={() => handleDelete(a.id)}
-                      style={{ background: 'none', border: '1px solid #fecaca', borderRadius: '8px', padding: '4px 10px', cursor: 'pointer', color: '#ef4444', fontSize: '12px', transition: 'all 0.2s' }}
+                      style={{ background: 'none', border: '1px solid #fecaca', borderRadius: '8px', padding: '4px 10px', cursor: 'pointer', color: '#D85C4A', fontSize: '12px', transition: 'all 0.2s' }}
                       title="Delete assignment"
                     >
                       <i className="bi bi-trash"></i>

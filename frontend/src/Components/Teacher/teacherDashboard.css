@@ -5,7 +5,7 @@ e
 .teacher-sidebar-new {
   width: 260px;
   min-height: 100vh;
-  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  background: linear-gradient(180deg, #101C2C 0%, #101C2C 100%);
   color: #fff;
   display: flex;
   flex-direction: column;
@@ -29,7 +29,7 @@ e
 
 .logo-icon {
   font-size: 1.75rem;
-  color: #3b82f6;
+  color: #101C2C;
 }
 
 .logo-text {
@@ -87,7 +87,7 @@ e
 }
 
 .nav-link.active {
-  background: #3b82f6;
+  background: #101C2C;
   color: #fff;
 }
 
@@ -145,7 +145,7 @@ e
 .teacher-main-content {
   margin-left: 260px;
   min-height: 100vh;
-  background: #f8fafc;
+  background: #F7F3EA;
   padding: 2rem;
 }
 
@@ -160,7 +160,7 @@ e
 .header-title h1 {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1e293b;
+  color: #101C2C;
   margin: 0;
 }
 
@@ -191,7 +191,7 @@ e
 
 .btn-secondary-custom:hover {
   background: #f1f5f9;
-  color: #1e293b;
+  color: #101C2C;
 }
 
 .btn-primary-custom {
@@ -199,7 +199,7 @@ e
   align-items: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
-  background: #3b82f6;
+  background: #101C2C;
   border: none;
   border-radius: 0.5rem;
   color: #fff;
@@ -209,7 +209,7 @@ e
 }
 
 .btn-primary-custom:hover {
-  background: #2563eb;
+  background: #101C2C;
   color: #fff;
 }
 
@@ -243,12 +243,12 @@ e
 
 .metric-icon.students {
   background: #dbeafe;
-  color: #3b82f6;
+  color: #101C2C;
 }
 
 .metric-icon.lessons {
   background: #fef3c7;
-  color: #f59e0b;
+  color: #C9A66B;
 }
 
 .metric-icon.completion {
@@ -269,7 +269,7 @@ e
 .metric-value {
   font-size: 2rem;
   font-weight: 700;
-  color: #1e293b;
+  color: #101C2C;
   line-height: 1;
   margin-bottom: 0.5rem;
 }
@@ -286,7 +286,7 @@ e
 }
 
 .metric-trend.down {
-  color: #ef4444;
+  color: #D85C4A;
 }
 
 /* Content Sections */
@@ -313,13 +313,13 @@ e
 .content-card-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: #101C2C;
   margin: 0;
 }
 
 .view-all-link {
   font-size: 0.85rem;
-  color: #3b82f6;
+  color: #101C2C;
   text-decoration: none;
   font-weight: 500;
 }
@@ -365,12 +365,12 @@ e
 
 .activity-icon.document {
   background: #dbeafe;
-  color: #3b82f6;
+  color: #101C2C;
 }
 
 .activity-icon.play {
   background: #fef3c7;
-  color: #f59e0b;
+  color: #C9A66B;
 }
 
 .activity-icon.comment {
@@ -389,12 +389,12 @@ e
 }
 
 .activity-text strong {
-  color: #1e293b;
+  color: #101C2C;
   font-weight: 600;
 }
 
 .activity-link {
-  color: #3b82f6;
+  color: #101C2C;
   text-decoration: none;
   font-weight: 500;
 }
@@ -431,7 +431,7 @@ e
 .session-time {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #1e293b;
+  color: #101C2C;
   min-width: 60px;
 }
 
@@ -442,7 +442,7 @@ e
 .session-student {
   font-size: 0.9rem;
   font-weight: 500;
-  color: #1e293b;
+  color: #101C2C;
 }
 
 .session-topic {
@@ -481,7 +481,7 @@ e
 }
 
 .btn-view-schedule:hover {
-  background: #f8fafc;
+  background: #F7F3EA;
   border-color: #cbd5e1;
 }
 
@@ -516,7 +516,7 @@ e
 
 .search-input:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: #101C2C;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -535,7 +535,7 @@ e
 }
 
 .filter-btn:hover {
-  background: #f8fafc;
+  background: #F7F3EA;
 }
 
 .students-table {
@@ -549,7 +549,7 @@ e
   font-size: 0.8rem;
   font-weight: 600;
   color: #64748b;
-  background: #f8fafc;
+  background: #F7F3EA;
   border-bottom: 1px solid #e2e8f0;
 }
 
@@ -578,12 +578,12 @@ e
   color: #fff;
 }
 
-.student-avatar.sm { background: #3b82f6; }
-.student-avatar.mj { background: #8b5cf6; }
-.student-avatar.ed { background: #ec4899; }
-.student-avatar.aw { background: #f59e0b; }
+.student-avatar.sm { background: #101C2C; }
+.student-avatar.mj { background: #7C9BB8; }
+.student-avatar.ed { background: #D85C4A; }
+.student-avatar.aw { background: #C9A66B; }
 .student-avatar.jb { background: #22c55e; }
-.student-avatar.dc { background: #ef4444; }
+.student-avatar.dc { background: #D85C4A; }
 
 .level-badge {
   display: inline-block;
@@ -595,12 +595,12 @@ e
 
 .level-badge.advanced {
   background: #f3e8ff;
-  color: #7c3aed;
+  color: #7C9BB8;
 }
 
 .level-badge.intermediate {
   background: #dbeafe;
-  color: #2563eb;
+  color: #101C2C;
 }
 
 .level-badge.beginner {
@@ -629,9 +629,9 @@ e
 }
 
 .progress-bar-fill.high { background: #22c55e; }
-.progress-bar-fill.medium { background: #3b82f6; }
-.progress-bar-fill.low { background: #f59e0b; }
-.progress-bar-fill.very-low { background: #ef4444; }
+.progress-bar-fill.medium { background: #101C2C; }
+.progress-bar-fill.low { background: #C9A66B; }
+.progress-bar-fill.very-low { background: #D85C4A; }
 
 .progress-text {
   min-width: 40px;
@@ -673,7 +673,7 @@ e
 
 .action-btn:hover {
   background: #f1f5f9;
-  color: #1e293b;
+  color: #101C2C;
 }
 
 /* Lesson Library */
@@ -697,7 +697,7 @@ e
 
 .view-toggle-btn.active {
   background: #fff;
-  color: #1e293b;
+  color: #101C2C;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
@@ -762,7 +762,7 @@ e
 
 .lesson-difficulty-badge.intermediate {
   background: #dbeafe;
-  color: #1e40af;
+  color: #101C2C;
 }
 
 .lesson-difficulty-badge.advanced {
@@ -777,7 +777,7 @@ e
 .lesson-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: #101C2C;
   margin: 0 0 0.5rem;
   line-height: 1.4;
 }
@@ -818,7 +818,7 @@ e
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #f8fafc;
+  background: #F7F3EA;
   border: none;
   color: #64748b;
   cursor: pointer;
@@ -829,7 +829,7 @@ e
 }
 
 .lesson-arrow:hover {
-  background: #3b82f6;
+  background: #101C2C;
   color: #fff;
 }
 
@@ -845,18 +845,18 @@ e
   border-radius: 1rem;
   padding: 3rem;
   text-align: center;
-  background: #f8fafc;
+  background: #F7F3EA;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .upload-area:hover {
-  border-color: #3b82f6;
+  border-color: #101C2C;
   background: #f0f9ff;
 }
 
 .upload-area.dragging {
-  border-color: #3b82f6;
+  border-color: #101C2C;
   background: #dbeafe;
 }
 
@@ -873,7 +873,7 @@ e
 
 .upload-icon i {
   font-size: 1.75rem;
-  color: #3b82f6;
+  color: #101C2C;
 }
 
 .upload-text {
@@ -910,7 +910,7 @@ e
 .form-section-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: #101C2C;
   margin-bottom: 1.25rem;
 }
 
@@ -937,7 +937,7 @@ e
 
 .form-input:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: #101C2C;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -968,7 +968,7 @@ e
 .assign-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: #101C2C;
   margin-bottom: 1.25rem;
 }
 
@@ -993,7 +993,7 @@ e
   width: 18px;
   height: 18px;
   border-radius: 0.25rem;
-  accent-color: #3b82f6;
+  accent-color: #101C2C;
 }
 
 .assign-name {
@@ -1008,7 +1008,7 @@ e
 .btn-upload-save {
   width: 100%;
   padding: 0.875rem 1.5rem;
-  background: #3b82f6;
+  background: #101C2C;
   border: none;
   border-radius: 0.5rem;
   color: #fff;
@@ -1019,7 +1019,7 @@ e
 }
 
 .btn-upload-save:hover {
-  background: #2563eb;
+  background: #101C2C;
 }
 
 .btn-cancel {
@@ -1049,7 +1049,7 @@ e
   width: 40px;
   height: 40px;
   border: 3px solid #e2e8f0;
-  border-top-color: #3b82f6;
+  border-top-color: #101C2C;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -1159,7 +1159,7 @@ e
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: #1e293b;
+  color: #101C2C;
 }
 
 .modal-close {
@@ -1178,7 +1178,7 @@ e
 
 .modal-close:hover {
   background: #fee2e2;
-  color: #ef4444;
+  color: #D85C4A;
 }
 
 .modal-body-custom {
@@ -1217,6 +1217,6 @@ e
 }
 
 .btn-secondary-custom:hover {
-  background: #f8fafc;
+  background: #F7F3EA;
   border-color: #cbd5e1;
 }

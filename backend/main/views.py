@@ -6016,18 +6016,20 @@ class AdminCourseModulesWithLessons(APIView):
                     'order': lesson.order,
                     'is_preview': lesson.is_preview,
                     'is_locked': lesson.is_locked,
+                    'manual_lock': lesson.manual_lock,
                     'is_premium': lesson.is_premium,
                     'repeat_after_me_enabled': lesson.repeat_after_me_enabled,
                     'repeat_after_me_prompt': lesson.repeat_after_me_prompt,
                     'repeat_after_me_audio': request.build_absolute_uri(lesson.repeat_after_me_audio.url) if lesson.repeat_after_me_audio else None,
                     'required_access_level': lesson.required_access_level,
                 } for lesson in lessons]
-                
+
                 modules_data.append({
                     'id': module.id,
                     'title': module.title,
                     'description': module.description,
                     'order': module.order,
+                    'manual_lock': module.manual_lock,
                     'total_lessons': len(lessons_data),
                     'lessons': lessons_data
                 })
@@ -6442,13 +6444,13 @@ class StudentModuleProgressEnhanced(APIView):
                         module_completed += 1
                         completed_lessons += 1
                     
-                    # Weekly module drip: a lesson is unlocked if its module is
-                    # unlocked for this student. Preview lessons and already-accessed
-                    # lessons stay open regardless.
+                    # Lock = weekly module drip + teacher module/lesson overrides.
+                    # Preview and already-accessed lessons stay open regardless.
                     is_preview = lesson.is_preview
-                    _mstate = module_unlock_state.get(module.id, {"unlocked": True, "unlock_date": None})
+                    _mstate = module_unlock_state.get(module.id, {"unlocked": True, "unlock_date": None, "manual": None})
                     already_accessed = lesson_progress is not None
-                    is_unlocked = _mstate["unlocked"] or is_preview or already_accessed
+                    _llocked, _ = SubscriptionAccessControl.resolve_lesson_lock(lesson, _mstate)
+                    is_unlocked = (not _llocked) or is_preview or already_accessed
                     
                     # Get downloadables for this lesson
                     downloadables = models.LessonDownloadable.objects.filter(
@@ -6971,9 +6973,98 @@ def increment_download_count(request, downloadable_id):
     return JsonResponse({'bool': False, 'message': 'Invalid request method'})
 
 
+def _parse_lock_state(request):
+    """Parse the desired lock state from the request body.
+    Accepts 'lock' | 'unlock' | 'auto' (or booleans) → returns (value, error).
+    value is True (force locked), False (force unlocked), or None (follow schedule)."""
+    raw = request.data.get('state', request.data.get('manual_lock'))
+    if isinstance(raw, str):
+        raw = raw.strip().lower()
+    mapping = {
+        'lock': True, 'locked': True, 'true': True, True: True,
+        'unlock': False, 'unlocked': False, 'false': False, False: False,
+        'auto': None, 'schedule': None, 'none': None, None: None, '': None,
+    }
+    if raw not in mapping:
+        return None, JsonResponse({'error': "state must be one of: lock, unlock, auto"}, status=400)
+    return mapping[raw], None
+
+
+def _require_course_teacher_or_admin(request, course):
+    """Return (ok: bool, error_response). Allows the course's teacher or an admin."""
+    requester_type = (request.data.get('requester_type') or request.GET.get('requester_type') or '').strip().lower()
+    requester_id = request.data.get('requester_id') or request.GET.get('requester_id')
+    if requester_type == 'admin':
+        return True, None
+    if requester_type == 'teacher':
+        if not requester_id:
+            return False, JsonResponse({'error': 'requester_id required'}, status=400)
+        teacher, blocked = _require_approved_teacher(requester_id)
+        if blocked:
+            return False, blocked
+        if course.teacher_id != teacher.id:
+            return False, JsonResponse({'error': 'Not authorized for this course'}, status=403)
+        return True, None
+    return False, JsonResponse({'error': 'requester_type must be admin or teacher'}, status=403)
+
+
+class ModuleLockToggle(APIView):
+    """
+    POST /module/{chapter_id}/lock/   body: {state: 'lock'|'unlock'|'auto', requester_type, requester_id}
+    Teacher/admin sets the module-level manual lock override. 'auto' clears the
+    override so the module follows the weekly drip schedule again.
+    """
+    def post(self, request, chapter_id):
+        try:
+            module = models.Chapter.objects.select_related('course__teacher').get(pk=chapter_id)
+        except models.Chapter.DoesNotExist:
+            return JsonResponse({'error': 'Module not found'}, status=404)
+        ok, err = _require_course_teacher_or_admin(request, module.course)
+        if not ok:
+            return err
+        value, err = _parse_lock_state(request)
+        if err:
+            return err
+        module.manual_lock = value
+        module.save(update_fields=['manual_lock'])
+        return JsonResponse({
+            'success': True,
+            'chapter_id': module.id,
+            'manual_lock': module.manual_lock,
+            'state': 'locked' if value is True else 'unlocked' if value is False else 'auto',
+        })
+
+
+class LessonLockToggle(APIView):
+    """
+    POST /lesson/{lesson_id}/lock/   body: {state: 'lock'|'unlock'|'auto', requester_type, requester_id}
+    Teacher/admin sets the individual-lesson manual lock override (takes precedence
+    over the module). 'auto' clears it so the lesson follows its module.
+    """
+    def post(self, request, lesson_id):
+        try:
+            lesson = models.ModuleLesson.objects.select_related('module__course__teacher').get(pk=lesson_id)
+        except models.ModuleLesson.DoesNotExist:
+            return JsonResponse({'error': 'Lesson not found'}, status=404)
+        ok, err = _require_course_teacher_or_admin(request, lesson.module.course)
+        if not ok:
+            return err
+        value, err = _parse_lock_state(request)
+        if err:
+            return err
+        lesson.manual_lock = value
+        lesson.save(update_fields=['manual_lock'])
+        return JsonResponse({
+            'success': True,
+            'lesson_id': lesson.id,
+            'manual_lock': lesson.manual_lock,
+            'state': 'locked' if value is True else 'unlocked' if value is False else 'auto',
+        })
+
+
 class LessonDetailWithDownloadables(APIView):
     """Get detailed lesson info with objectives and downloadables"""
-    
+
     def get(self, request, lesson_id, student_id=None):
         try:
             lesson = models.ModuleLesson.objects.get(pk=lesson_id)
@@ -7229,11 +7320,15 @@ class StudentLessonPageData(APIView):
                         module_completed += 1
                         completed_lessons += 1
                     
-                    # Determine if lesson is locked by the weekly module drip.
+                    # Lock = weekly module drip + teacher module/lesson overrides.
                     # Preview lessons and lessons the student already opened stay open.
                     already_accessed = lesson_progress is not None
-                    is_locked = module_is_locked and not lesson.is_preview and not already_accessed
-                    lesson_unlock_date = module_unlock_date if is_locked else None
+                    _llocked, _ = SubscriptionAccessControl.resolve_lesson_lock(lesson, _mstate)
+                    is_locked = _llocked and not lesson.is_preview and not already_accessed
+                    # Only surface an unlock DATE for schedule-based locks (not manual ones).
+                    lesson_unlock_date = None
+                    if is_locked and lesson.manual_lock is None and _mstate.get('manual') is None:
+                        lesson_unlock_date = module_unlock_date
 
                     # Access is allowed when not locked AND the plan permits the lesson
                     # (access-level / premium / teacher-category checks still apply).

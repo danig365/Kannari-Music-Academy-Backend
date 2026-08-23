@@ -6,10 +6,10 @@ import Swal from 'sweetalert2';
 const baseUrl = API_BASE_URL;
 
 const STATUS_META = {
-  scheduled: { label: 'Scheduled', color: '#3b82f6', icon: 'bi-calendar-event' },
+  scheduled: { label: 'Scheduled', color: '#101C2C', icon: 'bi-calendar-event' },
   live:      { label: 'Live Now',  color: '#10b981', icon: 'bi-broadcast' },
   completed: { label: 'Completed', color: '#6b7280', icon: 'bi-check-circle' },
-  cancelled: { label: 'Cancelled', color: '#ef4444', icon: 'bi-x-circle' },
+  cancelled: { label: 'Cancelled', color: '#D85C4A', icon: 'bi-x-circle' },
 };
 
 const GroupSessions = ({ groupId, studentId }) => {
@@ -96,7 +96,7 @@ const GroupSessions = ({ groupId, studentId }) => {
           {liveSessions.map(s => (
             <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', backgroundColor: '#fff', borderRadius: '8px', marginBottom: '6px' }}>
               <div>
-                <div style={{ fontWeight: '600', color: '#1e293b' }}>{s.title}</div>
+                <div style={{ fontWeight: '600', color: '#101C2C' }}>{s.title}</div>
                 <div style={{ fontSize: '12px', color: '#64748b' }}>{s.teacher_name} &bull; Started {s.started_at ? new Date(s.started_at).toLocaleTimeString() : 'Now'}</div>
               </div>
               <button
@@ -115,7 +115,7 @@ const GroupSessions = ({ groupId, studentId }) => {
       <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', flexWrap: 'wrap' }}>
         <button
           onClick={() => setFilter('')}
-          style={{ padding: '5px 14px', borderRadius: '20px', border: filter === '' ? '2px solid #6366f1' : '1px solid #e2e8f0', backgroundColor: filter === '' ? '#eef2ff' : '#fff', color: filter === '' ? '#4338ca' : '#64748b', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+          style={{ padding: '5px 14px', borderRadius: '20px', border: filter === '' ? '2px solid #7C9BB8' : '1px solid #e2e8f0', backgroundColor: filter === '' ? '#eef2ff' : '#fff', color: filter === '' ? '#4338ca' : '#64748b', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
         >All ({sessions.length})</button>
         {Object.entries(STATUS_META).map(([key, meta]) => {
           const count = sessions.filter(s => s.status === key).length;
@@ -133,7 +133,7 @@ const GroupSessions = ({ groupId, studentId }) => {
 
       {/* Sessions list */}
       {filteredSessions.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '48px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '2px dashed #e2e8f0', color: '#64748b' }}>
+        <div style={{ textAlign: 'center', padding: '48px', backgroundColor: '#F7F3EA', borderRadius: '12px', border: '2px dashed #e2e8f0', color: '#64748b' }}>
           <i className="bi bi-camera-video" style={{ fontSize: '32px', display: 'block', marginBottom: '8px' }}></i>
           {sessions.length > 0 ? 'No sessions matching filter.' : 'No sessions scheduled yet.'}
         </div>
@@ -155,7 +155,7 @@ const GroupSessions = ({ groupId, studentId }) => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                      <span style={{ fontWeight: '700', color: '#1e293b', fontSize: '15px' }}>{session.title}</span>
+                      <span style={{ fontWeight: '700', color: '#101C2C', fontSize: '15px' }}>{session.title}</span>
                       <span style={{
                         display: 'inline-flex', alignItems: 'center', gap: '4px',
                         padding: '2px 10px', borderRadius: '10px', fontSize: '11px',
@@ -202,7 +202,7 @@ const GroupSessions = ({ groupId, studentId }) => {
                         href={session.meeting_link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ padding: '6px 14px', backgroundColor: '#eff6ff', color: '#2563eb', borderRadius: '8px', fontSize: '12px', fontWeight: '600', textDecoration: 'none' }}
+                        style={{ padding: '6px 14px', backgroundColor: '#eff6ff', color: '#101C2C', borderRadius: '8px', fontSize: '12px', fontWeight: '600', textDecoration: 'none' }}
                       >
                         <i className="bi bi-link-45deg me-1"></i>Meeting Link
                       </a>
@@ -212,7 +212,7 @@ const GroupSessions = ({ groupId, studentId }) => {
                         href={session.recording_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ padding: '6px 14px', backgroundColor: '#f5f3ff', color: '#7c3aed', borderRadius: '8px', fontSize: '12px', fontWeight: '600', textDecoration: 'none' }}
+                        style={{ padding: '6px 14px', backgroundColor: '#f5f3ff', color: '#7C9BB8', borderRadius: '8px', fontSize: '12px', fontWeight: '600', textDecoration: 'none' }}
                       >
                         <i className="bi bi-play-circle me-1"></i>Recording
                       </a>

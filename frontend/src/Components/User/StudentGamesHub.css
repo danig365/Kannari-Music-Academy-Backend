@@ -9,7 +9,7 @@
   padding: 0;
   width: calc(100% - 250px);
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  background: linear-gradient(135deg, #101C2C 0%, #101C2C 50%, #101C2C 100%);
   color: #e2e8f0;
   font-family: 'Nunito', 'Segoe UI', sans-serif;
 }
@@ -44,7 +44,7 @@
   font-size: 1.6rem;
   font-weight: 900;
   margin: 0;
-  background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+  background: linear-gradient(135deg, #7C9BB8, #a78bfa, #f472b6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -82,13 +82,13 @@
 .gh-coin-amount {
   font-size: 1.4rem;
   font-weight: 800;
-  color: #fbbf24;
+  color: #C9A66B;
   line-height: 1;
 }
 
 .gh-coin-label {
   font-size: 0.65rem;
-  color: #d97706;
+  color: #C9A66B;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-weight: 700;
@@ -279,7 +279,7 @@
   background: rgba(245, 158, 11, 0.1);
   border: 1px solid rgba(245, 158, 11, 0.2);
   border-radius: 10px;
-  color: #d97706;
+  color: #C9A66B;
   font-size: 0.8rem;
   font-weight: 700;
 }
@@ -452,7 +452,7 @@
   display: inline-block;
   margin-left: 8px;
   padding: 1px 8px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #7C9BB8, #7C9BB8);
   color: #fff;
   border-radius: 8px;
   font-size: 0.6rem;
@@ -461,7 +461,7 @@
   vertical-align: middle;
 }
 
-.gh-lb-score { font-weight: 800; color: #fbbf24; }
+.gh-lb-score { font-weight: 800; color: #C9A66B; }
 
 /* ════════════════════════════════════════════════════════════════
    BADGES

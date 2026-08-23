@@ -211,7 +211,7 @@ const StreakCalendar = ({ studentId }) => {
                                         className={`calendar-cell ${day.isToday ? 'today' : ''} ${day.isFuture ? 'future' : ''}`}
                                         style={{ 
                                             backgroundColor: day.isFuture ? 'transparent' : getActivityColor(day.level),
-                                            borderColor: day.isToday ? '#4285f4' : 'transparent'
+                                            borderColor: day.isToday ? '#101C2C' : 'transparent'
                                         }}
                                         onMouseEnter={() => !day.isFuture && setHoveredDate(day)}
                                         onMouseLeave={() => setHoveredDate(null)}

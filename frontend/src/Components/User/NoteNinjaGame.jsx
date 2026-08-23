@@ -327,7 +327,7 @@ const NoteNinjaGame = () => {
 
   const timerMax = currentQuestion?.time_limit_seconds || 8;
   const timerPercent = timerMax > 0 ? (timeLeft / timerMax) * 100 : 0;
-  const timerColor = timerPercent > 50 ? '#22c55e' : timerPercent > 25 ? '#f59e0b' : '#ef4444';
+  const timerColor = timerPercent > 50 ? '#22c55e' : timerPercent > 25 ? '#C9A66B' : '#D85C4A';
 
   // ─── Network error state ──────────────────────────────────
   const [networkError, setNetworkError] = useState('');

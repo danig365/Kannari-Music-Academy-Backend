@@ -92,10 +92,10 @@ const MyAchievements = () => {
     };
 
     const getXpTier = (xp) => {
-        if (xp >= 1000) return { label: 'Music Master',   color: '#7c3aed', next: null,  nextXp: 0    };
-        if (xp >= 600)  return { label: 'Rhythm Master',  color: '#dc2626', next: 1000, nextXp: 1000 };
-        if (xp >= 300)  return { label: 'Music Maker',    color: '#d97706', next: 600,  nextXp: 600  };
-        if (xp >= 100)  return { label: 'Rising Star',    color: '#2563eb', next: 300,  nextXp: 300  };
+        if (xp >= 1000) return { label: 'Music Master',   color: '#7C9BB8', next: null,  nextXp: 0    };
+        if (xp >= 600)  return { label: 'Rhythm Master',  color: '#D85C4A', next: 1000, nextXp: 1000 };
+        if (xp >= 300)  return { label: 'Music Maker',    color: '#C9A66B', next: 600,  nextXp: 600  };
+        if (xp >= 100)  return { label: 'Rising Star',    color: '#101C2C', next: 300,  nextXp: 300  };
         return                 { label: 'Beginner',        color: '#16a34a', next: 100,  nextXp: 100  };
     };
 
@@ -196,7 +196,7 @@ const MyAchievements = () => {
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
-                                    background: streak >= 4 ? '#fff7ed' : streak >= 1 ? '#fefce8' : '#f8fafc',
+                                    background: streak >= 4 ? '#fff7ed' : streak >= 1 ? '#fefce8' : '#F7F3EA',
                                     border: `1.5px solid ${streak >= 4 ? '#fed7aa' : streak >= 1 ? '#fef08a' : '#e2e8f0'}`,
                                     borderRadius: 12,
                                     padding: '10px 20px',
@@ -218,11 +218,11 @@ const MyAchievements = () => {
                     {/* Summary Card */}
                     <div className="summary-card">
                         <div className="summary-item">
-                            <h3 style={{ color: '#3b82f6' }}>{achievements.length}</h3>
+                            <h3 style={{ color: '#101C2C' }}>{achievements.length}</h3>
                             <p>Achievements Earned</p>
                         </div>
                         <div className="summary-item">
-                            <h3 style={{ color: '#f59e0b' }}>
+                            <h3 style={{ color: '#C9A66B' }}>
                                 {dashboardData?.total_xp ?? achievements.reduce((sum, a) => sum + (a.achievement?.points || 0), 0)}
                             </h3>
                             <p>Total XP</p>

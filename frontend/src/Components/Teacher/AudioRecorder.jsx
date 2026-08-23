@@ -117,8 +117,8 @@ const AudioRecorder = ({ teacherId, students = [], onMessageSent = null }) => {
       for (let i = 0; i < bufferLength; i++) {
         const barHeight = (dataArray[i] / 255) * canvas.height;
         const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
-        gradient.addColorStop(0, '#3b82f6');
-        gradient.addColorStop(1, '#8b5cf6');
+        gradient.addColorStop(0, '#101C2C');
+        gradient.addColorStop(1, '#7C9BB8');
         ctx.fillStyle = gradient;
         ctx.fillRect(x, canvas.height - barHeight, barWidth - 1, barHeight);
         x += barWidth;
@@ -168,10 +168,10 @@ const AudioRecorder = ({ teacherId, students = [], onMessageSent = null }) => {
     <div style={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '24px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
         <div style={{ width: '40px', height: '40px', backgroundColor: '#fef3c7', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <i className="bi bi-mic" style={{ fontSize: '20px', color: '#f59e0b' }}></i>
+          <i className="bi bi-mic" style={{ fontSize: '20px', color: '#C9A66B' }}></i>
         </div>
         <div>
-          <h5 style={{ margin: 0, fontWeight: '600', color: '#1e293b' }}>Send Audio Message</h5>
+          <h5 style={{ margin: 0, fontWeight: '600', color: '#101C2C' }}>Send Audio Message</h5>
           <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>Record and send audio feedback to your students</p>
         </div>
       </div>
@@ -190,18 +190,18 @@ const AudioRecorder = ({ teacherId, students = [], onMessageSent = null }) => {
       </div>
 
       {/* Waveform / Recording area */}
-      <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', textAlign: 'center', marginBottom: '16px' }}>
+      <div style={{ backgroundColor: '#F7F3EA', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', textAlign: 'center', marginBottom: '16px' }}>
         {isRecording && (
           <canvas ref={canvasRef} width={400} height={60} style={{ width: '100%', height: '60px', marginBottom: '12px', borderRadius: '8px' }}></canvas>
         )}
         
-        <div style={{ fontSize: '32px', fontWeight: '700', color: isRecording ? '#ef4444' : '#1e293b', fontFamily: 'monospace', marginBottom: '8px' }}>
+        <div style={{ fontSize: '32px', fontWeight: '700', color: isRecording ? '#D85C4A' : '#101C2C', fontFamily: 'monospace', marginBottom: '8px' }}>
           {formatTime(duration)}
         </div>
 
         {isRecording && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#ef4444', fontSize: '13px' }}>
-            <div style={{ width: '8px', height: '8px', backgroundColor: '#ef4444', borderRadius: '50%', animation: 'pulse 1.5s infinite' }}></div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#D85C4A', fontSize: '13px' }}>
+            <div style={{ width: '8px', height: '8px', backgroundColor: '#D85C4A', borderRadius: '50%', animation: 'pulse 1.5s infinite' }}></div>
             Recording...
           </div>
         )}
@@ -216,7 +216,7 @@ const AudioRecorder = ({ teacherId, students = [], onMessageSent = null }) => {
       {/* Controls */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
         {!isRecording && !audioBlob && (
-          <button onClick={startRecording} style={{ padding: '12px 28px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
+          <button onClick={startRecording} style={{ padding: '12px 28px', backgroundColor: '#D85C4A', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
             <i className="bi bi-mic-fill"></i> Start Recording
           </button>
         )}

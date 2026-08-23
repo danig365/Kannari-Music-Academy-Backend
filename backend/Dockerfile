@@ -6,9 +6,12 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
 # Install system dependencies
+# - postgresql-client provides pg_dump/psql used by the `backup_data` command
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
+    postgresql-client \
+    rsync \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies first (separate layer — only rebuilds when requirements change)

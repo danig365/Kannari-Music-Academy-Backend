@@ -167,7 +167,11 @@ urlpatterns =[
         path('lesson-block/<int:block_id>/', views.LessonBlockDetail.as_view()),
         path('lesson/<int:lesson_id>/blocks/reorder/', views.LessonBlockReorder.as_view()),
         path('teacher/<int:teacher_id>/library-blocks/', views.TeacherLibraryBlocks.as_view()),
-        
+
+        # Teacher/admin manual lock overrides (on top of the weekly module drip)
+        path('module/<int:chapter_id>/lock/', views.ModuleLockToggle.as_view()),
+        path('lesson/<int:lesson_id>/lock/', views.LessonLockToggle.as_view()),
+
         # Student Lesson Progress
         path('student/<int:student_id>/course/<int:course_id>/progress/', views.StudentModuleProgress.as_view()),
         path('student/<int:student_id>/course/<int:course_id>/progress-enhanced/', views.StudentModuleProgressEnhanced.as_view()),

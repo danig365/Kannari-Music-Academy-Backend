@@ -338,7 +338,7 @@ const EnhancedDashboard = () => {
                         return (
                             <div className="row g-3 mb-4">
                                 <div className="col-12">
-                                    <div className="card border-0 shadow-sm" style={{background:'linear-gradient(135deg,#6366f1 0%,#4f46e5 100%)',color:'#fff'}}>
+                                    <div className="card border-0 shadow-sm" style={{background:'linear-gradient(135deg,#7C9BB8 0%,#4f46e5 100%)',color:'#fff'}}>
                                         <div className="card-body d-flex align-items-center gap-3 p-3 flex-wrap">
                                             <div className="flex-shrink-0">
                                                 <i className="bi bi-map fs-2"></i>

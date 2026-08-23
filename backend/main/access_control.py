@@ -177,45 +177,84 @@ class SubscriptionAccessControl:
 
         modules = list(models.Chapter.objects.filter(course=course).order_by('order', 'id'))
 
-        # No drip configured → everything open.
-        if not mpw:
-            return {m.id: {"unlocked": True, "unlock_date": None, "week": 1} for m in modules}
-
-        mpw = int(mpw)
-
-        # Anchor = per-course enrollment date, fallback to subscription start, then today.
-        enrolled_date = None
-        try:
-            enrollment = models.StudentCourseEnrollment.objects.filter(
-                student_id=student_id, course=course
-            ).order_by('enrolled_time').first()
-            if enrollment and enrollment.enrolled_time:
-                enrolled_date = enrollment.enrolled_time.date()
-        except Exception:
+        drip = bool(mpw)
+        allowed_modules = 0
+        enrolled_date = today
+        if drip:
+            mpw = int(mpw)
+            # Anchor = per-course enrollment date, fallback to subscription start, then today.
             enrolled_date = None
+            try:
+                enrollment = models.StudentCourseEnrollment.objects.filter(
+                    student_id=student_id, course=course
+                ).order_by('enrolled_time').first()
+                if enrollment and enrollment.enrolled_time:
+                    enrolled_date = enrollment.enrolled_time.date()
+            except Exception:
+                enrolled_date = None
+            if not enrolled_date and subscription and subscription.start_date:
+                enrolled_date = subscription.start_date
+            if not enrolled_date:
+                enrolled_date = today
 
-        if not enrolled_date and subscription and subscription.start_date:
-            enrolled_date = subscription.start_date
-        if not enrolled_date:
-            enrolled_date = today
-
-        days_since_enroll = max(0, (today - enrolled_date).days)
-        weeks_elapsed = (days_since_enroll // 7) + 1   # first 7 days = week 1
-        allowed_modules = weeks_elapsed * mpw
+            days_since_enroll = max(0, (today - enrolled_date).days)
+            weeks_elapsed = (days_since_enroll // 7) + 1   # first 7 days = week 1
+            allowed_modules = weeks_elapsed * mpw
 
         state = {}
         for idx, m in enumerate(modules):
             order = getattr(m, 'order', idx) or 0
-            # Week (1-based) in which this module becomes available.
-            week_needed = (order // mpw) + 1
-            unlocked = order < allowed_modules
-            unlock_date = enrolled_date + timedelta(weeks=(week_needed - 1))
+
+            # Automatic weekly schedule for this module.
+            if drip:
+                week_needed = (order // mpw) + 1
+                drip_unlocked = order < allowed_modules
+                drip_unlock_date = enrolled_date + timedelta(weeks=(week_needed - 1))
+            else:
+                week_needed = 1
+                drip_unlocked = True
+                drip_unlock_date = None
+
+            # Teacher manual override wins over the schedule.
+            if m.manual_lock is True:
+                unlocked, unlock_date = False, None          # locked by teacher (no schedule date)
+            elif m.manual_lock is False:
+                unlocked, unlock_date = True, None            # unlocked by teacher (possibly early)
+            else:
+                unlocked = drip_unlocked
+                unlock_date = None if drip_unlocked else drip_unlock_date
+
             state[m.id] = {
                 "unlocked": unlocked,
-                "unlock_date": None if unlocked else unlock_date,
+                "unlock_date": unlock_date,
                 "week": week_needed,
+                "manual": m.manual_lock,   # None / True / False — for the teacher UI
             }
         return state
+
+    @staticmethod
+    def resolve_lesson_lock(lesson, module_state):
+        """
+        Resolve whether a lesson is locked, combining the module's state (which
+        already includes the weekly drip + the module-level teacher override) with
+        the lesson's own teacher override. Lesson override takes precedence.
+
+        Returns (is_locked: bool, message: str).
+        """
+        # Individual lesson override wins over everything.
+        if lesson.manual_lock is True:
+            return True, "This lesson has been locked by your teacher."
+        if lesson.manual_lock is False:
+            return False, ""
+
+        # Otherwise follow the module.
+        if module_state.get("unlocked"):
+            return False, ""
+        if module_state.get("manual") is True:
+            return True, "This module has been locked by your teacher."
+        ud = module_state.get("unlock_date")
+        when = f" It unlocks on {ud.strftime('%b %d, %Y')}." if ud else ""
+        return True, f"This module is not yet unlocked.{when}"
 
     @staticmethod
     def can_access_lesson(student_id, lesson_id):
@@ -260,15 +299,14 @@ class SubscriptionAccessControl:
         unlock_state = SubscriptionAccessControl.get_course_module_unlock_state(
             student_id, course, subscription
         )
-        module_state = unlock_state.get(lesson.module_id, {"unlocked": True, "unlock_date": None})
-        if not module_state["unlocked"]:
+        module_state = unlock_state.get(lesson.module_id, {"unlocked": True, "unlock_date": None, "manual": None})
+        is_locked, lock_msg = SubscriptionAccessControl.resolve_lesson_lock(lesson, module_state)
+        if is_locked:
             already_accessed = models.ModuleLessonProgress.objects.filter(
                 student_id=student_id, lesson_id=lesson_id
             ).exists()
             if not already_accessed:
-                unlock_date = module_state.get("unlock_date")
-                when = f" It unlocks on {unlock_date.strftime('%b %d, %Y')}." if unlock_date else ""
-                return False, (f"This module is not yet unlocked.{when}"), subscription
+                return False, lock_msg, subscription
         # ------------------------------------------------------------------
 
         # If the student is on this course's teacher's roster, the teacher has

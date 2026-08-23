@@ -7,7 +7,7 @@
 
 .student-subscriptions .subscription-header {
     font-size: clamp(1.5rem, 2.5vw, 2rem);
-    color: #1a1a1a;
+    color: #101C2C;
     font-weight: 800;
     margin-bottom: 1.5rem;
     border-bottom: 2px solid rgba(59, 130, 246, 0.15);
@@ -16,7 +16,7 @@
 }
 
 .student-subscriptions .subscription-header i {
-    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    background: linear-gradient(135deg, #101C2C, #7C9BB8);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -37,13 +37,13 @@
 }
 
 .student-subscriptions .nav-tabs .nav-link:hover {
-    color: #3b82f6;
+    color: #101C2C;
     background: rgba(59, 130, 246, 0.05);
 }
 
 .student-subscriptions .nav-tabs .nav-link.active {
     color: #ffffff;
-    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    background: linear-gradient(135deg, #101C2C, #7C9BB8);
     border: none;
     box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
 }
@@ -85,7 +85,7 @@
 .student-subscriptions .plan-header h5 {
     margin: 0;
     font-size: 1.35rem;
-    color: #1a1a1a;
+    color: #101C2C;
     font-weight: 700;
 }
 
@@ -106,7 +106,7 @@
 .student-subscriptions .price-main {
     font-size: 2.5rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    background: linear-gradient(135deg, #101C2C, #7C9BB8);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -154,20 +154,20 @@
 }
 
 .student-subscriptions .plan-card .btn-primary {
-    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    background: linear-gradient(135deg, #101C2C, #7C9BB8);
     border: none;
     box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
 }
 
 .student-subscriptions .plan-card .btn-primary:hover:not(:disabled) {
-    background: linear-gradient(135deg, #2563eb, #0891b2);
+    background: linear-gradient(135deg, #101C2C, #0891b2);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
 }
 
 .student-subscriptions .plan-card .btn-secondary {
     background: rgba(59, 130, 246, 0.08);
-    color: #3b82f6;
+    color: #101C2C;
     border: 1px solid rgba(59, 130, 246, 0.15);
 }
 
@@ -195,7 +195,7 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, #3b82f6, #06b6d4);
+    background: linear-gradient(90deg, #101C2C, #7C9BB8);
 }
 
 .student-subscriptions .subscription-card:hover {
@@ -210,7 +210,7 @@
 }
 
 .student-subscriptions .subscription-card .card-title {
-    color: #1a1a1a;
+    color: #101C2C;
     font-weight: 800;
     margin-bottom: 1rem;
     font-size: 1.3rem;
@@ -246,7 +246,7 @@
 }
 
 .student-subscriptions .subscription-details strong {
-    color: #1a1a1a;
+    color: #101C2C;
     font-weight: 700;
     margin-right: 1rem;
     min-width: 120px;
@@ -338,7 +338,7 @@
 
 .student-subscriptions .payment-form label {
     font-weight: 600;
-    color: #1a1a1a;
+    color: #101C2C;
     margin-bottom: 0.5rem;
     display: block;
     font-size: 0.9rem;
@@ -354,7 +354,7 @@
 }
 
 .student-subscriptions .payment-form .form-control:focus {
-    border-color: #3b82f6;
+    border-color: #101C2C;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
     background: #ffffff;
     outline: none;
@@ -374,13 +374,13 @@
 }
 
 .student-subscriptions .card-element.StripeElement--focus {
-    border-color: #3b82f6 !important;
+    border-color: #101C2C !important;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08) !important;
     background: #ffffff !important;
 }
 
 .student-subscriptions .card-element.StripeElement--invalid {
-    border-color: #ef4444 !important;
+    border-color: #D85C4A !important;
 }
 
 .student-subscriptions .payment-form .btn {
@@ -413,7 +413,7 @@
 
 .student-subscriptions .payment-form .btn-secondary {
     background: rgba(59, 130, 246, 0.08);
-    color: #3b82f6;
+    color: #101C2C;
     border: 1px solid rgba(59, 130, 246, 0.15);
 }
 
@@ -445,7 +445,7 @@
 }
 
 .student-subscriptions .summary-item span:last-child {
-    color: #1a1a1a;
+    color: #101C2C;
     font-weight: 700;
 }
 
@@ -457,7 +457,7 @@
 }
 
 .student-subscriptions .summary-item.total span:last-child {
-    color: #3b82f6;
+    color: #101C2C;
     font-size: 1.4rem;
 }
 
@@ -680,7 +680,7 @@
 .student-subscriptions .alert-info {
     background: #ffffff;
     border: 1px solid rgba(59, 130, 246, 0.12);
-    color: #1a1a1a;
+    color: #101C2C;
     padding: 1.1rem 1.25rem;
     border-radius: 12px;
     font-weight: 500;

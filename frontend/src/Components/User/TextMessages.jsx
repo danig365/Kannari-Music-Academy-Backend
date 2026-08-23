@@ -232,7 +232,7 @@ const TextMessages = () => {
         {/* Access denied banner for minors */}
         {accessError ? (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', padding: '40px' }}>
-            <i className="bi bi-shield-lock-fill" style={{ fontSize: '56px', color: '#f59e0b' }}></i>
+            <i className="bi bi-shield-lock-fill" style={{ fontSize: '56px', color: '#C9A66B' }}></i>
             <p style={{ color: '#92400e', marginTop: '16px', fontSize: '16px', fontWeight: '600', textAlign: 'center' }}>{accessError}</p>
           </div>
         ) : (
@@ -240,7 +240,7 @@ const TextMessages = () => {
             {/* Teacher conversation list (left panel) */}
             <div style={{ width: isMobile && activeConv ? '0' : (isMobile ? '100%' : '300px'), borderRight: '1px solid #e2e8f0', backgroundColor: '#fff', overflow: 'auto', transition: 'width 0.3s', flexShrink: 0 }}>
               <div style={{ padding: '20px 16px', borderBottom: '1px solid #e2e8f0' }}>
-                <h3 style={{ margin: 0, color: '#1e293b', fontWeight: '700', fontSize: '18px' }}>
+                <h3 style={{ margin: 0, color: '#101C2C', fontWeight: '700', fontSize: '18px' }}>
                   <i className="bi bi-chat-dots me-2"></i>Text Messages
                 </h3>
                 <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '13px' }}>Chat with your teachers</p>
@@ -256,12 +256,12 @@ const TextMessages = () => {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '42px', height: '42px', backgroundColor: '#4285f4', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '18px', flexShrink: 0 }}>
+                  <div style={{ width: '42px', height: '42px', backgroundColor: '#101C2C', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '18px', flexShrink: 0 }}>
                     <i className="bi bi-shield-check"></i>
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: '700', color: '#1e293b', fontSize: '14px' }}>Admin Support</div>
-                    <div style={{ fontSize: '12px', color: '#4285f4' }}>Contact the platform admin</div>
+                    <div style={{ fontWeight: '700', color: '#101C2C', fontSize: '14px' }}>Admin Support</div>
+                    <div style={{ fontSize: '12px', color: '#101C2C' }}>Contact the platform admin</div>
                   </div>
                 </div>
               </div>
@@ -291,16 +291,16 @@ const TextMessages = () => {
                       {conv.teacher_profile_img ? (
                         <img src={conv.teacher_profile_img} alt="" style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }} />
                       ) : (
-                        <div style={{ width: '42px', height: '42px', backgroundColor: '#6366f1', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '600', fontSize: '14px', flexShrink: 0 }}>
+                        <div style={{ width: '42px', height: '42px', backgroundColor: '#7C9BB8', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '600', fontSize: '14px', flexShrink: 0 }}>
                           {conv.teacher_name.substring(0, 2).toUpperCase()}
                         </div>
                       )}
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>{conv.teacher_name}</div>
+                        <div style={{ fontWeight: '600', color: '#101C2C', fontSize: '14px' }}>{conv.teacher_name}</div>
                         <div style={{ fontSize: '12px', color: '#64748b' }}>Teacher</div>
                       </div>
                       {conv.unread_count > 0 && (
-                        <div style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#6366f1', color: '#fff', fontSize: '11px', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#7C9BB8', color: '#fff', fontSize: '11px', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {conv.unread_count}
                         </div>
                       )}
@@ -311,7 +311,7 @@ const TextMessages = () => {
             </div>
 
             {/* Chat area (right panel) */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#F7F3EA' }}>
               {!activeConv ? (
                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
                   <i className="bi bi-chat-square-text" style={{ fontSize: '64px', color: '#cbd5e1' }}></i>
@@ -327,19 +327,19 @@ const TextMessages = () => {
                       </button>
                     )}
                     {isAdminChat ? (
-                      <div style={{ width: '36px', height: '36px', backgroundColor: '#4285f4', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '16px' }}>
+                      <div style={{ width: '36px', height: '36px', backgroundColor: '#101C2C', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '16px' }}>
                         <i className="bi bi-shield-check"></i>
                       </div>
                     ) : activeConv.teacher_profile_img ? (
                       <img src={activeConv.teacher_profile_img} alt="" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
                     ) : (
-                      <div style={{ width: '36px', height: '36px', backgroundColor: '#6366f1', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '600', fontSize: '12px' }}>
+                      <div style={{ width: '36px', height: '36px', backgroundColor: '#7C9BB8', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '600', fontSize: '12px' }}>
                         {activeConv.teacher_name.substring(0, 2).toUpperCase()}
                       </div>
                     )}
                     <div>
-                      <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>{activeConv.teacher_name}</div>
-                      <div style={{ fontSize: '11px', color: isAdminChat ? '#4285f4' : (chatStatus.allowed ? '#10b981' : '#ef4444') }}>
+                      <div style={{ fontWeight: '600', color: '#101C2C', fontSize: '14px' }}>{activeConv.teacher_name}</div>
+                      <div style={{ fontSize: '11px', color: isAdminChat ? '#101C2C' : (chatStatus.allowed ? '#10b981' : '#D85C4A') }}>
                         {isAdminChat ? 'Platform admin support' : (chatStatus.allowed ? 'Chat available' : chatStatus.reason)}
                       </div>
                     </div>
@@ -364,7 +364,7 @@ const TextMessages = () => {
                           >
                             {isMine && hoveredMsgId === msg.id && (
                               <button onClick={() => handleDelete(msg.id)} title="Delete message"
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '13px', padding: '2px', flexShrink: 0, opacity: 0.8 }}>
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#D85C4A', fontSize: '13px', padding: '2px', flexShrink: 0, opacity: 0.8 }}>
                                 <i className="bi bi-trash3"></i>
                               </button>
                             )}
@@ -372,8 +372,8 @@ const TextMessages = () => {
                               maxWidth: '70%',
                               padding: '10px 14px',
                               borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                              backgroundColor: isMine ? '#3b82f6' : '#fff',
-                              color: isMine ? '#fff' : '#1e293b',
+                              backgroundColor: isMine ? '#101C2C' : '#fff',
+                              color: isMine ? '#fff' : '#101C2C',
                               fontSize: '14px',
                               boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                               border: isMine ? 'none' : '1px solid #e2e8f0'
@@ -399,8 +399,8 @@ const TextMessages = () => {
                   {/* Input area */}
                   {!isAdminChat && !chatStatus.allowed ? (
                     <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', backgroundColor: '#fef2f2', textAlign: 'center' }}>
-                      <i className="bi bi-lock me-2" style={{ color: '#ef4444' }}></i>
-                      <span style={{ color: '#dc2626', fontSize: '14px' }}>{chatStatus.reason}</span>
+                      <i className="bi bi-lock me-2" style={{ color: '#D85C4A' }}></i>
+                      <span style={{ color: '#D85C4A', fontSize: '14px' }}>{chatStatus.reason}</span>
                     </div>
                   ) : (
                     <div style={{ padding: '12px 16px', borderTop: '1px solid #e2e8f0', backgroundColor: '#fff', display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
@@ -421,7 +421,7 @@ const TextMessages = () => {
                         disabled={!newMessage.trim() || sending}
                         style={{
                           width: '40px', height: '40px', borderRadius: '50%', border: 'none',
-                          backgroundColor: newMessage.trim() ? '#3b82f6' : '#e2e8f0',
+                          backgroundColor: newMessage.trim() ? '#101C2C' : '#e2e8f0',
                           color: '#fff', cursor: newMessage.trim() ? 'pointer' : 'default',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: '18px', flexShrink: 0

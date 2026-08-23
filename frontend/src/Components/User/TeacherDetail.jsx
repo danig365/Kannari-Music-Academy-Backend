@@ -65,7 +65,7 @@ const TeacherDetail = () => {
         return (
             <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <div style={{ textAlign: 'center' }}>
-                    <h3 style={{ color: '#1f2937' }}>Teacher not found</h3>
+                    <h3 style={{ color: '#101C2C' }}>Teacher not found</h3>
                 </div>
             </div>
         );
@@ -75,7 +75,7 @@ const TeacherDetail = () => {
         <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa', padding: '2rem 0' }}>
             {/* Header Section */}
             <div style={{
-                backgroundColor: 'linear-gradient(135deg, #4285f4 0%, #3b5998 100%)',
+                backgroundColor: 'linear-gradient(135deg, #101C2C 0%, #101C2C 100%)',
                 paddingTop: '3rem',
                 paddingBottom: '2rem',
                 marginBottom: '2rem'
@@ -176,8 +176,8 @@ const TeacherDetail = () => {
                     marginBottom: '2rem',
                     boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
                 }}>
-                    <h3 style={{ color: '#1f2937', fontWeight: '700', marginBottom: '1rem' }}>
-                        <i className="bi bi-info-circle me-2" style={{ color: '#4285f4' }}></i>
+                    <h3 style={{ color: '#101C2C', fontWeight: '700', marginBottom: '1rem' }}>
+                        <i className="bi bi-info-circle me-2" style={{ color: '#101C2C' }}></i>
                         About
                     </h3>
                     <p style={{ color: '#6b7280', lineHeight: '1.6', marginBottom: '1.5rem' }}>
@@ -297,7 +297,7 @@ const TeacherDetail = () => {
                                         width: '44px',
                                         height: '44px',
                                         borderRadius: '50%',
-                                        backgroundColor: '#4285f4',
+                                        backgroundColor: '#101C2C',
                                         color: 'white',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -319,11 +319,11 @@ const TeacherDetail = () => {
                 {courseData.length > 0 && (
                     <div>
                         <h3 style={{
-                            color: '#1f2937',
+                            color: '#101C2C',
                             fontWeight: '700',
                             marginBottom: '1.5rem'
                         }}>
-                            <i className="bi bi-book me-2" style={{ color: '#4285f4' }}></i>
+                            <i className="bi bi-book me-2" style={{ color: '#101C2C' }}></i>
                             Courses by {teacherData.full_name}
                         </h3>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
@@ -351,7 +351,7 @@ const TeacherDetail = () => {
                                     <div style={{
                                         width: '100%',
                                         height: '160px',
-                                        backgroundColor: '#4285f4',
+                                        backgroundColor: '#101C2C',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
@@ -361,7 +361,7 @@ const TeacherDetail = () => {
                                     </div>
                                     <div style={{ padding: '1.5rem' }}>
                                         <h6 style={{
-                                            color: '#1f2937',
+                                            color: '#101C2C',
                                             fontWeight: '600',
                                             marginBottom: '0.5rem',
                                             overflow: 'hidden',

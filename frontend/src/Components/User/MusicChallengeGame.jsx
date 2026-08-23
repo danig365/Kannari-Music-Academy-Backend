@@ -31,13 +31,13 @@ const playCountdown= () => tone(660, 0.08, 'triangle', 0.12);
 
 /* ── Category display helpers ───────────────────────────────── */
 const CAT_META = {
-  instruments: { icon: '🎸', label: 'Instruments', color: '#f59e0b' },
-  symbols:     { icon: '🎵', label: 'Symbols',     color: '#8b5cf6' },
-  rhythm:      { icon: '🥁', label: 'Rhythm',      color: '#ef4444' },
-  theory:      { icon: '📖', label: 'Theory',      color: '#3b82f6' },
+  instruments: { icon: '🎸', label: 'Instruments', color: '#C9A66B' },
+  symbols:     { icon: '🎵', label: 'Symbols',     color: '#7C9BB8' },
+  rhythm:      { icon: '🥁', label: 'Rhythm',      color: '#D85C4A' },
+  theory:      { icon: '📖', label: 'Theory',      color: '#101C2C' },
   composers:   { icon: '🎹', label: 'Composers',   color: '#10b981' },
 };
-const catInfo = (c) => CAT_META[c] || { icon: '⚡', label: c || 'General', color: '#6366f1' };
+const catInfo = (c) => CAT_META[c] || { icon: '⚡', label: c || 'General', color: '#7C9BB8' };
 
 /* ── Phases ─────────────────────────────────────────────────── */
 const PHASE = { MENU: 'MENU', COUNTDOWN: 'COUNTDOWN', PLAYING: 'PLAYING', FEEDBACK: 'FEEDBACK', SUMMARY: 'SUMMARY' };

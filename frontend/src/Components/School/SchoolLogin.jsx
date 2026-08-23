@@ -69,7 +69,7 @@ const SchoolLogin = () => {
     return (
         <div style={{
             minHeight: '100vh',
-            background: 'linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%)',
+            background: 'linear-gradient(135deg, #F7F3EA 0%, #e8ecf1 100%)',
             padding: '40px 20px',
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
             display: 'flex',
@@ -101,7 +101,7 @@ const SchoolLogin = () => {
                     <h1 style={{
                         fontSize: '36px',
                         fontWeight: '700',
-                        color: '#1a1a1a',
+                        color: '#101C2C',
                         marginBottom: '10px',
                         letterSpacing: '-0.5px'
                     }}>School Access</h1>
@@ -146,7 +146,7 @@ const SchoolLogin = () => {
                             <div style={{
                                 width: '56px',
                                 height: '56px',
-                                background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                                background: 'linear-gradient(135deg, #101C2C 0%, #1565c0 100%)',
                                 borderRadius: '12px',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -162,7 +162,7 @@ const SchoolLogin = () => {
                                 <h2 style={{
                                     fontSize: '24px',
                                     fontWeight: '600',
-                                    color: '#1a1a1a',
+                                    color: '#101C2C',
                                     marginBottom: '4px',
                                     letterSpacing: '-0.3px'
                                 }}>School Login</h2>
@@ -214,19 +214,19 @@ const SchoolLogin = () => {
                                             width: '100%',
                                             padding: '12px 16px',
                                             fontSize: '15px',
-                                            border: fieldErrors.email ? '1px solid #ef4444' : '1px solid #e5e7eb',
+                                            border: fieldErrors.email ? '1px solid #D85C4A' : '1px solid #e5e7eb',
                                             borderRadius: '8px',
                                             outline: 'none',
                                             transition: 'all 0.2s',
                                             boxSizing: 'border-box',
-                                            color: '#1a1a1a'
+                                            color: '#101C2C'
                                         }}
                                         onFocus={(e) => {
-                                            e.target.style.borderColor = '#1976d2';
+                                            e.target.style.borderColor = '#101C2C';
                                             e.target.style.boxShadow = '0 0 0 3px rgba(25, 118, 210, 0.1)';
                                         }}
                                         onBlur={(e) => {
-                                            e.target.style.borderColor = fieldErrors.email ? '#ef4444' : '#e5e7eb';
+                                            e.target.style.borderColor = fieldErrors.email ? '#D85C4A' : '#e5e7eb';
                                             e.target.style.boxShadow = 'none';
                                         }}
                                     />
@@ -253,19 +253,19 @@ const SchoolLogin = () => {
                                             width: '100%',
                                             padding: '12px 16px',
                                             fontSize: '15px',
-                                            border: fieldErrors.password ? '1px solid #ef4444' : '1px solid #e5e7eb',
+                                            border: fieldErrors.password ? '1px solid #D85C4A' : '1px solid #e5e7eb',
                                             borderRadius: '8px',
                                             outline: 'none',
                                             transition: 'all 0.2s',
                                             boxSizing: 'border-box',
-                                            color: '#1a1a1a'
+                                            color: '#101C2C'
                                         }}
                                         onFocus={(e) => {
-                                            e.target.style.borderColor = '#1976d2';
+                                            e.target.style.borderColor = '#101C2C';
                                             e.target.style.boxShadow = '0 0 0 3px rgba(25, 118, 210, 0.1)';
                                         }}
                                         onBlur={(e) => {
-                                            e.target.style.borderColor = fieldErrors.password ? '#ef4444' : '#e5e7eb';
+                                            e.target.style.borderColor = fieldErrors.password ? '#D85C4A' : '#e5e7eb';
                                             e.target.style.boxShadow = 'none';
                                         }}
                                     />
@@ -277,7 +277,7 @@ const SchoolLogin = () => {
                                     style={{
                                         width: '100%',
                                         padding: '14px 24px',
-                                        background: loading ? '#9ca3af' : 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                                        background: loading ? '#9ca3af' : 'linear-gradient(135deg, #101C2C 0%, #1565c0 100%)',
                                         color: 'white',
                                         border: 'none',
                                         borderRadius: '8px',
@@ -350,7 +350,7 @@ const SchoolLogin = () => {
                         alignItems: 'center',
                         gap: '12px'
                     }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1976d2" strokeWidth="2">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#101C2C" strokeWidth="2">
                             <circle cx="12" cy="12" r="10"></circle>
                             <line x1="12" y1="16" x2="12" y2="12"></line>
                             <line x1="12" y1="8" x2="12.01" y2="8"></line>

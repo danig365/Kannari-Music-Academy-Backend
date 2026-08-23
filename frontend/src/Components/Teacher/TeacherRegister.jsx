@@ -122,7 +122,7 @@ const TeacherRegister = () => {
  return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%)',
+      background: 'linear-gradient(135deg, #F7F3EA 0%, #e8ecf1 100%)',
       padding: '40px 20px',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
     }}>
@@ -138,7 +138,7 @@ const TeacherRegister = () => {
             background: '#e3f2fd',
             borderRadius: '20px',
             fontSize: '14px',
-            color: '#1976d2',
+            color: '#101C2C',
             fontWeight: '500',
             marginBottom: '20px'
           }}>
@@ -153,7 +153,7 @@ const TeacherRegister = () => {
           <h1 style={{
             fontSize: '36px',
             fontWeight: '700',
-            color: '#1a1a1a',
+            color: '#101C2C',
             marginBottom: '10px',
             letterSpacing: '-0.5px'
           }}>Create Your Account</h1>
@@ -185,7 +185,7 @@ const TeacherRegister = () => {
               fontWeight: '500',
               transition: 'color 0.2s'
             }}
-            onMouseEnter={(e) => e.target.style.color = '#1976d2'}
+            onMouseEnter={(e) => e.target.style.color = '#101C2C'}
             onMouseLeave={(e) => e.target.style.color = '#6b7280'}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -198,7 +198,7 @@ const TeacherRegister = () => {
               <div style={{
                 width: '56px',
                 height: '56px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                 borderRadius: '12px',
                 display: 'flex',
                 alignItems: 'center',
@@ -214,7 +214,7 @@ const TeacherRegister = () => {
                 <h2 style={{
                   fontSize: '24px',
                   fontWeight: '600',
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   marginBottom: '4px',
                   letterSpacing: '-0.3px'
                 }}>Teacher Registration</h2>
@@ -278,19 +278,19 @@ const TeacherRegister = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: fieldErrors.full_name ? '1px solid #ef4444' : '1px solid #e5e7eb',
+                    border: fieldErrors.full_name ? '1px solid #D85C4A' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box',
-                    color: '#1a1a1a'
+                    color: '#101C2C'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = fieldErrors.full_name ? '#ef4444' : '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.full_name ? '#D85C4A' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
@@ -316,19 +316,19 @@ const TeacherRegister = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: fieldErrors.email ? '1px solid #ef4444' : '1px solid #e5e7eb',
+                    border: fieldErrors.email ? '1px solid #D85C4A' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box',
-                    color: '#1a1a1a'
+                    color: '#101C2C'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = fieldErrors.email ? '#ef4444' : '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.email ? '#D85C4A' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
@@ -354,19 +354,19 @@ const TeacherRegister = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: fieldErrors.password ? '1px solid #ef4444' : '1px solid #e5e7eb',
+                    border: fieldErrors.password ? '1px solid #D85C4A' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box',
-                    color: '#1a1a1a'
+                    color: '#101C2C'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = fieldErrors.password ? '#ef4444' : '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.password ? '#D85C4A' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
@@ -392,19 +392,19 @@ const TeacherRegister = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: fieldErrors.qualification ? '1px solid #ef4444' : '1px solid #e5e7eb',
+                    border: fieldErrors.qualification ? '1px solid #D85C4A' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box',
-                    color: '#1a1a1a'
+                    color: '#101C2C'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = fieldErrors.qualification ? '#ef4444' : '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.qualification ? '#D85C4A' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
@@ -430,19 +430,19 @@ const TeacherRegister = () => {
                     width: '100%',
                     padding: '12px 16px',
                     fontSize: '15px',
-                    border: fieldErrors.mobile_no ? '1px solid #ef4444' : '1px solid #e5e7eb',
+                    border: fieldErrors.mobile_no ? '1px solid #D85C4A' : '1px solid #e5e7eb',
                     borderRadius: '8px',
                     outline: 'none',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box',
-                    color: '#1a1a1a'
+                    color: '#101C2C'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = fieldErrors.mobile_no ? '#ef4444' : '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.mobile_no ? '#D85C4A' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
@@ -475,10 +475,10 @@ const TeacherRegister = () => {
                     boxSizing: 'border-box',
                     resize: 'vertical',
                     fontFamily: 'inherit',
-                    color: '#1a1a1a'
+                    color: '#101C2C'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
@@ -496,7 +496,7 @@ const TeacherRegister = () => {
                 style={{
                   width: '100%',
                   padding: '14px 24px',
-                  background: loading ? '#9ca3af' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: loading ? '#9ca3af' : 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                   color: 'white',
                   border: 'none',
                   borderRadius: '8px',
@@ -572,8 +572,8 @@ const TeacherRegister = () => {
                   width: '100%',
                   padding: '14px 24px',
                   background: 'white',
-                  color: '#667eea',
-                  border: '2px solid #667eea',
+                  color: '#101C2C',
+                  border: '2px solid #101C2C',
                   borderRadius: '8px',
                   fontSize: '15px',
                   fontWeight: '600',

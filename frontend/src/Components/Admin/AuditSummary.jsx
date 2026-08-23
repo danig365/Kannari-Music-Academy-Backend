@@ -42,8 +42,8 @@ const AuditSummary = ({ data }) => {
         ],
         backgroundColor: [
           '#28a745',
-          '#dc3545',
-          '#ffc107',
+          '#D85C4A',
+          '#C9A66B',
           '#17a2b8'
         ],
         borderColor: '#fff',
@@ -65,8 +65,8 @@ const AuditSummary = ({ data }) => {
         ],
         backgroundColor: [
           '#28a745',
-          '#dc3545',
-          '#ffc107'
+          '#D85C4A',
+          '#C9A66B'
         ],
         borderColor: '#fff',
         borderWidth: 2
@@ -83,10 +83,10 @@ const AuditSummary = ({ data }) => {
         label: 'Count',
         data: paymentTypeData.map(item => item.count),
         backgroundColor: [
-          '#0d6efd',
+          '#101C2C',
           '#6c757d',
           '#198754',
-          '#dc3545',
+          '#D85C4A',
           '#fd7e14',
           '#20c997'
         ],
@@ -137,7 +137,7 @@ const AuditSummary = ({ data }) => {
         <div>
           <div className="card summary-card danger">
             <div className="d-flex flex-column align-items-center p-3">
-              <i className="bi bi-exclamation-circle summary-card-icon" style={{ color: '#dc3545' }}></i>
+              <i className="bi bi-exclamation-circle summary-card-icon" style={{ color: '#D85C4A' }}></i>
               <div>
                 <div className="summary-card-label">Failed</div>
                 <div className="summary-card-value">{uploads?.failed || 0}</div>
@@ -167,7 +167,7 @@ const AuditSummary = ({ data }) => {
 
         {/* Payment Success Rate */}
         <div>
-          <div className="card summary-card" style={{ borderTopColor: '#0d6efd', borderTopWidth: '4px' }}>
+          <div className="card summary-card" style={{ borderTopColor: '#101C2C', borderTopWidth: '4px' }}>
             <div className="d-flex flex-column align-items-center p-3">
               <i className="bi bi-percent summary-card-icon"></i>
               <div>
@@ -215,7 +215,7 @@ const AuditSummary = ({ data }) => {
         <div>
           <div className="card summary-card danger">
             <div className="d-flex flex-column align-items-center p-3">
-              <i className="bi bi-ban summary-card-icon" style={{ color: '#dc3545' }}></i>
+              <i className="bi bi-ban summary-card-icon" style={{ color: '#D85C4A' }}></i>
               <div>
                 <div className="summary-card-label">Access Denied</div>
                 <div className="summary-card-value">{access?.denied || 0}</div>

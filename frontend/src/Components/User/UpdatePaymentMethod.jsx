@@ -80,7 +80,7 @@ const CardForm = ({ studentId }) => {
                     <i className="bi bi-exclamation-circle me-2"></i>{error}
                 </div>
             )}
-            <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#1e3a8a', marginBottom: 16 }}>
+            <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#101C2C', marginBottom: 16 }}>
                 <i className="bi bi-shield-check me-2"></i>
                 No charge today. We're just saving your card so your subscription can renew automatically.
             </div>
@@ -89,7 +89,7 @@ const CardForm = ({ studentId }) => {
                 <i className="bi bi-credit-card me-2"></i>Card Information
             </label>
             <div style={{ border: '1px solid #d1d5db', borderRadius: 8, padding: '12px' }}>
-                <CardElement options={{ hidePostalCode: true, style: { base: { fontSize: '16px', color: '#111827' } } }} />
+                <CardElement options={{ hidePostalCode: true, style: { base: { fontSize: '16px', color: '#101C2C' } } }} />
             </div>
 
             <button type="submit" disabled={!stripe || loading} style={{ ...btnPrimary, width: '100%', marginTop: 18, opacity: loading ? 0.7 : 1 }}>
@@ -129,6 +129,6 @@ const UpdatePaymentMethod = () => {
     );
 };
 
-const btnPrimary = { display: 'inline-block', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 18px', fontSize: 14, fontWeight: 600, cursor: 'pointer', textDecoration: 'none', marginTop: 16 };
+const btnPrimary = { display: 'inline-block', background: '#101C2C', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 18px', fontSize: 14, fontWeight: 600, cursor: 'pointer', textDecoration: 'none', marginTop: 16 };
 
 export default UpdatePaymentMethod;

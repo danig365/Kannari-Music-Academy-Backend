@@ -113,7 +113,7 @@ const StudentAssignmentModal = ({ student, adminId, onClose, onChanged }) => {
         const confirm = await Swal.fire({
             icon: 'warning', title: 'Remove assignment?',
             text: `Remove "${title}" from ${student.fullname}?`,
-            showCancelButton: true, confirmButtonText: 'Remove', confirmButtonColor: '#dc2626',
+            showCancelButton: true, confirmButtonText: 'Remove', confirmButtonColor: '#D85C4A',
         });
         if (!confirm.isConfirmed) return;
         try {
@@ -273,11 +273,11 @@ const lbl = { display: 'block', fontSize: 12, fontWeight: 600, color: '#374151',
 const input = { width: '100%', padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14 };
 const courseList = { border: '1px solid #e5e7eb', borderRadius: 8, maxHeight: 200, overflowY: 'auto' };
 const courseItem = { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderBottom: '1px solid #f3f4f6' };
-const assignedRow = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: '#f8fafc', border: '1px solid #e5e7eb', borderRadius: 8 };
-const removeBtn = { background: '#fee2e2', color: '#b91c1c', border: 'none', borderRadius: 6, padding: '4px 10px', fontSize: 12, cursor: 'pointer' };
+const assignedRow = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: '#F7F3EA', border: '1px solid #e5e7eb', borderRadius: 8 };
+const removeBtn = { background: '#fee2e2', color: '#D85C4A', border: 'none', borderRadius: 6, padding: '4px 10px', fontSize: 12, cursor: 'pointer' };
 const pill = { display: 'inline-block', background: '#eef2ff', color: '#3730a3', borderRadius: 999, padding: '2px 10px', fontSize: 12, marginRight: 6 };
 const warnBox = { background: '#fffbeb', border: '1px solid #fcd34d', color: '#92400e', borderRadius: 8, padding: '10px 12px', fontSize: 13, marginBottom: 16 };
-const btnPrimary = { background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer' };
+const btnPrimary = { background: '#101C2C', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer' };
 const btnSecondary = { background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 14, cursor: 'pointer' };
 
 export default StudentAssignmentModal;

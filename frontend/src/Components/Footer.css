@@ -1,7 +1,7 @@
 /* ==================== MODERN PROFESSIONAL FOOTER STYLING ==================== */
 
 .footer-modern {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    background: linear-gradient(135deg, #101C2C 0%, #2d2d2d 100%);
     color: #ffffff;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
@@ -91,7 +91,7 @@
     content: '•';
     position: absolute;
     left: 0;
-    color: #667eea;
+    color: #101C2C;
 }
 
 .footer-cta-link {
@@ -100,12 +100,12 @@
     color: #ffffff;
     text-decoration: none;
     font-weight: 600;
-    border-bottom: 2px solid #667eea;
+    border-bottom: 2px solid #101C2C;
     padding-bottom: 2px;
 }
 
 .footer-cta-link:hover {
-    color: #667eea;
+    color: #101C2C;
 }
 
 /* Social Links */
@@ -129,7 +129,7 @@
 }
 
 .social-link:hover {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%);
     transform: translateY(-4px);
     box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
 }
@@ -161,7 +161,7 @@
     left: 0;
     width: 40px;
     height: 3px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
+    background: linear-gradient(90deg, #101C2C, #7C9BB8);
     border-radius: 2px;
 }
 
@@ -195,7 +195,7 @@
 }
 
 .footer-link:hover {
-    color: #667eea;
+    color: #101C2C;
     transform: translateX(4px);
 }
 
@@ -227,7 +227,7 @@
     height: 20px;
     flex-shrink: 0;
     margin-top: 2px;
-    color: #667eea;
+    color: #101C2C;
 }
 
 .contact-item a {
@@ -237,7 +237,7 @@
 }
 
 .contact-item a:hover {
-    color: #667eea;
+    color: #101C2C;
 }
 
 /* Footer Bottom */
@@ -261,14 +261,14 @@
 }
 
 .copyright a {
-    color: #667eea;
+    color: #101C2C;
     text-decoration: none;
     font-weight: 500;
     transition: color 0.3s ease;
 }
 
 .copyright a:hover {
-    color: #764ba2;
+    color: #7C9BB8;
 }
 
 .footer-menu {
@@ -286,7 +286,7 @@
 }
 
 .footer-menu-link:hover {
-    color: #667eea;
+    color: #101C2C;
 }
 
 /* Back to Top Button */
@@ -296,7 +296,7 @@
     right: 30px;
     width: 50px;
     height: 50px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%);
     border: none;
     border-radius: 12px;
     color: white;

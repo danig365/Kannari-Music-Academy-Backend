@@ -531,7 +531,7 @@ const UsersManagement = () => {
                     icon: 'success',
                     title: shouldApprove ? 'Teacher Approved' : 'Approval Revoked',
                     text: response.data?.message || 'Teacher approval status updated.',
-                    confirmButtonColor: '#1976d2'
+                    confirmButtonColor: '#101C2C'
                 });
                 fetchTeachers();
             } else {
@@ -539,7 +539,7 @@ const UsersManagement = () => {
                     icon: 'error',
                     title: 'Update Failed',
                     text: response.data?.message || 'Could not update teacher approval status.',
-                    confirmButtonColor: '#1976d2'
+                    confirmButtonColor: '#101C2C'
                 });
             }
         } catch (error) {
@@ -548,7 +548,7 @@ const UsersManagement = () => {
                 icon: 'error',
                 title: 'Error',
                 text: error.response?.data?.message || 'Failed to update teacher approval status.',
-                confirmButtonColor: '#1976d2'
+                confirmButtonColor: '#101C2C'
             });
         }
     };
@@ -718,7 +718,7 @@ const UsersManagement = () => {
             inputPlaceholder: isApprove ? 'Add a short note for the override' : 'Explain why this override is being removed',
             showCancelButton: true,
             confirmButtonText: isApprove ? 'Approve' : 'Revoke',
-            confirmButtonColor: isApprove ? '#16a34a' : '#dc2626',
+            confirmButtonColor: isApprove ? '#16a34a' : '#D85C4A',
         });
 
         if (!result.isConfirmed) return;
@@ -887,7 +887,7 @@ const UsersManagement = () => {
                             <div style="text-align: left; padding: 10px;">
                                 <p style="margin-bottom: 15px; color: #666;">The following login credentials have been generated for the school portal:</p>
                                 <div style="background: #f8f9fa; border-radius: 8px; padding: 16px; border: 1px solid #e9ecef;">
-                                    <p style="margin: 5px 0;"><strong>Login URL:</strong> <a href="/school/login" style="color: #1976d2;">${window.location.origin}/school/login</a></p>
+                                    <p style="margin: 5px 0;"><strong>Login URL:</strong> <a href="/school/login" style="color: #101C2C;">${window.location.origin}/school/login</a></p>
                                     <p style="margin: 5px 0;"><strong>Email:</strong> <code style="background: #e3f2fd; padding: 2px 8px; border-radius: 4px;">${response.data.school_login_email}</code></p>
                                     <p style="margin: 5px 0;"><strong>Password:</strong> <code style="background: #e8f5e9; padding: 2px 8px; border-radius: 4px;">${response.data.school_login_password}</code></p>
                                 </div>
@@ -896,7 +896,7 @@ const UsersManagement = () => {
                         `,
                         icon: 'success',
                         confirmButtonText: 'Got it!',
-                        confirmButtonColor: '#1976d2',
+                        confirmButtonColor: '#101C2C',
                         width: '500px',
                     });
                 }
@@ -946,7 +946,7 @@ const UsersManagement = () => {
                 icon: 'error',
                 title: 'No School User',
                 text: 'This school does not have a login user associated with it.',
-                confirmButtonColor: '#1976d2'
+                confirmButtonColor: '#101C2C'
             });
             return;
         }
@@ -967,7 +967,7 @@ const UsersManagement = () => {
             },
             showCancelButton: true,
             confirmButtonText: 'Change Password',
-            confirmButtonColor: '#1976d2',
+            confirmButtonColor: '#101C2C',
             cancelButtonColor: '#6c757d',
             inputValidator: (value) => {
                 if (!value) {
@@ -992,14 +992,14 @@ const UsersManagement = () => {
                         icon: 'success',
                         title: 'Password Changed!',
                         text: `The password for ${school.name} has been updated successfully.`,
-                        confirmButtonColor: '#1976d2'
+                        confirmButtonColor: '#101C2C'
                     });
                 } else {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
                         text: 'Failed to change password. Please try again.',
-                        confirmButtonColor: '#1976d2'
+                        confirmButtonColor: '#101C2C'
                     });
                 }
             } catch (error) {
@@ -1008,7 +1008,7 @@ const UsersManagement = () => {
                     icon: 'error',
                     title: 'Error',
                     text: 'Failed to change password: ' + (error.response?.data?.detail || error.message),
-                    confirmButtonColor: '#1976d2'
+                    confirmButtonColor: '#101C2C'
                 });
             }
         }
@@ -2298,7 +2298,7 @@ const UsersManagement = () => {
                     <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                         <div className="modal-content" style={{borderRadius: '12px', overflow: 'hidden', border: 'none', boxShadow: '0 20px 60px rgba(0,0,0,0.3)'}}>
                             {/* Header */}
-                            <div className="modal-header py-3 px-4" style={{background: '#1e293b', borderBottom: 'none'}}>
+                            <div className="modal-header py-3 px-4" style={{background: '#101C2C', borderBottom: 'none'}}>
                                 <div className="d-flex align-items-center">
                                     <div style={{
                                         width: '38px', height: '38px', borderRadius: '10px',
@@ -2316,7 +2316,7 @@ const UsersManagement = () => {
                             </div>
 
                             {/* Body */}
-                            <div className="modal-body p-4" style={{background: '#f8fafc', maxHeight: '65vh', overflowY: 'auto'}}>
+                            <div className="modal-body p-4" style={{background: '#F7F3EA', maxHeight: '65vh', overflowY: 'auto'}}>
                                 {membersMsg && (
                                     <div className="alert alert-info py-2 px-3 d-flex align-items-center" style={{borderRadius: '8px', fontSize: '13px', border: 'none', background: '#e0f2fe', color: '#0369a1'}}>
                                         <i className="bi bi-info-circle me-2"></i>{membersMsg}
@@ -2333,10 +2333,10 @@ const UsersManagement = () => {
                                             <div style={{background: '#fff', borderRadius: '10px', border: '1px solid #e2e8f0', overflow: 'hidden'}}>
                                                 <div className="px-3 py-2 d-flex align-items-center justify-content-between" style={{background: '#f1f5f9', borderBottom: '1px solid #e2e8f0'}}>
                                                     <div className="d-flex align-items-center">
-                                                        <i className="bi bi-person-workspace me-2" style={{color: '#6366f1'}}></i>
+                                                        <i className="bi bi-person-workspace me-2" style={{color: '#7C9BB8'}}></i>
                                                         <span style={{fontWeight: 600, fontSize: '14px', color: '#334155'}}>Teachers</span>
                                                     </div>
-                                                    <span className="badge" style={{background: '#6366f1', fontSize: '11px', padding: '4px 10px', borderRadius: '20px'}}>{schoolTeachers.length}</span>
+                                                    <span className="badge" style={{background: '#7C9BB8', fontSize: '11px', padding: '4px 10px', borderRadius: '20px'}}>{schoolTeachers.length}</span>
                                                 </div>
                                                 <div className="p-3">
                                                     <div className="d-flex gap-2 mb-3">
@@ -2357,7 +2357,7 @@ const UsersManagement = () => {
                                                             className="btn btn-sm px-3"
                                                             onClick={addTeacherToSchool}
                                                             disabled={!selectedTeacherId}
-                                                            style={{borderRadius: '8px', background: '#6366f1', color: '#fff', border: 'none', whiteSpace: 'nowrap', fontSize: '13px'}}
+                                                            style={{borderRadius: '8px', background: '#7C9BB8', color: '#fff', border: 'none', whiteSpace: 'nowrap', fontSize: '13px'}}
                                                         >
                                                             <i className="bi bi-plus-lg me-1"></i>Add
                                                         </button>
@@ -2370,11 +2370,11 @@ const UsersManagement = () => {
                                                     <div style={{maxHeight: '240px', overflowY: 'auto'}}>
                                                         {schoolTeachers.length > 0 ? (
                                                             schoolTeachers.map(st => (
-                                                                <div key={st.id} className="d-flex align-items-center justify-content-between p-2 mb-2" style={{background: '#f8fafc', borderRadius: '8px', border: '1px solid #f1f5f9'}}>
+                                                                <div key={st.id} className="d-flex align-items-center justify-content-between p-2 mb-2" style={{background: '#F7F3EA', borderRadius: '8px', border: '1px solid #f1f5f9'}}>
                                                                     <div className="d-flex align-items-center">
                                                                         <div style={{
                                                                             width: '32px', height: '32px', borderRadius: '50%',
-                                                                            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                                                                            background: 'linear-gradient(135deg, #7C9BB8, #7C9BB8)',
                                                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                                             marginRight: '10px', flexShrink: 0
                                                                         }}>
@@ -2383,7 +2383,7 @@ const UsersManagement = () => {
                                                                             </span>
                                                                         </div>
                                                                         <div>
-                                                                            <div style={{fontSize: '13px', fontWeight: 500, color: '#1e293b', lineHeight: 1.3}}>
+                                                                            <div style={{fontSize: '13px', fontWeight: 500, color: '#101C2C', lineHeight: 1.3}}>
                                                                                 {st.teacher?.full_name || 'Teacher'}
                                                                             </div>
                                                                             <div style={{fontSize: '11px', color: '#94a3b8'}}>{st.teacher?.email}</div>
@@ -2393,7 +2393,7 @@ const UsersManagement = () => {
                                                                         className="btn btn-sm p-0 d-flex align-items-center justify-content-center"
                                                                         onClick={() => removeTeacherFromSchool(st.id)}
                                                                         title="Remove teacher"
-                                                                        style={{width: '28px', height: '28px', borderRadius: '6px', border: '1px solid #fecaca', background: '#fef2f2', color: '#ef4444', flexShrink: 0}}
+                                                                        style={{width: '28px', height: '28px', borderRadius: '6px', border: '1px solid #fecaca', background: '#fef2f2', color: '#D85C4A', flexShrink: 0}}
                                                                     >
                                                                         <i className="bi bi-x" style={{fontSize: '16px'}}></i>
                                                                     </button>
@@ -2452,7 +2452,7 @@ const UsersManagement = () => {
                                                     <div style={{maxHeight: '240px', overflowY: 'auto'}}>
                                                         {schoolStudents.length > 0 ? (
                                                             schoolStudents.map(ss => (
-                                                                <div key={ss.id} className="d-flex align-items-center justify-content-between p-2 mb-2" style={{background: '#f8fafc', borderRadius: '8px', border: '1px solid #f1f5f9'}}>
+                                                                <div key={ss.id} className="d-flex align-items-center justify-content-between p-2 mb-2" style={{background: '#F7F3EA', borderRadius: '8px', border: '1px solid #f1f5f9'}}>
                                                                     <div className="d-flex align-items-center">
                                                                         <div style={{
                                                                             width: '32px', height: '32px', borderRadius: '50%',
@@ -2465,7 +2465,7 @@ const UsersManagement = () => {
                                                                             </span>
                                                                         </div>
                                                                         <div>
-                                                                            <div style={{fontSize: '13px', fontWeight: 500, color: '#1e293b', lineHeight: 1.3}}>
+                                                                            <div style={{fontSize: '13px', fontWeight: 500, color: '#101C2C', lineHeight: 1.3}}>
                                                                                 {ss.student?.fullname || 'Student'}
                                                                             </div>
                                                                             <div style={{fontSize: '11px', color: '#94a3b8'}}>{ss.student?.email}</div>
@@ -2475,7 +2475,7 @@ const UsersManagement = () => {
                                                                         className="btn btn-sm p-0 d-flex align-items-center justify-content-center"
                                                                         onClick={() => removeStudentFromSchool(ss.id)}
                                                                         title="Remove student"
-                                                                        style={{width: '28px', height: '28px', borderRadius: '6px', border: '1px solid #fecaca', background: '#fef2f2', color: '#ef4444', flexShrink: 0}}
+                                                                        style={{width: '28px', height: '28px', borderRadius: '6px', border: '1px solid #fecaca', background: '#fef2f2', color: '#D85C4A', flexShrink: 0}}
                                                                     >
                                                                         <i className="bi bi-x" style={{fontSize: '16px'}}></i>
                                                                     </button>
@@ -2501,7 +2501,7 @@ const UsersManagement = () => {
                                     type="button"
                                     className="btn btn-sm px-4"
                                     onClick={closeMembersModal}
-                                    style={{borderRadius: '8px', background: '#1e293b', color: '#fff', border: 'none', fontSize: '13px', fontWeight: 500}}
+                                    style={{borderRadius: '8px', background: '#101C2C', color: '#fff', border: 'none', fontSize: '13px', fontWeight: 500}}
                                 >
                                     Close
                                 </button>
@@ -2517,7 +2517,7 @@ const UsersManagement = () => {
                     <div className="modal-dialog modal-lg modal-dialog-scrollable verification-review-dialog">
                         <div className="modal-content verification-review-modal">
                             {/* Header */}
-                            <div className="modal-header" style={{background: 'linear-gradient(135deg, #1e293b, #334155)', color: '#fff', borderBottom: 'none', padding: '16px 20px'}}>
+                            <div className="modal-header" style={{background: 'linear-gradient(135deg, #101C2C, #334155)', color: '#fff', borderBottom: 'none', padding: '16px 20px'}}>
                                 <div className="d-flex align-items-center gap-2">
                                     <i className="bi bi-shield-lock" style={{fontSize: '20px'}}></i>
                                     <div>
@@ -2533,7 +2533,7 @@ const UsersManagement = () => {
                             </div>
 
                             {/* Body */}
-                            <div className="modal-body" style={{padding: '16px 20px', background: '#f8fafc'}}>
+                            <div className="modal-body" style={{padding: '16px 20px', background: '#F7F3EA'}}>
                                 {verificationLoading ? (
                                     <div className="text-center py-5">
                                         <div className="spinner-border text-primary" role="status"><span className="visually-hidden">Loading...</span></div>
@@ -2587,7 +2587,7 @@ const UsersManagement = () => {
                                         <div className="vr-section mb-3">
                                             <div className="vr-section-header d-flex justify-content-between align-items-center">
                                                 <div className="d-flex align-items-center gap-2">
-                                                    <i className="bi bi-shield-lock" style={{fontSize: '16px', color: '#f59e0b'}}></i>
+                                                    <i className="bi bi-shield-lock" style={{fontSize: '16px', color: '#C9A66B'}}></i>
                                                     <strong style={{fontSize: '14px'}}>Minor Access Override</strong>
                                                 </div>
                                                 <span className={`badge ${verificationDetail.admin_override_for_minors ? 'bg-success' : 'bg-secondary'}`}>
@@ -2648,7 +2648,7 @@ const UsersManagement = () => {
                                         <div className="vr-section mb-3">
                                             <div className="vr-section-header d-flex justify-content-between align-items-center">
                                                 <div className="d-flex align-items-center gap-2">
-                                                    <i className="bi bi-person-vcard" style={{fontSize: '16px', color: '#3b82f6'}}></i>
+                                                    <i className="bi bi-person-vcard" style={{fontSize: '16px', color: '#101C2C'}}></i>
                                                     <strong style={{fontSize: '14px'}}>ID Verification</strong>
                                                 </div>
                                                 <span className={`badge ${getStatusBadgeClass(verificationDetail.id_verification?.status)}`}>
@@ -2669,7 +2669,7 @@ const UsersManagement = () => {
                                                 {verificationDetail.id_verification?.id_document ? (
                                                     <div className="vr-document-box">
                                                         <div className="d-flex align-items-center gap-2 mb-2">
-                                                            <i className="bi bi-file-earmark-text" style={{color: '#3b82f6'}}></i>
+                                                            <i className="bi bi-file-earmark-text" style={{color: '#101C2C'}}></i>
                                                             <small className="text-muted">Uploaded Document:</small>
                                                         </div>
                                                         {isImageFile(verificationDetail.id_verification.id_document) ? (
@@ -2770,11 +2770,11 @@ const UsersManagement = () => {
                                                             <small className="text-muted d-block" style={{fontSize: '11px'}}>Expiry</small>
                                                             {verificationDetail.background_check?.expires_at ? (
                                                                 verificationDetail.background_check.is_expired ? (
-                                                                    <span style={{fontSize: '13px', fontWeight: 600, color: '#ef4444'}}>
+                                                                    <span style={{fontSize: '13px', fontWeight: 600, color: '#D85C4A'}}>
                                                                         EXPIRED ({new Date(verificationDetail.background_check.expires_at).toLocaleDateString()})
                                                                     </span>
                                                                 ) : verificationDetail.background_check.days_until_expiry !== null && verificationDetail.background_check.days_until_expiry <= 30 ? (
-                                                                    <span style={{fontSize: '13px', fontWeight: 600, color: '#f59e0b'}}>
+                                                                    <span style={{fontSize: '13px', fontWeight: 600, color: '#C9A66B'}}>
                                                                         {verificationDetail.background_check.days_until_expiry} days left ({new Date(verificationDetail.background_check.expires_at).toLocaleDateString()})
                                                                     </span>
                                                                 ) : (
@@ -2853,7 +2853,7 @@ const UsersManagement = () => {
                                         <div className="vr-section mb-3">
                                             <div className="vr-section-header d-flex justify-content-between align-items-center">
                                                 <div className="d-flex align-items-center gap-2">
-                                                    <i className="bi bi-file-earmark-check" style={{fontSize: '16px', color: '#8b5cf6'}}></i>
+                                                    <i className="bi bi-file-earmark-check" style={{fontSize: '16px', color: '#7C9BB8'}}></i>
                                                     <strong style={{fontSize: '14px'}}>Agreement Signatures</strong>
                                                 </div>
                                                 <span className={`badge ${getStatusBadgeClass(verificationDetail.agreement_status)}`}>
@@ -2974,7 +2974,7 @@ const UsersManagement = () => {
                                 </button>
                                 <button type="button" className="btn btn-sm px-4"
                                     onClick={closeVerificationModal}
-                                    style={{borderRadius: '8px', background: '#1e293b', color: '#fff', border: 'none', fontSize: '13px', fontWeight: 500}}
+                                    style={{borderRadius: '8px', background: '#101C2C', color: '#fff', border: 'none', fontSize: '13px', fontWeight: 500}}
                                 >
                                     Close
                                 </button>

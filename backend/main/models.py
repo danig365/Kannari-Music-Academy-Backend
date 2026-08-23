@@ -123,6 +123,12 @@ class Chapter(models.Model):
     video=models.FileField(upload_to='chapter_videos/',null=True,blank=True)
     remarks=models.TextField(null=True,blank=True)
     order=models.PositiveIntegerField(default=0)
+    # Teacher manual override on top of the weekly module drip:
+    #   None  = follow the weekly schedule (drip)
+    #   True  = force this module LOCKED (even if the schedule would open it)
+    #   False = force this module UNLOCKED (even ahead of schedule)
+    manual_lock=models.BooleanField(null=True, blank=True, default=None,
+        help_text="Teacher override: null=follow weekly schedule, true=force locked, false=force unlocked")
 
     class Meta:
         verbose_name_plural="4. Modules"
@@ -157,6 +163,10 @@ class ModuleLesson(models.Model):
     order = models.PositiveIntegerField(default=0)
     is_preview = models.BooleanField(default=False, help_text="Allow non-enrolled users to preview this lesson")
     is_locked = models.BooleanField(default=True, help_text="Lesson locked until previous lessons completed")
+    # Teacher manual override for an individual lesson (takes precedence over the
+    # module's state). None = follow the module; True = force locked; False = force unlocked.
+    manual_lock = models.BooleanField(null=True, blank=True, default=None,
+        help_text="Teacher override: null=follow module, true=force locked, false=force unlocked")
     is_premium = models.BooleanField(default=False, help_text="Mark as premium content")
     repeat_after_me_enabled = models.BooleanField(default=False)
     repeat_after_me_prompt = models.TextField(blank=True, null=True)

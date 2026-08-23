@@ -24,8 +24,8 @@ const Footer = () => {
                     <circle cx="18" cy="16" r="3" stroke="url(#gradient)" strokeWidth="2"/>
                     <defs>
                       <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#667eea"/>
-                        <stop offset="100%" stopColor="#764ba2"/>
+                        <stop offset="0%" stopColor="#101C2C"/>
+                        <stop offset="100%" stopColor="#7C9BB8"/>
                       </linearGradient>
                     </defs>
                   </svg>

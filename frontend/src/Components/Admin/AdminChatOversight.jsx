@@ -18,10 +18,10 @@ const timeAgo = (dateStr) => {
 };
 
 const SENDER_COLORS = {
-  teacher: { bg: '#6366f1', label: 'Teacher' },
-  student: { bg: '#3b82f6', label: 'Student' },
-  parent:  { bg: '#8b5cf6', label: 'Parent'  },
-  admin:   { bg: '#4285f4', label: 'Admin'   },
+  teacher: { bg: '#7C9BB8', label: 'Teacher' },
+  student: { bg: '#101C2C', label: 'Student' },
+  parent:  { bg: '#7C9BB8', label: 'Parent'  },
+  admin:   { bg: '#101C2C', label: 'Admin'   },
   school:  { bg: '#0891b2', label: 'School'  },
 };
 
@@ -167,16 +167,16 @@ const AdminChatOversight = () => {
         {isMobile && showThread && (
           <button
             onClick={() => setShowThread(false)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', color: '#4285f4', fontSize: 18 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', color: '#101C2C', fontSize: 18 }}
           >
             <i className="bi bi-arrow-left" />
           </button>
         )}
-        <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg,#f59e0b,#d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg,#C9A66B,#C9A66B)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <i className="bi bi-eye-fill text-white" style={{ fontSize: 18 }} />
         </div>
         <div>
-          <h5 style={{ margin: 0, fontWeight: 700, color: '#0f172a', fontSize: 18 }}>Chat Oversight</h5>
+          <h5 style={{ margin: 0, fontWeight: 700, color: '#101C2C', fontSize: 18 }}>Chat Oversight</h5>
           <p style={{ margin: 0, fontSize: 13, color: '#64748b' }}>Monitor all user conversations — delete any message as needed</p>
         </div>
         <div style={{ marginLeft: 'auto', background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 8, padding: '6px 14px', fontSize: 12, color: '#92400e', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -200,7 +200,7 @@ const AdminChatOversight = () => {
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Search participants…"
-                  style={{ width: '100%', paddingLeft: 32, paddingRight: 12, height: 36, border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box', color: '#0f172a' }}
+                  style={{ width: '100%', paddingLeft: 32, paddingRight: 12, height: 36, border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box', color: '#101C2C' }}
                 />
               </div>
               <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
@@ -216,7 +216,7 @@ const AdminChatOversight = () => {
                       fontSize: 11,
                       fontWeight: 600,
                       cursor: 'pointer',
-                      background: filterType === val ? '#f59e0b' : '#f1f5f9',
+                      background: filterType === val ? '#C9A66B' : '#f1f5f9',
                       color:      filterType === val ? '#fff'    : '#64748b',
                       transition: 'all .15s',
                     }}
@@ -240,7 +240,7 @@ const AdminChatOversight = () => {
               ) : filteredConvs.map(conv => {
                 const isActive = activeThread?.thread_type === conv.thread_type && activeThread?.thread_id === conv.thread_id;
                 const typeLabel = conv.thread_type === 'teacher_student' ? 'T↔S' : 'P↔S';
-                const typeColor = conv.thread_type === 'teacher_student' ? '#6366f1' : '#8b5cf6';
+                const typeColor = conv.thread_type === 'teacher_student' ? '#7C9BB8' : '#7C9BB8';
                 return (
                   <div
                     key={`${conv.thread_type}:${conv.thread_id}`}
@@ -252,7 +252,7 @@ const AdminChatOversight = () => {
                       border: isActive ? '1px solid #fcd34d' : '1px solid transparent',
                       transition: 'all .15s',
                     }}
-                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#f8fafc'; }}
+                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#F7F3EA'; }}
                     onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
                   >
                     {/* avatar stack */}
@@ -267,11 +267,11 @@ const AdminChatOversight = () => {
 
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 130 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#101C2C', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 130 }}>
                           {conv.participant_a.name}
                         </span>
                         <i className="bi bi-arrow-left-right" style={{ fontSize: 10, color: '#94a3b8', flexShrink: 0 }} />
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 100 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#101C2C', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 100 }}>
                           {conv.participant_b.name}
                         </span>
                       </div>
@@ -298,7 +298,7 @@ const AdminChatOversight = () => {
             {!activeThread ? (
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
                 <div style={{ width: 64, height: 64, borderRadius: 16, background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-                  <i className="bi bi-eye" style={{ fontSize: 28, color: '#f59e0b' }} />
+                  <i className="bi bi-eye" style={{ fontSize: 28, color: '#C9A66B' }} />
                 </div>
                 <p style={{ fontSize: 15, fontWeight: 600, color: '#475569', margin: 0 }}>Select a conversation</p>
                 <p style={{ fontSize: 13, color: '#94a3b8', marginTop: 4 }}>Click any thread on the left to view and moderate</p>
@@ -308,7 +308,7 @@ const AdminChatOversight = () => {
                 {/* thread header */}
                 <div style={{ padding: '14px 18px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: '#fafafa' }}>
                   {isMobile && (
-                    <button onClick={() => setShowThread(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4285f4', fontSize: 18, padding: 0, marginRight: 4 }}>
+                    <button onClick={() => setShowThread(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#101C2C', fontSize: 18, padding: 0, marginRight: 4 }}>
                       <i className="bi bi-arrow-left" />
                     </button>
                   )}
@@ -322,13 +322,13 @@ const AdminChatOversight = () => {
                     </div>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a' }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: '#101C2C' }}>
                       {activeThread.participant_a.name}
                       <span style={{ color: '#94a3b8', fontWeight: 400, margin: '0 6px' }}>↔</span>
                       {activeThread.participant_b.name}
                     </div>
                     <div style={{ fontSize: 12, color: '#64748b', marginTop: 1 }}>
-                      <span style={{ background: activeThread.thread_type === 'teacher_student' ? '#eef2ff' : '#f5f3ff', color: activeThread.thread_type === 'teacher_student' ? '#4338ca' : '#7c3aed', borderRadius: 4, padding: '1px 6px', fontSize: 11, fontWeight: 600 }}>
+                      <span style={{ background: activeThread.thread_type === 'teacher_student' ? '#eef2ff' : '#f5f3ff', color: activeThread.thread_type === 'teacher_student' ? '#4338ca' : '#7C9BB8', borderRadius: 4, padding: '1px 6px', fontSize: 11, fontWeight: 600 }}>
                         {activeThread.thread_type === 'teacher_student' ? 'Teacher ↔ Student' : 'Parent ↔ Student'}
                       </span>
                       <span style={{ marginLeft: 8 }}>{messages.length} message{messages.length !== 1 ? 's' : ''}</span>
@@ -371,12 +371,12 @@ const AdminChatOversight = () => {
                           </div>
                           <div style={{
                             display: 'inline-block',
-                            background: '#f8fafc',
+                            background: '#F7F3EA',
                             border: '1px solid #e2e8f0',
                             borderRadius: '4px 12px 12px 12px',
                             padding: '8px 14px',
                             fontSize: 14,
-                            color: '#0f172a',
+                            color: '#101C2C',
                             maxWidth: '80%',
                             wordBreak: 'break-word',
                             boxShadow: isHovered ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
@@ -395,7 +395,7 @@ const AdminChatOversight = () => {
                               position: 'absolute', right: 0, top: 0,
                               background: '#fef2f2', border: '1px solid #fecaca',
                               borderRadius: 6, padding: '3px 8px',
-                              cursor: 'pointer', color: '#ef4444', fontSize: 12,
+                              cursor: 'pointer', color: '#D85C4A', fontSize: 12,
                               display: 'flex', alignItems: 'center', gap: 4,
                               transition: 'all .15s',
                             }}
@@ -415,7 +415,7 @@ const AdminChatOversight = () => {
                 {/* oversight notice footer */}
                 <div style={{ padding: '10px 18px', borderTop: '1px solid #f1f5f9', background: '#fafafa', flexShrink: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#92400e' }}>
-                    <i className="bi bi-eye-fill" style={{ color: '#f59e0b' }} />
+                    <i className="bi bi-eye-fill" style={{ color: '#C9A66B' }} />
                     <span>You are viewing this conversation in <strong>read-only oversight mode</strong>. Hover over any message to delete it.</span>
                   </div>
                 </div>

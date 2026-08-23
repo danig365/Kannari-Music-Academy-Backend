@@ -36,18 +36,18 @@
 
 .back-btn:hover {
     background: #e5e7eb;
-    color: #1f2937;
+    color: #101C2C;
 }
 
 .analytics-title {
     font-size: 24px;
     font-weight: 700;
-    color: #1a2332;
+    color: #101C2C;
     margin: 0;
 }
 
 .analytics-title i {
-    color: #4285f4;
+    color: #101C2C;
 }
 
 .analytics-subtitle {
@@ -90,7 +90,7 @@
 .stat-content h3 {
     font-size: 28px;
     font-weight: 700;
-    color: #1a2332;
+    color: #101C2C;
     margin: 0;
 }
 
@@ -133,7 +133,7 @@
 
 .search-box input:focus {
     outline: none;
-    border-color: #4285f4;
+    border-color: #101C2C;
     box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
 }
 
@@ -154,7 +154,7 @@
 
 .sort-select:focus {
     outline: none;
-    border-color: #4285f4;
+    border-color: #101C2C;
 }
 
 .sort-order-btn {
@@ -191,13 +191,13 @@
 }
 
 .student-card:hover {
-    border-color: #4285f4;
+    border-color: #101C2C;
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(66, 133, 244, 0.15);
 }
 
 .student-card.selected {
-    border-color: #4285f4;
+    border-color: #101C2C;
     background: #f0f7ff;
 }
 
@@ -212,7 +212,7 @@
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -243,7 +243,7 @@
 .student-info h4 {
     font-size: 15px;
     font-weight: 600;
-    color: #1a2332;
+    color: #101C2C;
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -361,7 +361,7 @@
 .student-detail-modal .modal-header h3 {
     font-size: 18px;
     font-weight: 600;
-    color: #1a2332;
+    color: #101C2C;
     margin: 0;
 }
 
@@ -423,7 +423,7 @@
     transform: translate(-50%, -50%);
     font-size: 20px;
     font-weight: 700;
-    color: #1a2332;
+    color: #101C2C;
 }
 
 .progress-stats {
@@ -439,7 +439,7 @@
     display: block;
     font-size: 28px;
     font-weight: 700;
-    color: #1a2332;
+    color: #101C2C;
 }
 
 .progress-stats .label {
@@ -451,7 +451,7 @@
 .section-title {
     font-size: 16px;
     font-weight: 600;
-    color: #1a2332;
+    color: #101C2C;
     margin: 0 0 16px;
 }
 
@@ -464,7 +464,7 @@
 
 .module-progress-item {
     padding: 16px;
-    background: #f9fafb;
+    background: #F7F3EA;
     border-radius: 10px;
     border: 1px solid #f3f4f6;
 }
@@ -479,7 +479,7 @@
 .module-number {
     width: 28px;
     height: 28px;
-    background: #4285f4;
+    background: #101C2C;
     color: white;
     border-radius: 8px;
     display: flex;
@@ -498,7 +498,7 @@
 .module-info h5 {
     font-size: 14px;
     font-weight: 500;
-    color: #1a2332;
+    color: #101C2C;
     margin: 0;
     white-space: nowrap;
     overflow: hidden;

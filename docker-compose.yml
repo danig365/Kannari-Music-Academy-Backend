@@ -46,6 +46,7 @@ services:
       - ./backend/.env                       # all secrets live here only
     volumes:
       - media_data:/app/media
+      - ./backups:/app/backups               # DB/media/lesson backups (host-visible)
     networks:
       - backend_net                          # reach the DB
       - app_net                              # reached by nginx
@@ -73,6 +74,9 @@ services:
     restart: unless-stopped
     env_file:
       - ./backend/.env
+    volumes:
+      - media_data:/app/media:ro             # read-only: needed to archive uploads
+      - ./backups:/app/backups               # write backups here (host-visible)
     networks:
       - backend_net
     depends_on:
@@ -92,6 +96,7 @@ services:
           echo "[scheduler] running daily jobs";
           python manage.py expire_subscriptions || true;
           python manage.py payment_reminders --send || true;
+          python manage.py backup_data --keep-days 7 || true;
         done
     logging:
       driver: json-file

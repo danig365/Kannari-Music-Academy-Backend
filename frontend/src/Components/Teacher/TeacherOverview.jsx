@@ -54,13 +54,13 @@ const TeacherOverview = () => {
   const getActivityColor = (type) => {
     const colors = {
       check: { bg: '#dcfce7', color: '#16a34a' },
-      play: { bg: '#dbeafe', color: '#3b82f6' },
-      comment: { bg: '#fef3c7', color: '#d97706' },
+      play: { bg: '#dbeafe', color: '#101C2C' },
+      comment: { bg: '#fef3c7', color: '#C9A66B' },
       document: { bg: '#f3e8ff', color: '#9333ea' },
       download: { bg: '#e0f2fe', color: '#0284c7' },
       calendar: { bg: '#fce7f3', color: '#db2777' },
       trophy: { bg: '#fef9c3', color: '#ca8a04' },
-      'person-plus': { bg: '#dbeafe', color: '#2563eb' },
+      'person-plus': { bg: '#dbeafe', color: '#101C2C' },
     }
     return colors[type] || { bg: '#f1f5f9', color: '#64748b' }
   }
@@ -112,7 +112,7 @@ const TeacherOverview = () => {
           <h1 style={{
             fontSize: 'clamp(28px, 5vw, 42px)',
             fontWeight: 700,
-            color: '#1a1a1a',
+            color: '#101C2C',
             marginBottom: '12px',
             letterSpacing: '-0.5px'
           }}>Dashboard Overview</h1>
@@ -134,8 +134,8 @@ const TeacherOverview = () => {
             style={{
               padding: '12px 20px',
               background: 'white',
-              color: '#667eea',
-              border: '2px solid #667eea',
+              color: '#101C2C',
+              border: '2px solid #101C2C',
               borderRadius: '10px',
               fontSize: '15px',
               fontWeight: 600,
@@ -161,8 +161,8 @@ const TeacherOverview = () => {
           <Link to='/teacher/students' style={{
             padding: '12px 20px',
             background: 'white',
-            color: '#667eea',
-            border: '2px solid #667eea',
+            color: '#101C2C',
+            border: '2px solid #101C2C',
             borderRadius: '10px',
             fontSize: '15px',
             fontWeight: 600,
@@ -188,7 +188,7 @@ const TeacherOverview = () => {
           </Link>
           <Link to='/teacher/course-management' style={{
             padding: '12px 20px',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
             color: 'white',
             border: 'none',
             borderRadius: '10px',
@@ -253,7 +253,7 @@ const TeacherOverview = () => {
             justifyContent: 'center',
             marginBottom: '20px',
             fontSize: '28px',
-            color: '#667eea'
+            color: '#101C2C'
           }}>
             <i className="bi bi-people-fill"></i>
           </div>
@@ -261,7 +261,7 @@ const TeacherOverview = () => {
           <div style={{
             fontSize: 'clamp(24px, 4vw, 32px)',
             fontWeight: 700,
-            color: '#1a1a1a',
+            color: '#101C2C',
             marginBottom: '12px',
             letterSpacing: '-0.5px'
           }}>{data.total_students}</div>
@@ -308,7 +308,7 @@ const TeacherOverview = () => {
             justifyContent: 'center',
             marginBottom: '20px',
             fontSize: '28px',
-            color: '#667eea'
+            color: '#101C2C'
           }}>
             <i className="bi bi-journal-richtext"></i>
           </div>
@@ -316,7 +316,7 @@ const TeacherOverview = () => {
           <div style={{
             fontSize: 'clamp(24px, 4vw, 32px)',
             fontWeight: 700,
-            color: '#1a1a1a',
+            color: '#101C2C',
             marginBottom: '12px',
             letterSpacing: '-0.5px'
           }}>{data.total_courses}</div>
@@ -353,7 +353,7 @@ const TeacherOverview = () => {
             justifyContent: 'center',
             marginBottom: '20px',
             fontSize: '28px',
-            color: '#667eea'
+            color: '#101C2C'
           }}>
             <i className="bi bi-person-check-fill"></i>
           </div>
@@ -361,7 +361,7 @@ const TeacherOverview = () => {
           <div style={{
             fontSize: 'clamp(24px, 4vw, 32px)',
             fontWeight: 700,
-            color: '#1a1a1a',
+            color: '#101C2C',
             marginBottom: '12px',
             letterSpacing: '-0.5px'
           }}>{data.total_enrollments}</div>
@@ -412,7 +412,7 @@ const TeacherOverview = () => {
             justifyContent: 'center',
             marginBottom: '20px',
             fontSize: '28px',
-            color: '#667eea'
+            color: '#101C2C'
           }}>
             <i className="bi bi-trophy-fill"></i>
           </div>
@@ -420,7 +420,7 @@ const TeacherOverview = () => {
           <div style={{
             fontSize: 'clamp(24px, 4vw, 32px)',
             fontWeight: 700,
-            color: '#1a1a1a',
+            color: '#101C2C',
             marginBottom: '12px',
             letterSpacing: '-0.5px'
           }}>
@@ -452,14 +452,14 @@ const TeacherOverview = () => {
             <h2 style={{
               fontSize: 'clamp(24px, 4vw, 32px)',
               fontWeight: 700,
-              color: '#1a1a1a',
+              color: '#101C2C',
               margin: 0,
               letterSpacing: '-0.5px'
             }}>My Courses</h2>
             <Link to='/teacher/course-management' style={{
               fontSize: '15px',
               fontWeight: 600,
-              color: '#667eea',
+              color: '#101C2C',
               textDecoration: 'none',
               transition: 'all 0.3s ease',
               display: 'flex',
@@ -467,11 +467,11 @@ const TeacherOverview = () => {
               gap: '4px'
             }}
               onMouseEnter={e => {
-                e.currentTarget.style.color = '#764ba2';
+                e.currentTarget.style.color = '#7C9BB8';
                 e.currentTarget.style.transform = 'translateX(4px)';
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.color = '#667eea';
+                e.currentTarget.style.color = '#101C2C';
                 e.currentTarget.style.transform = 'translateX(0)';
               }}
             >
@@ -497,7 +497,7 @@ const TeacherOverview = () => {
                 onMouseEnter={e => {
                   e.currentTarget.style.transform = 'translateY(-8px)';
                   e.currentTarget.style.boxShadow = '0 12px 24px rgba(102, 126, 234, 0.15)';
-                  e.currentTarget.style.borderColor = '#667eea';
+                  e.currentTarget.style.borderColor = '#101C2C';
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.transform = 'translateY(0)';
@@ -508,7 +508,7 @@ const TeacherOverview = () => {
                 <div style={{
                   height: '6px',
                   background: course.total_enrolled > 0 
-                    ? 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)' 
+                    ? 'linear-gradient(90deg, #101C2C 0%, #7C9BB8 100%)' 
                     : '#e5e7eb'
                 }}></div>
                 <div style={{ padding: '20px' }}>
@@ -533,7 +533,7 @@ const TeacherOverview = () => {
                         width: '56px',
                         height: '42px',
                         borderRadius: '12px',
-                        background: '#f5f7fa',
+                        background: '#F7F3EA',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -548,7 +548,7 @@ const TeacherOverview = () => {
                       <h6 style={{
                         fontSize: '15px',
                         fontWeight: 600,
-                        color: '#1a1a1a',
+                        color: '#101C2C',
                         margin: '0 0 8px 0',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -593,8 +593,8 @@ const TeacherOverview = () => {
                           background: course.avg_progress >= 70 
                             ? '#10b981' 
                             : course.avg_progress >= 40 
-                              ? '#f59e0b' 
-                              : 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                              ? '#C9A66B' 
+                              : 'linear-gradient(90deg, #101C2C 0%, #7C9BB8 100%)',
                           borderRadius: '3px',
                           transition: 'width 0.3s ease'
                         }}></div>
@@ -625,7 +625,7 @@ const TeacherOverview = () => {
           <h2 style={{
             fontSize: 'clamp(20px, 3vw, 24px)',
             fontWeight: 700,
-            color: '#1a1a1a',
+            color: '#101C2C',
             margin: '0 0 28px 0',
             letterSpacing: '-0.5px'
           }}>Recent Activity</h2>
@@ -659,31 +659,31 @@ const TeacherOverview = () => {
                       <p style={{
                         fontSize: '14px',
                         fontWeight: 500,
-                        color: '#1a1a1a',
+                        color: '#101C2C',
                         margin: '0 0 4px 0',
                         lineHeight: '1.5'
                       }}>
                         <strong>{activity.student_name}</strong> {getActivityVerb(activity.activity_type)}{' '}
                         {activity.target_id ? (
                           <Link to={`/detail/${activity.target_id}`} style={{
-                            color: '#667eea',
+                            color: '#101C2C',
                             textDecoration: 'none',
                             fontWeight: 600,
                             transition: 'all 0.2s ease'
                           }}
                             onMouseEnter={e => {
-                              e.currentTarget.style.color = '#764ba2';
+                              e.currentTarget.style.color = '#7C9BB8';
                               e.currentTarget.style.textDecoration = 'underline';
                             }}
                             onMouseLeave={e => {
-                              e.currentTarget.style.color = '#667eea';
+                              e.currentTarget.style.color = '#101C2C';
                               e.currentTarget.style.textDecoration = 'none';
                             }}
                           >
                             {activity.target_name}
                           </Link>
                         ) : (
-                          <span style={{ color: '#667eea', fontWeight: 600 }}>{activity.target_name}</span>
+                          <span style={{ color: '#101C2C', fontWeight: 600 }}>{activity.target_name}</span>
                         )}
                       </p>
                       <span style={{
@@ -742,7 +742,7 @@ const TeacherOverview = () => {
             <h2 style={{
               fontSize: 'clamp(20px, 3vw, 24px)',
               fontWeight: 700,
-              color: '#1a1a1a',
+              color: '#101C2C',
               margin: '0 0 28px 0',
               letterSpacing: '-0.5px'
             }}>Upcoming Sessions</h2>
@@ -760,14 +760,14 @@ const TeacherOverview = () => {
                       minWidth: '56px',
                       fontSize: '13px',
                       fontWeight: 600,
-                      color: '#667eea',
+                      color: '#101C2C',
                       textAlign: 'center'
                     }}>{session.scheduled_time}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{
                         fontSize: '14px',
                         fontWeight: 600,
-                        color: '#1a1a1a',
+                        color: '#101C2C',
                         marginBottom: '4px'
                       }}>{session.student_name}</div>
                       <div style={{
@@ -790,10 +790,10 @@ const TeacherOverview = () => {
                           ? '#d4edda'
                           : '#f8d7da',
                       color: session.status === 'scheduled' 
-                        ? '#1976d2' 
+                        ? '#101C2C' 
                         : session.status === 'completed'
                           ? '#10b981'
-                          : '#ef4444',
+                          : '#D85C4A',
                       whiteSpace: 'nowrap'
                     }}>
                       {session.status.charAt(0).toUpperCase() + session.status.slice(1)}
@@ -836,7 +836,7 @@ const TeacherOverview = () => {
             <h2 style={{
               fontSize: 'clamp(20px, 3vw, 24px)',
               fontWeight: 700,
-              color: '#1a1a1a',
+              color: '#101C2C',
               margin: '0 0 28px 0',
               letterSpacing: '-0.5px'
             }}>Recent Enrollments</h2>
@@ -865,7 +865,7 @@ const TeacherOverview = () => {
                         width: '40px',
                         height: '40px',
                         borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -881,7 +881,7 @@ const TeacherOverview = () => {
                       <div style={{
                         fontSize: '14px',
                         fontWeight: 600,
-                        color: '#1a1a1a',
+                        color: '#101C2C',
                         marginBottom: '4px'
                       }}>{enroll.student_name}</div>
                       <div style={{
@@ -892,7 +892,7 @@ const TeacherOverview = () => {
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap'
                       }}>
-                        enrolled in <strong style={{ color: '#1a1a1a' }}>{enroll.course_title}</strong>
+                        enrolled in <strong style={{ color: '#101C2C' }}>{enroll.course_title}</strong>
                       </div>
                     </div>
                     <div style={{
@@ -906,8 +906,8 @@ const TeacherOverview = () => {
                         color: enroll.progress_percent >= 70 
                           ? '#10b981' 
                           : enroll.progress_percent >= 30 
-                            ? '#f59e0b' 
-                            : '#667eea'
+                            ? '#C9A66B' 
+                            : '#101C2C'
                       }}>
                         {enroll.progress_percent}%
                       </div>
@@ -956,7 +956,7 @@ const TeacherOverview = () => {
         }}>
           <div style={{
             fontSize: '56px',
-            color: '#667eea',
+            color: '#101C2C',
             marginBottom: '24px'
           }}>
             <i className="bi bi-rocket-takeoff"></i>
@@ -964,7 +964,7 @@ const TeacherOverview = () => {
           <h4 style={{
             fontSize: 'clamp(24px, 4vw, 32px)',
             fontWeight: 700,
-            color: '#1a1a1a',
+            color: '#101C2C',
             margin: '0 0 12px 0',
             letterSpacing: '-0.5px'
           }}>Get Started!</h4>
@@ -986,7 +986,7 @@ const TeacherOverview = () => {
           }}>
             <Link to='/teacher/course-management' style={{
               padding: '12px 28px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
               color: 'white',
               border: 'none',
               borderRadius: '10px',
@@ -1014,8 +1014,8 @@ const TeacherOverview = () => {
             <Link to='/teacher/students' style={{
               padding: '12px 28px',
               background: 'white',
-              color: '#667eea',
-              border: '2px solid #667eea',
+              color: '#101C2C',
+              border: '2px solid #101C2C',
               borderRadius: '10px',
               fontSize: '15px',
               fontWeight: 600,

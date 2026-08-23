@@ -1,15 +1,15 @@
 /* ==================== ROOT VARIABLES ==================== */
 :root {
-    --primary-color: #3b82f6;
-    --primary-dark: #2563eb;
+    --primary-color: #101C2C;
+    --primary-dark: #101C2C;
     --secondary-color: #10b981;
     --secondary-light: #d1fae5;
-    --danger-color: #ef4444;
-    --warning-color: #f59e0b;
+    --danger-color: #D85C4A;
+    --warning-color: #C9A66B;
     --bg-light: #ffffff;
-    --bg-gray: #f9fafb;
+    --bg-gray: #F7F3EA;
     --bg-light-gray: #f3f4f6;
-    --text-dark: #1f2937;
+    --text-dark: #101C2C;
     --text-gray: #6b7280;
     --text-light-gray: #9ca3af;
     --border-color: #e5e7eb;
@@ -35,7 +35,7 @@ body {
     display: flex;
     flex-direction: row;
     min-height: 100vh;
-    background-color: #F9FAFB;
+    background-color: #F7F3EA;
     font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', system-ui, sans-serif;
     position: relative;
 }
@@ -132,7 +132,7 @@ body {
     align-items: center;
     justify-content: center;
     height: 100vh;
-    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+    background: linear-gradient(135deg, #101C2C 0%, #101C2C 100%);
     color: white;
 }
 
@@ -183,7 +183,7 @@ body {
     padding: 10px 16px;
     margin: 0 0 16px 0;
     background-color: #eff6ff;
-    color: #3b82f6;
+    color: #101C2C;
     font-weight: 500;
     font-size: 13px;
     border: none;
@@ -195,7 +195,7 @@ body {
 
 .back-to-course-link:hover {
     background-color: #dbeafe;
-    color: #1e40af;
+    color: #101C2C;
 }
 
 .back-to-course-link i {
@@ -204,7 +204,7 @@ body {
 
 /* ==================== LESSON HEADER ==================== */
 .lesson-header {
-    background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+    background: linear-gradient(180deg, #ffffff 0%, #F7F3EA 100%);
     border-bottom: 1px solid var(--border-color);
     padding: 20px 24px;
 }
@@ -399,7 +399,7 @@ body {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    border: 1px solid #06b6d4;
+    border: 1px solid #7C9BB8;
 }
 
 .downloadable-icon i {
@@ -511,14 +511,14 @@ body {
 
 .lesson-submission-title i {
     font-size: 22px;
-    color: #ef4444;
+    color: #D85C4A;
 }
 
 .lesson-submission-title h6 {
     margin: 0;
     font-size: 15px;
     font-weight: 700;
-    color: #0f172a;
+    color: #101C2C;
 }
 
 .lesson-submission-title p {
@@ -561,12 +561,12 @@ body {
 }
 
 .lesson-submission-feedback {
-    color: #1e293b;
+    color: #101C2C;
     font-weight: 600;
 }
 
 .lesson-submission-score {
-    color: #1f2937;
+    color: #101C2C;
     font-weight: 700;
 }
 
@@ -581,7 +581,7 @@ body {
 .lesson-submission-toggle {
     display: inline-flex;
     gap: 8px;
-    background: #f8fafc;
+    background: #F7F3EA;
     padding: 6px;
     border-radius: 999px;
     border: 1px solid #e2e8f0;
@@ -602,7 +602,7 @@ body {
 }
 
 .lesson-submission-toggle button.active {
-    background: #1d4ed8;
+    background: #101C2C;
     color: #ffffff;
 }
 
@@ -622,12 +622,12 @@ body {
 }
 
 .lesson-submission-actions .record-btn {
-    background: #ef4444;
+    background: #D85C4A;
     color: #ffffff;
 }
 
 .lesson-submission-actions .stop-btn {
-    background: #0f172a;
+    background: #101C2C;
     color: #ffffff;
 }
 
@@ -643,7 +643,7 @@ body {
 
 .lesson-submission-actions .upload-toggle-btn {
     background: #e2e8f0;
-    color: #1f2937;
+    color: #101C2C;
 }
 
 .lesson-submission-upload {
@@ -659,7 +659,7 @@ body {
     min-width: 220px;
     border: 1px solid #e2e8f0;
     border-radius: 10px;
-    background: #f8fafc;
+    background: #F7F3EA;
     padding: 8px 12px;
     font-size: 12px;
     font-weight: 600;
@@ -686,7 +686,7 @@ body {
     margin-top: 12px;
     border-radius: 10px;
     border: 1px solid #e2e8f0;
-    background: #0f172a;
+    background: #101C2C;
 }
 
 /* ==================== CONTENT SECTIONS ==================== */
@@ -805,7 +805,7 @@ body {
     width: 72px;
     height: 72px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, #7C9BB8 0%, #7C9BB8 100%);
     color: white;
     font-size: 36px;
     flex-shrink: 0;
@@ -920,7 +920,7 @@ body {
     justify-content: center;
     width: 100%;
     min-height: 400px;
-    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+    background: linear-gradient(135deg, #101C2C 0%, #101C2C 100%);
     color: white;
     text-align: center;
     padding: 40px;
@@ -1030,7 +1030,7 @@ body {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%);
     color: white;
     border: none;
     cursor: pointer;
@@ -1048,7 +1048,7 @@ body {
     position: absolute;
     top: -8px;
     right: -8px;
-    background: #ef4444;
+    background: #D85C4A;
     color: white;
     font-size: 12px;
     font-weight: 600;
@@ -1097,7 +1097,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%);
     color: white;
     position: sticky;
     top: 0;
@@ -1242,7 +1242,7 @@ body {
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
-    background: #f9fafb;
+    background: #F7F3EA;
     align-items: flex-start;
 }
 
@@ -1274,7 +1274,7 @@ body {
 .resource-title {
     font-size: 14px;
     font-weight: 600;
-    color: #1f2937;
+    color: #101C2C;
     word-break: break-word;
     margin-bottom: 4px;
 }

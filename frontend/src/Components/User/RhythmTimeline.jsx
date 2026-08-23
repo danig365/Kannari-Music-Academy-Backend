@@ -61,7 +61,7 @@ const RhythmTimeline = ({
          style={{ display: 'block', margin: '0 auto' }}>
       <defs>
         <linearGradient id="rr-track-bg" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#1e293b" />
+          <stop offset="0%" stopColor="#101C2C" />
           <stop offset="100%" stopColor="#334155" />
         </linearGradient>
         <filter id="rr-glow-green" x="-50%" y="-50%" width="200%" height="200%">
@@ -72,13 +72,13 @@ const RhythmTimeline = ({
         </filter>
         <filter id="rr-glow-yellow" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="3" />
-          <feFlood floodColor="#f59e0b" floodOpacity="0.5" />
+          <feFlood floodColor="#C9A66B" floodOpacity="0.5" />
           <feComposite in2="SourceGraphic" operator="in" />
           <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
         <filter id="rr-glow-red" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="3" />
-          <feFlood floodColor="#ef4444" floodOpacity="0.5" />
+          <feFlood floodColor="#D85C4A" floodOpacity="0.5" />
           <feComposite in2="SourceGraphic" operator="in" />
           <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
@@ -91,7 +91,7 @@ const RhythmTimeline = ({
       </defs>
 
       {/* Background */}
-      <rect width={width} height={height} fill="#0f172a" rx="12" />
+      <rect width={width} height={height} fill="#101C2C" rx="12" />
 
       {/* Track line */}
       <line x1={padL} y1={trackY} x2={padL + trackWidth} y2={trackY}
@@ -104,7 +104,7 @@ const RhythmTimeline = ({
         const info = NOTE_SYMBOLS[nt] || NOTE_SYMBOLS.quarter;
         const resultColor = phase === 'result'
           ? (tapResults[i] === 'perfect' ? '#22c55e'
-            : tapResults[i] === 'good' ? '#f59e0b' : '#ef4444')
+            : tapResults[i] === 'good' ? '#C9A66B' : '#D85C4A')
           : '#94a3b8';
         const previewHit = phase === 'preview' && playheadMs !== null && playheadMs >= ts;
         const noteColor = previewHit ? '#a78bfa' : resultColor;

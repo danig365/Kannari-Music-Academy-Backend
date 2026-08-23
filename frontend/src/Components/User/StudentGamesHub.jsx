@@ -6,15 +6,15 @@ import './StudentGamesHub.css';
 
 /* ── Game meta ──────────────────────────────────────────────── */
 const GAME_META = {
-  note_ninja:      { icon: '🎯', color: '#3b82f6', gradient: 'linear-gradient(135deg,#1e40af,#3b82f6)', route: '/student/games/note-ninja' },
-  music_challenge: { icon: '⚡', color: '#f59e0b', gradient: 'linear-gradient(135deg,#d97706,#f59e0b)', route: '/student/games/music-challenge' },
+  note_ninja:      { icon: '🎯', color: '#101C2C', gradient: 'linear-gradient(135deg,#101C2C,#101C2C)', route: '/student/games/note-ninja' },
+  music_challenge: { icon: '⚡', color: '#C9A66B', gradient: 'linear-gradient(135deg,#C9A66B,#C9A66B)', route: '/student/games/music-challenge' },
 };
 
 /* ── Badge meta ─────────────────────────────────────────────── */
 const BADGE_META = {
-  note_master:      { icon: '🎵', color: '#3b82f6', desc: 'Master of note identification' },
-  rhythm_king:      { icon: '👑', color: '#8b5cf6', desc: 'King of rhythm patterns' },
-  theory_champion:  { icon: '🏆', color: '#f59e0b', desc: 'Champion of music theory' },
+  note_master:      { icon: '🎵', color: '#101C2C', desc: 'Master of note identification' },
+  rhythm_king:      { icon: '👑', color: '#7C9BB8', desc: 'King of rhythm patterns' },
+  theory_champion:  { icon: '🏆', color: '#C9A66B', desc: 'Champion of music theory' },
 };
 
 /* ── Tabs ───────────────────────────────────────────────────── */
@@ -187,7 +187,7 @@ const StudentGamesHub = () => {
                             ▶ Play Now
                           </Link>
                         ) : !g.access.has_subscription ? (
-                          <Link to="/student/subscriptions" className="gh-gc-play-btn gh-gc-subscribe-btn" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
+                          <Link to="/student/subscriptions" className="gh-gc-play-btn gh-gc-subscribe-btn" style={{ background: 'linear-gradient(135deg, #C9A66B, #C9A66B)' }}>
                             🔒 Subscribe to Play
                           </Link>
                         ) : (
@@ -205,13 +205,13 @@ const StudentGamesHub = () => {
               <h2 className="gh-section-title" style={{ marginTop: 28 }}>🛠️ Practice Tools</h2>
               <div className="gh-games-grid">
                 <div className="gh-game-card">
-                  <div className="gh-gc-icon" style={{ background: 'linear-gradient(135deg,#0891b2,#06b6d4)' }}>
+                  <div className="gh-gc-icon" style={{ background: 'linear-gradient(135deg,#0891b2,#7C9BB8)' }}>
                     <span>🎵</span>
                   </div>
                   <div className="gh-gc-body">
                     <h3 className="gh-gc-title">Metronome</h3>
                     <p className="gh-gc-desc">Practice your timing with a steady beat. Adjustable BPM and time signatures.</p>
-                    <Link to="/student/metronome" className="gh-gc-play-btn" style={{ background: 'linear-gradient(135deg,#0891b2,#06b6d4)' }}>
+                    <Link to="/student/metronome" className="gh-gc-play-btn" style={{ background: 'linear-gradient(135deg,#0891b2,#7C9BB8)' }}>
                       🎵 Open Metronome
                     </Link>
                   </div>
@@ -329,7 +329,7 @@ const StudentGamesHub = () => {
               </p>
               <div className="gh-badges-grid">
                 {badges.map(b => {
-                  const meta = BADGE_META[b.badge_key] || { icon: '🏅', color: '#6366f1', desc: '' };
+                  const meta = BADGE_META[b.badge_key] || { icon: '🏅', color: '#7C9BB8', desc: '' };
                   return (
                     <div key={b.badge_key} className={`gh-badge-card ${b.earned ? 'earned' : 'locked'}`}>
                       <div className="gh-badge-icon" style={b.earned ? { borderColor: meta.color, boxShadow: `0 0 20px ${meta.color}40` } : {}}>

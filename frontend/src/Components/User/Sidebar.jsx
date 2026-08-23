@@ -134,7 +134,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
   };
 
   const sidebarStyle = {
-    backgroundColor: '#0f172a', 
+    backgroundColor: '#101C2C', 
     height: '100vh', 
     display: 'flex', 
     flexDirection: 'column',
@@ -158,7 +158,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
           <div style={{
             width: '40px',
             height: '40px',
-            backgroundColor: '#3b82f6',
+            backgroundColor: '#101C2C',
             borderRadius: '8px',
             display: 'flex',
             alignItems: 'center',
@@ -187,7 +187,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
             borderRadius: '8px',
             textDecoration: 'none',
             color: isActive('/student/dashboard') ? 'white' : '#94a3b8',
-            backgroundColor: isActive('/student/dashboard') ? '#1e40af' : 'transparent',
+            backgroundColor: isActive('/student/dashboard') ? '#101C2C' : 'transparent',
             marginBottom: '4px',
             transition: 'all 0.2s'
           }}
@@ -207,7 +207,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
             borderRadius: '8px',
             textDecoration: 'none',
             color: isActive('/student/my-courses') ? 'white' : '#94a3b8',
-            backgroundColor: isActive('/student/my-courses') ? '#1e40af' : 'transparent',
+            backgroundColor: isActive('/student/my-courses') ? '#101C2C' : 'transparent',
             marginBottom: '4px',
             transition: 'all 0.2s',
             position: 'relative'
@@ -216,7 +216,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
           <i className="bi bi-book" style={{ fontSize: '18px' }}></i>
           <span style={{ fontSize: '14px', fontWeight: '500' }}>My Courses</span>
           {isActive('/student/my-courses') && (
-            <span style={{ marginLeft: 'auto', width: '6px', height: '6px', backgroundColor: '#60a5fa', borderRadius: '50%' }}></span>
+            <span style={{ marginLeft: 'auto', width: '6px', height: '6px', backgroundColor: '#7C9BB8', borderRadius: '50%' }}></span>
           )}
         </Link>
 
@@ -231,7 +231,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
             borderRadius: '8px',
             textDecoration: 'none',
             color: isActive('/student/my-learning-path') ? 'white' : '#94a3b8',
-            backgroundColor: isActive('/student/my-learning-path') ? '#1e40af' : 'transparent',
+            backgroundColor: isActive('/student/my-learning-path') ? '#101C2C' : 'transparent',
             marginBottom: '4px',
             transition: 'all 0.2s',
           }}
@@ -252,7 +252,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
             borderRadius: '8px',
             textDecoration: 'none',
             color: isActive('/student/my-progress') ? 'white' : '#94a3b8',
-            backgroundColor: isActive('/student/my-progress') ? '#1e40af' : 'transparent',
+            backgroundColor: isActive('/student/my-progress') ? '#101C2C' : 'transparent',
             marginBottom: '4px',
             transition: 'all 0.2s'
           }}
@@ -272,7 +272,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
             borderRadius: '8px',
             textDecoration: 'none',
             color: isActive('/student/my-achievements') ? 'white' : '#94a3b8',
-            backgroundColor: isActive('/student/my-achievements') ? '#1e40af' : 'transparent',
+            backgroundColor: isActive('/student/my-achievements') ? '#101C2C' : 'transparent',
             marginBottom: '4px',
             transition: 'all 0.2s'
           }}
@@ -292,7 +292,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
             borderRadius: '8px',
             textDecoration: 'none',
             color: isActive('/student/my-sessions') ? 'white' : '#94a3b8',
-            backgroundColor: isActive('/student/my-sessions') ? '#1e40af' : 'transparent',
+            backgroundColor: isActive('/student/my-sessions') ? '#101C2C' : 'transparent',
             marginBottom: '4px',
             transition: 'all 0.2s'
           }}
@@ -312,7 +312,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
             borderRadius: '8px',
             textDecoration: 'none',
             color: (minorStatus?.is_minor && !minorStatus?.can_send_messages) ? '#475569' : (isActive('/student/my-messages') ? 'white' : '#94a3b8'),
-            backgroundColor: isActive('/student/my-messages') ? '#1e40af' : 'transparent',
+            backgroundColor: isActive('/student/my-messages') ? '#101C2C' : 'transparent',
             marginBottom: '4px',
             transition: 'all 0.2s',
             opacity: (minorStatus?.is_minor && !minorStatus?.can_send_messages) ? 0.5 : 1,
@@ -322,7 +322,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
           <i className="bi bi-mic" style={{ fontSize: '18px' }}></i>
           <span style={{ fontSize: '14px', fontWeight: '500' }}>Messages</span>
           {minorStatus?.is_minor && !minorStatus?.can_send_messages && (
-            <i className="bi bi-lock-fill" style={{ marginLeft: 'auto', fontSize: '12px', color: '#f59e0b' }}></i>
+            <i className="bi bi-lock-fill" style={{ marginLeft: 'auto', fontSize: '12px', color: '#C9A66B' }}></i>
           )}
         </Link>
 
@@ -335,8 +335,8 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
             borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.2)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <i className="bi bi-shield-exclamation" style={{ fontSize: '12px', color: '#f59e0b' }}></i>
-              <span style={{ fontSize: '11px', color: '#d97706', fontWeight: '600' }}>Parent Approval Required</span>
+              <i className="bi bi-shield-exclamation" style={{ fontSize: '12px', color: '#C9A66B' }}></i>
+              <span style={{ fontSize: '11px', color: '#C9A66B', fontWeight: '600' }}>Parent Approval Required</span>
             </div>
             <p style={{ margin: '4px 0 0', fontSize: '10px', color: '#92400e', lineHeight: '1.4' }}>
               Messaging is locked until your parent/guardian approves your account.
@@ -357,7 +357,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
               borderRadius: '8px',
               textDecoration: 'none',
               color: isActive('/student/text-messages') ? 'white' : '#94a3b8',
-              backgroundColor: isActive('/student/text-messages') ? '#1e40af' : 'transparent',
+              backgroundColor: isActive('/student/text-messages') ? '#101C2C' : 'transparent',
               marginBottom: '4px',
               transition: 'all 0.2s'
             }}
@@ -378,7 +378,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
             borderRadius: '8px',
             textDecoration: 'none',
             color: isActive('/student/my-assignments') ? 'white' : '#94a3b8',
-            backgroundColor: isActive('/student/my-assignments') ? '#1e40af' : 'transparent',
+            backgroundColor: isActive('/student/my-assignments') ? '#101C2C' : 'transparent',
             marginBottom: '4px',
             transition: 'all 0.2s'
           }}
@@ -390,7 +390,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
         {/* Group Classes Section */}
         {groups.length > 0 && (
           <>
-            <div style={{ height: '1px', backgroundColor: '#1e293b', margin: '8px 0' }}></div>
+            <div style={{ height: '1px', backgroundColor: '#101C2C', margin: '8px 0' }}></div>
             <div style={{ padding: '4px 16px 8px', fontSize: '11px', fontWeight: '700', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               My Groups
             </div>
@@ -405,7 +405,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
                 borderRadius: '8px',
                 textDecoration: 'none',
                 color: isActive('/student/my-groups') ? 'white' : '#94a3b8',
-                backgroundColor: isActive('/student/my-groups') ? '#1e40af' : 'transparent',
+                backgroundColor: isActive('/student/my-groups') ? '#101C2C' : 'transparent',
                 marginBottom: '4px',
                 transition: 'all 0.2s'
               }}
@@ -430,7 +430,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
             borderRadius: '8px',
             textDecoration: 'none',
             color: isActive('/student/games') ? 'white' : '#94a3b8',
-            backgroundColor: isActive('/student/games') ? '#1e40af' : 'transparent',
+            backgroundColor: isActive('/student/games') ? '#101C2C' : 'transparent',
             marginBottom: '4px',
             transition: 'all 0.2s'
           }}
@@ -465,7 +465,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
               borderRadius: '10px',
               fontSize: '11px',
               fontWeight: '700',
-              color: '#fbbf24',
+              color: '#C9A66B',
             }}>
               💰 {sonaraCoins}
             </span>
@@ -483,7 +483,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
             borderRadius: '8px',
             textDecoration: 'none',
             color: isActive('/student/subscriptions') ? 'white' : '#94a3b8',
-            backgroundColor: isActive('/student/subscriptions') ? '#1e40af' : 'transparent',
+            backgroundColor: isActive('/student/subscriptions') ? '#101C2C' : 'transparent',
             marginBottom: '4px',
             transition: 'all 0.2s'
           }}
@@ -492,18 +492,18 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
           <span style={{ fontSize: '14px', fontWeight: '500' }}>Subscriptions</span>
         </Link>
 
-        <div style={{ height: '1px', backgroundColor: '#1e293b', margin: '8px 0' }}></div>
+        <div style={{ height: '1px', backgroundColor: '#101C2C', margin: '8px 0' }}></div>
       </nav>
 
       {/* Bottom Section */}
-      <div style={{ padding: '12px 12px 16px 12px', borderTop: '1px solid #1e293b' }}>
+      <div style={{ padding: '12px 12px 16px 12px', borderTop: '1px solid #101C2C' }}>
         {/* User Profile */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '12px',
           padding: '12px',
-          backgroundColor: '#1e293b',
+          backgroundColor: '#101C2C',
           borderRadius: '8px',
           marginBottom: '12px'
         }}>
@@ -574,7 +574,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
               borderRadius: '6px',
               textDecoration: 'none',
               color: '#94a3b8',
-              backgroundColor: '#1e293b',
+              backgroundColor: '#101C2C',
               fontSize: '12px',
               fontWeight: '500',
               transition: 'all 0.2s',
@@ -598,7 +598,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
               borderRadius: '6px',
               textDecoration: 'none',
               color: '#94a3b8',
-              backgroundColor: '#1e293b',
+              backgroundColor: '#101C2C',
               fontSize: '12px',
               fontWeight: '500',
               transition: 'all 0.2s',

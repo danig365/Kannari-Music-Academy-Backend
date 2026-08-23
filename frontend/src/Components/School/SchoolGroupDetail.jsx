@@ -184,7 +184,7 @@ const SchoolGroupDetail = ({ groupId, onBack }) => {
     { key: 'assignments', icon: 'bi-journal-check', label: 'Assignments' },
   ];
 
-  const priorityColors = { urgent: '#ef4444', high: '#f59e0b', normal: '#3b82f6', low: '#6b7280' };
+  const priorityColors = { urgent: '#D85C4A', high: '#C9A66B', normal: '#101C2C', low: '#6b7280' };
 
   const timeAgo = (d) => {
     const diff = Math.floor((Date.now() - new Date(d)) / 1000);
@@ -204,7 +204,7 @@ const SchoolGroupDetail = ({ groupId, onBack }) => {
           <i className="bi bi-arrow-left"></i>
         </button>
         <div>
-          <h4 style={{ margin: 0, fontWeight: '700', color: '#1e293b' }}>{group?.title || 'Group'}</h4>
+          <h4 style={{ margin: 0, fontWeight: '700', color: '#101C2C' }}>{group?.title || 'Group'}</h4>
           <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>{group?.student_count || 0} students • {group?.teacher_name}</p>
         </div>
       </div>
@@ -216,7 +216,7 @@ const SchoolGroupDetail = ({ groupId, onBack }) => {
             style={{
               flex: 1, padding: '10px 0', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer',
               backgroundColor: activeTab === t.key ? '#fff' : 'transparent',
-              color: activeTab === t.key ? '#1e293b' : '#64748b',
+              color: activeTab === t.key ? '#101C2C' : '#64748b',
               boxShadow: activeTab === t.key ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
               transition: 'all 0.2s'
             }}>
@@ -233,15 +233,15 @@ const SchoolGroupDetail = ({ groupId, onBack }) => {
               <div style={{ textAlign: 'center', color: '#94a3b8', padding: '40px', fontSize: '14px' }}>No messages yet</div>
             ) : messages.map(msg => (
               <div key={msg.id} style={{ display: 'flex', gap: '10px', padding: '8px', borderRadius: '8px', backgroundColor: msg.is_pinned ? '#fefce8' : 'transparent' }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: msg.sender_type === 'teacher' ? '#6366f1' : msg.sender_type === 'student' ? '#3b82f6' : msg.sender_type === 'parent' ? '#f59e0b' : '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '11px', fontWeight: '600', flexShrink: 0, overflow: 'hidden' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: msg.sender_type === 'teacher' ? '#7C9BB8' : msg.sender_type === 'student' ? '#101C2C' : msg.sender_type === 'parent' ? '#C9A66B' : '#D85C4A', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '11px', fontWeight: '600', flexShrink: 0, overflow: 'hidden' }}>
                   {msg.sender_profile_img ? <img src={msg.sender_profile_img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (msg.sender_name_display || msg.sender_name || 'U').substring(0, 2).toUpperCase()}
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontWeight: '600', fontSize: '13px', color: '#1e293b' }}>{msg.sender_name_display || msg.sender_name}</span>
-                    <span style={{ fontSize: '10px', color: '#94a3b8', padding: '1px 6px', borderRadius: '8px', backgroundColor: '#f8fafc', textTransform: 'capitalize' }}>{msg.sender_type}</span>
+                    <span style={{ fontWeight: '600', fontSize: '13px', color: '#101C2C' }}>{msg.sender_name_display || msg.sender_name}</span>
+                    <span style={{ fontSize: '10px', color: '#94a3b8', padding: '1px 6px', borderRadius: '8px', backgroundColor: '#F7F3EA', textTransform: 'capitalize' }}>{msg.sender_type}</span>
                     <span style={{ fontSize: '11px', color: '#94a3b8' }}>{timeAgo(msg.created_at)}</span>
-                    {msg.is_pinned && <i className="bi bi-pin-fill" style={{ color: '#f59e0b', fontSize: '12px' }}></i>}
+                    {msg.is_pinned && <i className="bi bi-pin-fill" style={{ color: '#C9A66B', fontSize: '12px' }}></i>}
                   </div>
                   <div style={{ fontSize: '14px', color: '#334155', marginTop: '2px' }}>{msg.content}</div>
                 </div>
@@ -257,7 +257,7 @@ const SchoolGroupDetail = ({ groupId, onBack }) => {
               onKeyPress={(e) => e.key === 'Enter' && sendGroupMessage()}
               placeholder="Type a message..." style={{ flex: 1, padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: '20px', fontSize: '14px', outline: 'none' }} />
             <button onClick={sendGroupMessage} disabled={!newMsg.trim() || sendingMsg}
-              style={{ width: '38px', height: '38px', borderRadius: '50%', border: 'none', backgroundColor: newMsg.trim() ? '#6366f1' : '#e2e8f0', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              style={{ width: '38px', height: '38px', borderRadius: '50%', border: 'none', backgroundColor: newMsg.trim() ? '#7C9BB8' : '#e2e8f0', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <i className="bi bi-send-fill"></i>
             </button>
           </div>
@@ -269,7 +269,7 @@ const SchoolGroupDetail = ({ groupId, onBack }) => {
         <div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
             <button onClick={() => setShowAnnouncementForm(!showAnnouncementForm)}
-              style={{ padding: '8px 16px', backgroundColor: showAnnouncementForm ? '#ef4444' : '#6366f1', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+              style={{ padding: '8px 16px', backgroundColor: showAnnouncementForm ? '#D85C4A' : '#7C9BB8', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
               <i className={`bi ${showAnnouncementForm ? 'bi-x-lg' : 'bi-plus-lg'} me-1`}></i>{showAnnouncementForm ? 'Cancel' : 'New'}
             </button>
           </div>
@@ -299,13 +299,13 @@ const SchoolGroupDetail = ({ groupId, onBack }) => {
           )}
 
           {announcements.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '48px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '2px dashed #e2e8f0', color: '#64748b' }}>No announcements yet</div>
+            <div style={{ textAlign: 'center', padding: '48px', backgroundColor: '#F7F3EA', borderRadius: '12px', border: '2px dashed #e2e8f0', color: '#64748b' }}>No announcements yet</div>
           ) : (
             <div style={{ display: 'grid', gap: '10px' }}>
               {announcements.map(a => (
-                <div key={a.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '16px', borderLeft: `4px solid ${priorityColors[a.priority] || '#3b82f6'}` }}>
+                <div key={a.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '16px', borderLeft: `4px solid ${priorityColors[a.priority] || '#101C2C'}` }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h6 style={{ margin: 0, fontWeight: '600', color: '#1e293b' }}>{a.title}</h6>
+                    <h6 style={{ margin: 0, fontWeight: '600', color: '#101C2C' }}>{a.title}</h6>
                     <span style={{ fontSize: '11px', fontWeight: '600', color: priorityColors[a.priority], textTransform: 'uppercase' }}>{a.priority}</span>
                   </div>
                   <p style={{ margin: '8px 0 0', fontSize: '14px', color: '#475569' }}>{a.content}</p>
@@ -322,7 +322,7 @@ const SchoolGroupDetail = ({ groupId, onBack }) => {
         <div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
             <button onClick={() => setShowResourceForm(!showResourceForm)}
-              style={{ padding: '8px 16px', backgroundColor: showResourceForm ? '#ef4444' : '#6366f1', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+              style={{ padding: '8px 16px', backgroundColor: showResourceForm ? '#D85C4A' : '#7C9BB8', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
               <i className={`bi ${showResourceForm ? 'bi-x-lg' : 'bi-plus-lg'} me-1`}></i>{showResourceForm ? 'Cancel' : 'Add Resource'}
             </button>
           </div>
@@ -340,21 +340,21 @@ const SchoolGroupDetail = ({ groupId, onBack }) => {
           )}
 
           {resources.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '48px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '2px dashed #e2e8f0', color: '#64748b' }}>No resources yet</div>
+            <div style={{ textAlign: 'center', padding: '48px', backgroundColor: '#F7F3EA', borderRadius: '12px', border: '2px dashed #e2e8f0', color: '#64748b' }}>No resources yet</div>
           ) : (
             <div style={{ display: 'grid', gap: '10px' }}>
               {resources.map(r => (
                 <div key={r.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ width: '40px', height: '40px', backgroundColor: '#eff6ff', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <i className={`bi ${r.file ? 'bi-file-earmark' : 'bi-link-45deg'}`} style={{ fontSize: '18px', color: '#3b82f6' }}></i>
+                    <i className={`bi ${r.file ? 'bi-file-earmark' : 'bi-link-45deg'}`} style={{ fontSize: '18px', color: '#101C2C' }}></i>
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>{r.title}</div>
+                    <div style={{ fontWeight: '600', color: '#101C2C', fontSize: '14px' }}>{r.title}</div>
                     {r.description && <div style={{ fontSize: '12px', color: '#64748b' }}>{r.description}</div>}
                     <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>{r.teacher_name || 'School'} • {timeAgo(r.created_at)}</div>
                   </div>
                   {(r.file || r.link_url) && (
-                    <a href={r.file || r.link_url} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 12px', backgroundColor: '#eff6ff', borderRadius: '6px', color: '#2563eb', fontSize: '12px', textDecoration: 'none', fontWeight: '600' }}>
+                    <a href={r.file || r.link_url} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 12px', backgroundColor: '#eff6ff', borderRadius: '6px', color: '#101C2C', fontSize: '12px', textDecoration: 'none', fontWeight: '600' }}>
                       {r.file ? 'Download' : 'Open'}
                     </a>
                   )}
@@ -370,7 +370,7 @@ const SchoolGroupDetail = ({ groupId, onBack }) => {
         <div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
             <button onClick={() => setShowSessionForm(!showSessionForm)}
-              style={{ padding: '8px 16px', backgroundColor: showSessionForm ? '#ef4444' : '#6366f1', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+              style={{ padding: '8px 16px', backgroundColor: showSessionForm ? '#D85C4A' : '#7C9BB8', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
               <i className={`bi ${showSessionForm ? 'bi-x-lg' : 'bi-plus-lg'} me-1`}></i>{showSessionForm ? 'Cancel' : 'Schedule Session'}
             </button>
           </div>
@@ -398,16 +398,16 @@ const SchoolGroupDetail = ({ groupId, onBack }) => {
           )}
 
           {sessions.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '48px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '2px dashed #e2e8f0', color: '#64748b' }}>No sessions scheduled</div>
+            <div style={{ textAlign: 'center', padding: '48px', backgroundColor: '#F7F3EA', borderRadius: '12px', border: '2px dashed #e2e8f0', color: '#64748b' }}>No sessions scheduled</div>
           ) : (
             <div style={{ display: 'grid', gap: '10px' }}>
               {sessions.map(s => {
-                const statusColors = { scheduled: '#3b82f6', live: '#10b981', completed: '#6b7280', cancelled: '#ef4444' };
+                const statusColors = { scheduled: '#101C2C', live: '#10b981', completed: '#6b7280', cancelled: '#D85C4A' };
                 return (
                   <div key={s.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '16px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                       <div>
-                        <div style={{ fontWeight: '600', color: '#1e293b' }}>{s.title}</div>
+                        <div style={{ fontWeight: '600', color: '#101C2C' }}>{s.title}</div>
                         <div style={{ fontSize: '12px', color: '#64748b' }}>
                           {s.session_type === 'video_call' ? 'Video Call' : s.session_type === 'audio_call' ? 'Audio Call' : s.session_type} • {s.scheduled_date && new Date(s.scheduled_date + 'T00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} {s.formatted_time || s.scheduled_time || ''}
                           {s.duration_minutes && ` • ${s.duration_minutes} min`}
@@ -425,7 +425,7 @@ const SchoolGroupDetail = ({ groupId, onBack }) => {
                           </button>
                         )}
                         {s.status === 'live' && (
-                          <button onClick={() => endSession(s.id)} style={{ padding: '4px 12px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                          <button onClick={() => endSession(s.id)} style={{ padding: '4px 12px', backgroundColor: '#D85C4A', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
                             End
                           </button>
                         )}
@@ -444,20 +444,20 @@ const SchoolGroupDetail = ({ groupId, onBack }) => {
       {activeTab === 'assignments' && (
         <div>
           {groupAssignments.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '48px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '2px dashed #e2e8f0', color: '#64748b' }}>
+            <div style={{ textAlign: 'center', padding: '48px', backgroundColor: '#F7F3EA', borderRadius: '12px', border: '2px dashed #e2e8f0', color: '#64748b' }}>
               <i className="bi bi-journal-check" style={{ fontSize: '32px', display: 'block', marginBottom: '8px' }}></i>
               No group assignments yet. Create assignments from the main Assignments page.
             </div>
           ) : (
             <div style={{ display: 'grid', gap: '10px' }}>
               {groupAssignments.map(a => {
-                const typeColors = { audio: '#8b5cf6', video: '#ec4899', file_upload: '#f59e0b', discussion: '#06b6d4', multiple_choice: '#3b82f6' };
-                const statusColors = { assigned: '#3b82f6', submitted: '#f59e0b', late: '#ef4444', graded: '#10b981' };
+                const typeColors = { audio: '#7C9BB8', video: '#D85C4A', file_upload: '#C9A66B', discussion: '#7C9BB8', multiple_choice: '#101C2C' };
+                const statusColors = { assigned: '#101C2C', submitted: '#C9A66B', late: '#D85C4A', graded: '#10b981' };
                 return (
-                  <div key={a.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '16px', borderLeft: `4px solid ${typeColors[a.submission_type] || '#6366f1'}` }}>
+                  <div key={a.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '16px', borderLeft: `4px solid ${typeColors[a.submission_type] || '#7C9BB8'}` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                       <div>
-                        <div style={{ fontWeight: '600', color: '#1e293b' }}>{a.display_title || a.title || a.lesson_title || 'Assignment'}</div>
+                        <div style={{ fontWeight: '600', color: '#101C2C' }}>{a.display_title || a.title || a.lesson_title || 'Assignment'}</div>
                         <div style={{ fontSize: '12px', color: '#64748b' }}>
                           {a.submission_type_display || a.submission_type} &bull; Due: {a.due_date || 'No due date'} &bull; Max: {a.max_points} pts
                         </div>

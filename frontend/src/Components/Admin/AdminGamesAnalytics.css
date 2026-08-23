@@ -28,7 +28,7 @@
 }
 
 .aga-header h2 span {
-  color: #4285f4;
+  color: #101C2C;
 }
 
 .aga-header-subtitle {
@@ -48,7 +48,7 @@
   align-items: center;
   gap: 6px;
   padding: 9px 16px;
-  background: linear-gradient(135deg, #4285f4, #3b78e7);
+  background: linear-gradient(135deg, #101C2C, #3b78e7);
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -66,7 +66,7 @@
 }
 
 .aga-export-btn.secondary {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  background: linear-gradient(135deg, #7C9BB8, #7C9BB8);
 }
 
 .aga-export-btn.secondary:hover {
@@ -158,9 +158,9 @@
   height: 4px;
 }
 
-.aga-game-card-stripe.note_ninja { background: linear-gradient(90deg, #6366f1, #818cf8); }
-.aga-game-card-stripe.rhythm_rush { background: linear-gradient(90deg, #ec4899, #f472b6); }
-.aga-game-card-stripe.music_challenge { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.aga-game-card-stripe.note_ninja { background: linear-gradient(90deg, #7C9BB8, #818cf8); }
+.aga-game-card-stripe.rhythm_rush { background: linear-gradient(90deg, #D85C4A, #f472b6); }
+.aga-game-card-stripe.music_challenge { background: linear-gradient(90deg, #C9A66B, #C9A66B); }
 
 .aga-game-card-body {
   padding: 20px;
@@ -210,10 +210,10 @@
   color: #1a1a2e;
 }
 
-.aga-game-stat .stat-value.accent-blue { color: #4285f4; }
+.aga-game-stat .stat-value.accent-blue { color: #101C2C; }
 .aga-game-stat .stat-value.accent-green { color: #22c55e; }
-.aga-game-stat .stat-value.accent-amber { color: #f59e0b; }
-.aga-game-stat .stat-value.accent-pink { color: #ec4899; }
+.aga-game-stat .stat-value.accent-amber { color: #C9A66B; }
+.aga-game-stat .stat-value.accent-pink { color: #D85C4A; }
 
 /* ── Accuracy Donut (mini) ── */
 .aga-accuracy-mini {
@@ -278,7 +278,7 @@
 }
 
 .aga-table thead th {
-  background: #f9fafb;
+  background: #F7F3EA;
   padding: 10px 16px;
   font-size: 11px;
   font-weight: 700;
@@ -295,7 +295,7 @@
 }
 
 .aga-table tbody tr:hover {
-  background: #f9fafb;
+  background: #F7F3EA;
 }
 
 .aga-table tbody tr:last-child {
@@ -319,7 +319,7 @@
   font-size: 12px;
 }
 
-.aga-rank.gold { background: #fef3c7; color: #d97706; }
+.aga-rank.gold { background: #fef3c7; color: #C9A66B; }
 .aga-rank.silver { background: #f3f4f6; color: #6b7280; }
 .aga-rank.bronze { background: #fef3c7; color: #b45309; }
 .aga-rank.normal { background: #f3f4f6; color: #9ca3af; }
@@ -362,7 +362,7 @@
 .aga-badge-count {
   font-size: 20px;
   font-weight: 800;
-  color: #4285f4;
+  color: #101C2C;
 }
 
 /* ── Engagement Chart ── */
@@ -399,14 +399,14 @@
   width: 100%;
   max-width: 28px;
   border-radius: 4px 4px 0 0;
-  background: linear-gradient(180deg, #4285f4, #60a5fa);
+  background: linear-gradient(180deg, #101C2C, #7C9BB8);
   transition: height 0.3s;
   min-height: 2px;
   position: relative;
 }
 
 .aga-chart-bar:hover {
-  background: linear-gradient(180deg, #2563eb, #4285f4);
+  background: linear-gradient(180deg, #101C2C, #101C2C);
 }
 
 .aga-chart-bar-label {
@@ -424,7 +424,7 @@
   transform: translateX(-50%);
   font-size: 10px;
   font-weight: 700;
-  color: #4285f4;
+  color: #101C2C;
   display: none;
 }
 
@@ -446,7 +446,7 @@
   width: 40px;
   height: 40px;
   border: 3px solid #e5e7eb;
-  border-top-color: #4285f4;
+  border-top-color: #101C2C;
   border-radius: 50%;
   animation: agaSpin 0.8s linear infinite;
 }

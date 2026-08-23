@@ -2,10 +2,10 @@
 
 /* Color Scheme */
 :root {
-    --primary-color: #4285f4;
-    --text-dark: #1a2332;
+    --primary-color: #101C2C;
+    --text-dark: #101C2C;
     --text-light: #6b7280;
-    --bg-light: #f5f7fa;
+    --bg-light: #F7F3EA;
     --border-light: #e9ecef;
 }
 
@@ -164,7 +164,7 @@
 
 .course-badge {
     background: #e8f4fd;
-    color: #1976d2;
+    color: #101C2C;
     padding: 4px 10px;
     border-radius: 12px;
     font-size: 11px;
@@ -180,7 +180,7 @@
 
 .course-actions button {
     background: #e3f2fd;
-    color: #1976d2;
+    color: #101C2C;
     border: none;
     border-radius: 6px;
     padding: 6px 10px;
@@ -194,7 +194,7 @@
 
 .course-actions button.delete {
     background: #ffebee;
-    color: #c62828;
+    color: #D85C4A;
 }
 
 .course-actions button.delete:hover {
@@ -210,7 +210,7 @@
 }
 
 .module-header {
-    background: #f8fafc;
+    background: #F7F3EA;
     padding: 16px 20px;
     border-bottom: 1px solid var(--border-light);
     cursor: pointer;
@@ -233,7 +233,7 @@
 .module-number {
     width: 32px;
     height: 32px;
-    background: linear-gradient(135deg, #4285f4 0%, #3b5998 100%);
+    background: linear-gradient(135deg, #101C2C 0%, #101C2C 100%);
     color: white;
     border-radius: 50%;
     display: flex;
@@ -262,7 +262,7 @@
 
 .module-actions button {
     background: #e3f2fd;
-    color: #1976d2;
+    color: #101C2C;
     border: none;
     border-radius: 6px;
     padding: 6px 10px;
@@ -277,7 +277,7 @@
 
 .module-actions button.delete {
     background: #ffebee;
-    color: #c62828;
+    color: #D85C4A;
 }
 
 .lesson-list {
@@ -297,7 +297,7 @@
 }
 
 .lesson-item:hover {
-    background: #f8fafc;
+    background: #F7F3EA;
 }
 
 .lesson-info {
@@ -316,7 +316,7 @@
 .lesson-actions a,
 .lesson-actions button {
     background: #e3f2fd;
-    color: #1976d2;
+    color: #101C2C;
     border: none;
     border-radius: 6px;
     padding: 6px 10px;
@@ -327,7 +327,7 @@
 
 .lesson-actions button.delete {
     background: #ffebee;
-    color: #c62828;
+    color: #D85C4A;
 }
 
 /* Modal Styles */
@@ -373,7 +373,7 @@
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #4285f4 0%, #3b5998 100%);
+    background: linear-gradient(135deg, #101C2C 0%, #101C2C 100%);
     color: white;
 }
 

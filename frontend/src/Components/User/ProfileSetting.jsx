@@ -333,7 +333,7 @@ const ProfileSetting = () => {
                                     value={studentData.fullname} 
                                     onChange={handleChange} 
                                     className="form-control"
-                                    style={fieldErrors.fullname ? { border: '1px solid #ef4444' } : {}}
+                                    style={fieldErrors.fullname ? { border: '1px solid #D85C4A' } : {}}
                                 />
                                 <FieldError error={fieldErrors.fullname} />
                             </div>
@@ -348,7 +348,7 @@ const ProfileSetting = () => {
                                     value={studentData.email} 
                                     onChange={handleChange} 
                                     className="form-control"
-                                    style={fieldErrors.email ? { border: '1px solid #ef4444' } : {}}
+                                    style={fieldErrors.email ? { border: '1px solid #D85C4A' } : {}}
                                 />
                                 <FieldError error={fieldErrors.email} />
                             </div>
@@ -513,7 +513,7 @@ const ProfileSetting = () => {
 
                                     {(consentStatus.link_status === 'denied' || consentStatus.link_status === 'revoked') && (
                                         <div style={{ marginTop: '0.75rem' }}>
-                                            <p style={{ fontSize: '0.85rem', color: '#c62828', marginBottom: '0.75rem' }}>
+                                            <p style={{ fontSize: '0.85rem', color: '#D85C4A', marginBottom: '0.75rem' }}>
                                                 <i className="bi bi-exclamation-triangle-fill me-1"></i>
                                                 Your parent/guardian declined consent. You can update parent details and send a new consent request below.
                                             </p>
@@ -539,7 +539,7 @@ const ProfileSetting = () => {
                                             border: `1px solid ${consentStatus?.link_status === 'revoked' ? '#ef9a9a' : '#ffe0b2'}`,
                                             borderRadius: '8px',
                                             padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem',
-                                            color: consentStatus?.link_status === 'revoked' ? '#c62828' : '#e65100'
+                                            color: consentStatus?.link_status === 'revoked' ? '#D85C4A' : '#e65100'
                                         }}>
                                             <i className="bi bi-info-circle me-1"></i>
                                             {consentStatus?.link_status === 'revoked'

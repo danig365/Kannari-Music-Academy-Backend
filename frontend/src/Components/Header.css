@@ -61,14 +61,14 @@
 .brand-text {
     font-size: 20px;
     font-weight: 700;
-    color: #1a1a1a;
+    color: #101C2C;
     letter-spacing: -0.5px;
     white-space: nowrap;
 }
 
 /* Navbar Toggler */
 .navbar-toggler-custom {
-    border: 2px solid #667eea;
+    border: 2px solid #101C2C;
     padding: 8px 12px;
     border-radius: 8px;
     background: rgba(102, 126, 234, 0.05);
@@ -83,7 +83,7 @@
 
 .navbar-toggler-custom:hover {
     background: rgba(102, 126, 234, 0.15);
-    border-color: #764ba2;
+    border-color: #7C9BB8;
     transform: scale(1.05);
 }
 
@@ -96,7 +96,7 @@
     background-image: none !important;
     width: 24px !important;
     height: 2px !important;
-    background: #667eea !important;
+    background: #101C2C !important;
     border-radius: 2px;
     position: relative;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -108,7 +108,7 @@
     position: absolute;
     width: 24px;
     height: 2px;
-    background: #667eea;
+    background: #101C2C;
     border-radius: 2px;
     left: 0;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -166,7 +166,7 @@
 }
 
 .nav-link-custom:hover {
-    color: #667eea !important;
+    color: #101C2C !important;
     background: rgba(102, 126, 234, 0.08);
     transform: translateY(-2px);
 }
@@ -177,7 +177,7 @@
 }
 
 .nav-link-custom.active {
-    color: #667eea !important;
+    color: #101C2C !important;
     background: rgba(102, 126, 234, 0.12);
 }
 
@@ -232,8 +232,8 @@
 
 .dropdown-item-custom:hover {
     background: rgba(102, 126, 234, 0.08);
-    color: #667eea !important;
-    border-left-color: #667eea;
+    color: #101C2C !important;
+    border-left-color: #101C2C;
     transform: translateX(4px);
 }
 
@@ -249,12 +249,12 @@
 
 .dropdown-item-logout:hover {
     background: rgba(239, 68, 68, 0.08);
-    color: #ef4444 !important;
-    border-left-color: #ef4444;
+    color: #D85C4A !important;
+    border-left-color: #D85C4A;
 }
 
 .dropdown-item-logout:hover svg {
-    stroke: #ef4444;
+    stroke: #D85C4A;
 }
 
 /* ==================== RESPONSIVE DESIGN ==================== */

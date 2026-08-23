@@ -265,7 +265,7 @@ const TeacherMessages = () => {
       {/* Student list panel */}
       <div style={{ width: isMobile && activeStudent ? '0' : (isMobile ? '100%' : '280px'), borderRight: '1px solid #e2e8f0', backgroundColor: '#fff', overflow: 'auto', transition: 'width 0.3s', flexShrink: 0 }}>
         <div style={{ padding: '16px', borderBottom: '1px solid #e2e8f0' }}>
-          <h4 style={{ margin: 0, fontWeight: '700', color: '#1e293b', fontSize: '16px' }}>
+          <h4 style={{ margin: 0, fontWeight: '700', color: '#101C2C', fontSize: '16px' }}>
             <i className="bi bi-chat-dots me-2"></i>Text Messages
           </h4>
           <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '12px' }}>Chat with parents & adult students</p>
@@ -281,12 +281,12 @@ const TeacherMessages = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '36px', height: '36px', backgroundColor: '#4285f4', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '16px', flexShrink: 0 }}>
+            <div style={{ width: '36px', height: '36px', backgroundColor: '#101C2C', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '16px', flexShrink: 0 }}>
               <i className="bi bi-shield-check"></i>
             </div>
             <div>
-              <div style={{ fontWeight: '700', color: '#1e293b', fontSize: '13px' }}>Admin Support</div>
-              <div style={{ fontSize: '11px', color: '#4285f4' }}>Contact the platform admin</div>
+              <div style={{ fontWeight: '700', color: '#101C2C', fontSize: '13px' }}>Admin Support</div>
+              <div style={{ fontSize: '11px', color: '#101C2C' }}>Contact the platform admin</div>
             </div>
           </div>
         </div>
@@ -304,12 +304,12 @@ const TeacherMessages = () => {
                 {s.student_profile_img ? (
                   <img src={s.student_profile_img} alt="" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
                 ) : (
-                  <div style={{ width: '36px', height: '36px', backgroundColor: '#6366f1', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '600', fontSize: '12px' }}>
+                  <div style={{ width: '36px', height: '36px', backgroundColor: '#7C9BB8', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '600', fontSize: '12px' }}>
                     {(s.student_name || 'S').substring(0, 2).toUpperCase()}
                   </div>
                 )}
                 <div>
-                  <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '13px' }}>{s.student_name}</div>
+                  <div style={{ fontWeight: '600', color: '#101C2C', fontSize: '13px' }}>{s.student_name}</div>
                   <div style={{ fontSize: '11px', color: '#64748b' }}>{s.instrument} • {s.level}</div>
                 </div>
               </div>
@@ -319,7 +319,7 @@ const TeacherMessages = () => {
       </div>
 
       {/* Chat panel */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#F7F3EA' }}>
         {!activeStudent ? (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
             <i className="bi bi-chat-square-text" style={{ fontSize: '56px', color: '#cbd5e1' }}></i>
@@ -334,15 +334,15 @@ const TeacherMessages = () => {
                   <i className="bi bi-arrow-left"></i>
                 </button>
               )}
-              <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>
+              <div style={{ fontWeight: '600', color: '#101C2C', fontSize: '14px' }}>
                 {activeStudent.student_name}
                 {isAdminChat && (
-                  <span style={{ fontSize: '11px', color: '#4285f4', marginLeft: '8px', fontWeight: '500' }}>
+                  <span style={{ fontSize: '11px', color: '#101C2C', marginLeft: '8px', fontWeight: '500' }}>
                     <i className="bi bi-shield-check me-1"></i>Admin Support
                   </span>
                 )}
                 {!isAdminChat && isDirectChat && (
-                  <span style={{ fontSize: '11px', color: '#6366f1', marginLeft: '8px', fontWeight: '500' }}>
+                  <span style={{ fontSize: '11px', color: '#7C9BB8', marginLeft: '8px', fontWeight: '500' }}>
                     <i className="bi bi-person-fill me-1"></i>Direct (18+)
                   </span>
                 )}
@@ -351,7 +351,7 @@ const TeacherMessages = () => {
                     via {chatPartnerName}
                   </span>
                 )}
-                {!chatStatus.allowed && <span style={{ color: '#ef4444', fontSize: '11px', marginLeft: '8px' }}>
+                {!chatStatus.allowed && <span style={{ color: '#D85C4A', fontSize: '11px', marginLeft: '8px' }}>
                   <i className="bi bi-lock-fill me-1"></i>{chatStatus.reason}
                 </span>}
               </div>
@@ -385,14 +385,14 @@ const TeacherMessages = () => {
                     >
                       {isMine && hoveredMsgId === msg.id && (
                         <button onClick={() => handleDelete(msg.id)} title="Delete message"
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '13px', padding: '2px', flexShrink: 0, opacity: 0.8 }}>
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#D85C4A', fontSize: '13px', padding: '2px', flexShrink: 0, opacity: 0.8 }}>
                           <i className="bi bi-trash3"></i>
                         </button>
                       )}
                       <div style={{
                         maxWidth: '70%', padding: '10px 14px',
                         borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                        backgroundColor: isMine ? '#6366f1' : '#fff', color: isMine ? '#fff' : '#1e293b',
+                        backgroundColor: isMine ? '#7C9BB8' : '#fff', color: isMine ? '#fff' : '#101C2C',
                         fontSize: '14px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                         border: isMine ? 'none' : '1px solid #e2e8f0'
                       }}>
@@ -416,12 +416,12 @@ const TeacherMessages = () => {
                   onKeyPress={handleKeyPress} placeholder="Type a message..." rows={1}
                   style={{ flex: 1, padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: '20px', fontSize: '14px', resize: 'none', outline: 'none', fontFamily: 'inherit', maxHeight: '80px' }} />
                 <button onClick={handleSend} disabled={!newMessage.trim() || sending}
-                  style={{ width: '38px', height: '38px', borderRadius: '50%', border: 'none', backgroundColor: newMessage.trim() ? '#6366f1' : '#e2e8f0', color: '#fff', cursor: newMessage.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>
+                  style={{ width: '38px', height: '38px', borderRadius: '50%', border: 'none', backgroundColor: newMessage.trim() ? '#7C9BB8' : '#e2e8f0', color: '#fff', cursor: newMessage.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>
                   <i className="bi bi-send-fill"></i>
                 </button>
               </div>
             ) : (
-              <div style={{ padding: '12px 16px', borderTop: '1px solid #e2e8f0', backgroundColor: '#fef2f2', textAlign: 'center', fontSize: '13px', color: '#dc2626' }}>
+              <div style={{ padding: '12px 16px', borderTop: '1px solid #e2e8f0', backgroundColor: '#fef2f2', textAlign: 'center', fontSize: '13px', color: '#D85C4A' }}>
                 <i className="bi bi-lock me-1"></i>{chatStatus.reason || 'Messaging unavailable'}
               </div>
             )}

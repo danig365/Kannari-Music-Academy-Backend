@@ -57,7 +57,7 @@ const StudentGroups = () => {
 
         <div style={{ padding: '32px', width: '100%' }}>
           <div style={{ marginBottom: '24px' }}>
-            <h2 style={{ margin: 0, color: '#1e293b', fontWeight: '700' }}>
+            <h2 style={{ margin: 0, color: '#101C2C', fontWeight: '700' }}>
               <i className="bi bi-diagram-3 me-2"></i>My Groups
             </h2>
             <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14px' }}>View your group classes, chat with members, and join sessions.</p>
@@ -66,7 +66,7 @@ const StudentGroups = () => {
           {loading ? (
             <div style={{ textAlign: 'center', color: '#64748b', padding: '48px 0' }}>Loading groups...</div>
           ) : groups.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '56px', backgroundColor: '#f8fafc', borderRadius: '16px', border: '2px dashed #e2e8f0', color: '#64748b' }}>
+            <div style={{ textAlign: 'center', padding: '56px', backgroundColor: '#F7F3EA', borderRadius: '16px', border: '2px dashed #e2e8f0', color: '#64748b' }}>
               <i className="bi bi-diagram-3" style={{ fontSize: '40px', color: '#cbd5e1', display: 'block', marginBottom: '12px' }}></i>
               You're not part of any group classes yet.
             </div>
@@ -79,12 +79,12 @@ const StudentGroups = () => {
                   style={{
                     backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px',
                     padding: '20px', cursor: 'pointer', transition: 'all 0.2s',
-                    borderLeft: group.live_now ? '4px solid #10b981' : '4px solid #6366f1'
+                    borderLeft: group.live_now ? '4px solid #10b981' : '4px solid #7C9BB8'
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
                     <div>
-                      <div style={{ fontWeight: '700', color: '#0f172a', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ fontWeight: '700', color: '#101C2C', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         {group.name}
                         {group.live_now && (
                           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: '700', backgroundColor: '#dcfce7', color: '#166534', animation: 'pulse 2s infinite' }}>
@@ -107,7 +107,7 @@ const StudentGroups = () => {
                         <i className="bi bi-people me-1"></i>{group.student_count} students
                       </span>
                       {group.upcoming_sessions > 0 && (
-                        <span style={{ padding: '4px 10px', borderRadius: '10px', fontSize: '11px', fontWeight: '600', backgroundColor: '#dbeafe', color: '#1d4ed8' }}>
+                        <span style={{ padding: '4px 10px', borderRadius: '10px', fontSize: '11px', fontWeight: '600', backgroundColor: '#dbeafe', color: '#101C2C' }}>
                           <i className="bi bi-camera-video me-1"></i>{group.upcoming_sessions} upcoming
                         </span>
                       )}

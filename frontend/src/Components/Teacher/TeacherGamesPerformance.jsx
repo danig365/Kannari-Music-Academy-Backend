@@ -6,7 +6,7 @@ import {
 import './TeacherGamesPerformance.css';
 
 /* ─── helpers ─── */
-const accuracyColor = (v) => (v >= 75 ? '#22c55e' : v >= 50 ? '#f59e0b' : '#ef4444');
+const accuracyColor = (v) => (v >= 75 ? '#22c55e' : v >= 50 ? '#C9A66B' : '#D85C4A');
 const initials = (name) =>
   (name || 'S')
     .split(' ')
@@ -162,28 +162,28 @@ const TeacherGamesPerformance = () => {
             <div className="label">Students</div>
           </div>
           <div className="tgp-summary-card">
-            <div className="tgp-summary-icon" style={{ background: 'rgba(99,102,241,0.12)', color: '#6366f1' }}>
+            <div className="tgp-summary-icon" style={{ background: 'rgba(99,102,241,0.12)', color: '#7C9BB8' }}>
               🎯
             </div>
             <div className="value">{summaryStats.totalAttempts}</div>
             <div className="label">Total Attempts</div>
           </div>
           <div className="tgp-summary-card">
-            <div className="tgp-summary-icon" style={{ background: 'rgba(245,158,11,0.12)', color: '#f59e0b' }}>
+            <div className="tgp-summary-icon" style={{ background: 'rgba(245,158,11,0.12)', color: '#C9A66B' }}>
               📊
             </div>
             <div className="value">{summaryStats.avgAccuracy}%</div>
             <div className="label">Avg Accuracy</div>
           </div>
           <div className="tgp-summary-card">
-            <div className="tgp-summary-icon" style={{ background: 'rgba(236,72,153,0.12)', color: '#ec4899' }}>
+            <div className="tgp-summary-icon" style={{ background: 'rgba(236,72,153,0.12)', color: '#D85C4A' }}>
               🏆
             </div>
             <div className="value">{summaryStats.bestScore}</div>
             <div className="label">Top Score</div>
           </div>
           <div className="tgp-summary-card">
-            <div className="tgp-summary-icon" style={{ background: 'rgba(234,179,8,0.12)', color: '#eab308' }}>
+            <div className="tgp-summary-icon" style={{ background: 'rgba(234,179,8,0.12)', color: '#C9A66B' }}>
               💰
             </div>
             <div className="value">{summaryStats.totalCoins}</div>

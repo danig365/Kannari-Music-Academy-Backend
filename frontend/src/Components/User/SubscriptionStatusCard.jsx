@@ -159,7 +159,7 @@ const SubscriptionStatusCard = ({ studentId, compact = false }) => {
                                 className="usage-fill" 
                                 style={{ 
                                     width: `${Math.min(coursesUsedPercent, 100)}%`,
-                                    backgroundColor: coursesUsedPercent > 90 ? '#ef4444' : '#3b82f6'
+                                    backgroundColor: coursesUsedPercent > 90 ? '#D85C4A' : '#101C2C'
                                 }}
                             ></div>
                         </div>
@@ -175,7 +175,7 @@ const SubscriptionStatusCard = ({ studentId, compact = false }) => {
                                 className="usage-fill" 
                                 style={{ 
                                     width: `${Math.min(lessonsUsedPercent, 100)}%`,
-                                    backgroundColor: lessonsUsedPercent > 90 ? '#ef4444' : '#10b981'
+                                    backgroundColor: lessonsUsedPercent > 90 ? '#D85C4A' : '#10b981'
                                 }}
                             ></div>
                         </div>
@@ -192,7 +192,7 @@ const SubscriptionStatusCard = ({ studentId, compact = false }) => {
                                     className="usage-fill" 
                                     style={{ 
                                         width: `${Math.min(weeklyLessonsPercent, 100)}%`,
-                                        backgroundColor: weeklyLessonsPercent > 90 ? '#f59e0b' : '#8b5cf6'
+                                        backgroundColor: weeklyLessonsPercent > 90 ? '#C9A66B' : '#7C9BB8'
                                     }}
                                 ></div>
                             </div>

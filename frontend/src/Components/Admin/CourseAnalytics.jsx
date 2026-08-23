@@ -133,9 +133,9 @@ const CourseAnalytics = () => {
 
     const getProgressColor = (percentage) => {
         if (percentage >= 80) return '#22c55e';
-        if (percentage >= 50) return '#f59e0b';
-        if (percentage >= 25) return '#3b82f6';
-        return '#ef4444';
+        if (percentage >= 50) return '#C9A66B';
+        if (percentage >= 25) return '#101C2C';
+        return '#D85C4A';
     };
 
     const averageProgress = enrolledStudents.length > 0
@@ -181,7 +181,7 @@ const CourseAnalytics = () => {
             {/* Stats Overview */}
             <div className="stats-grid">
                 <div className="stat-card">
-                    <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' }}>
+                    <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #101C2C 0%, #101C2C 100%)' }}>
                         <i className="bi bi-people-fill"></i>
                     </div>
                     <div className="stat-content">
@@ -199,7 +199,7 @@ const CourseAnalytics = () => {
                     </div>
                 </div>
                 <div className="stat-card">
-                    <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}>
+                    <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #C9A66B 0%, #C9A66B 100%)' }}>
                         <i className="bi bi-percent"></i>
                     </div>
                     <div className="stat-content">
@@ -208,7 +208,7 @@ const CourseAnalytics = () => {
                     </div>
                 </div>
                 <div className="stat-card">
-                    <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' }}>
+                    <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #7C9BB8 0%, #7C9BB8 100%)' }}>
                         <i className="bi bi-collection-play-fill"></i>
                     </div>
                     <div className="stat-content">

@@ -150,7 +150,7 @@ const ParentDashboard = () => {
             <button key={child.student_id || i} onClick={() => selectChild(child)}
               style={{
                 padding: '8px 16px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: '600',
-                backgroundColor: selectedChild?.student_id === child.student_id ? '#7c3aed' : '#f1f5f9',
+                backgroundColor: selectedChild?.student_id === child.student_id ? '#7C9BB8' : '#f1f5f9',
                 color: selectedChild?.student_id === child.student_id ? '#fff' : '#475569',
                 transition: 'all 0.2s'
               }}>
@@ -169,11 +169,11 @@ const ParentDashboard = () => {
           {/* Student Info Card */}
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', gridColumn: isMobile ? '1' : '1 / -1' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '700', fontSize: '20px' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'linear-gradient(135deg, #7C9BB8, #6d28d9)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '700', fontSize: '20px' }}>
                 {(selectedChild.student_name || 'S').substring(0, 2).toUpperCase()}
               </div>
               <div style={{ flex: 1 }}>
-                <h3 style={{ margin: '0 0 4px', fontWeight: '700', color: '#1e293b', fontSize: '18px' }}>{selectedChild.student_name}</h3>
+                <h3 style={{ margin: '0 0 4px', fontWeight: '700', color: '#101C2C', fontSize: '18px' }}>{selectedChild.student_name}</h3>
                 <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>
                   {selectedChild.student_email} &nbsp;&bull;&nbsp; {statusBadge(selectedChild.link_status)}
                 </p>
@@ -183,8 +183,8 @@ const ParentDashboard = () => {
 
           {/* Access Status Card */}
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-            <h4 style={{ margin: '0 0 16px', fontWeight: '600', color: '#1e293b', fontSize: '15px' }}>
-              <i className="bi bi-shield-check me-2" style={{ color: '#7c3aed' }}></i>Access Status
+            <h4 style={{ margin: '0 0 16px', fontWeight: '600', color: '#101C2C', fontSize: '15px' }}>
+              <i className="bi bi-shield-check me-2" style={{ color: '#7C9BB8' }}></i>Access Status
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {[
@@ -208,8 +208,8 @@ const ParentDashboard = () => {
 
           {/* Enrolled Courses Card */}
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-            <h4 style={{ margin: '0 0 16px', fontWeight: '600', color: '#1e293b', fontSize: '15px' }}>
-              <i className="bi bi-book me-2" style={{ color: '#3b82f6' }}></i>Enrolled Courses
+            <h4 style={{ margin: '0 0 16px', fontWeight: '600', color: '#101C2C', fontSize: '15px' }}>
+              <i className="bi bi-book me-2" style={{ color: '#101C2C' }}></i>Enrolled Courses
               <span style={{ marginLeft: '8px', fontSize: '12px', color: '#94a3b8', fontWeight: '400' }}>
                 ({childActivity.enrolledCourses.length})
               </span>
@@ -219,10 +219,10 @@ const ParentDashboard = () => {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {childActivity.enrolledCourses.slice(0, 5).map((enr, idx) => (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
-                    <i className="bi bi-mortarboard" style={{ color: '#3b82f6', fontSize: '16px' }}></i>
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', backgroundColor: '#F7F3EA', borderRadius: '8px' }}>
+                    <i className="bi bi-mortarboard" style={{ color: '#101C2C', fontSize: '16px' }}></i>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '13px', fontWeight: '500', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '500', color: '#101C2C', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {enr.course?.title || enr.title || 'Course'}
                       </div>
                       <div style={{ fontSize: '11px', color: '#94a3b8' }}>
@@ -261,11 +261,11 @@ const ParentDashboard = () => {
         <div key={child.student_id || idx} style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#8b5cf6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '600', fontSize: '14px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#7C9BB8', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '600', fontSize: '14px' }}>
                 {(child.student_name || 'S').substring(0, 2).toUpperCase()}
               </div>
               <div>
-                <h4 style={{ margin: 0, fontWeight: '600', color: '#1e293b', fontSize: '15px' }}>{child.student_name}</h4>
+                <h4 style={{ margin: 0, fontWeight: '600', color: '#101C2C', fontSize: '15px' }}>{child.student_name}</h4>
                 <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>{child.student_email}</p>
               </div>
             </div>
@@ -275,9 +275,9 @@ const ParentDashboard = () => {
           {/* Consent controls */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {/* Account Authorization */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', backgroundColor: '#F7F3EA', borderRadius: '8px' }}>
               <div>
-                <div style={{ fontSize: '13px', fontWeight: '600', color: '#1e293b' }}>Account Authorization</div>
+                <div style={{ fontSize: '13px', fontWeight: '600', color: '#101C2C' }}>Account Authorization</div>
                 <div style={{ fontSize: '11px', color: '#64748b' }}>Allow this child to use the platform</div>
               </div>
               {child.link_status === 'approved' ? (
@@ -294,9 +294,9 @@ const ParentDashboard = () => {
             </div>
 
             {/* Live Sessions Consent */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', backgroundColor: '#F7F3EA', borderRadius: '8px' }}>
               <div>
-                <div style={{ fontSize: '13px', fontWeight: '600', color: '#1e293b' }}>Live Sessions</div>
+                <div style={{ fontSize: '13px', fontWeight: '600', color: '#101C2C' }}>Live Sessions</div>
                 <div style={{ fontSize: '11px', color: '#64748b' }}>Allow child to join live video/audio sessions</div>
               </div>
               {child.live_sessions_status === 'approved' ? (
@@ -313,8 +313,8 @@ const ParentDashboard = () => {
             </div>
 
             {/* Authorization Mode */}
-            <div style={{ padding: '12px 16px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
-              <div style={{ fontSize: '13px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Authorization Mode</div>
+            <div style={{ padding: '12px 16px', backgroundColor: '#F7F3EA', borderRadius: '8px' }}>
+              <div style={{ fontSize: '13px', fontWeight: '600', color: '#101C2C', marginBottom: '4px' }}>Authorization Mode</div>
               <div style={{ fontSize: '12px', color: '#64748b' }}>
                 {child.authorization_mode === 'pre_authorized'
                   ? '✓ Pre-authorized (child can join sessions without per-session approval)'
@@ -337,7 +337,7 @@ const ParentDashboard = () => {
       <button onClick={() => navigate('/parent/messages')}
         style={{
           marginTop: '16px', padding: '12px 28px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-          background: 'linear-gradient(135deg, #7c3aed, #6d28d9)', color: '#fff', fontSize: '14px', fontWeight: '600',
+          background: 'linear-gradient(135deg, #7C9BB8, #6d28d9)', color: '#fff', fontSize: '14px', fontWeight: '600',
           boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
         }}>
         <i className="bi bi-chat-dots me-2"></i>Open Messages
@@ -351,11 +351,11 @@ const ParentDashboard = () => {
       <div style={{ backgroundColor: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 24px', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #7c3aed, #6d28d9)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #7C9BB8, #6d28d9)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <i className="bi bi-people-fill" style={{ fontSize: '16px', color: '#fff' }}></i>
             </div>
             <div>
-              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#1e293b' }}>Parent Portal</h2>
+              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#101C2C' }}>Parent Portal</h2>
               <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8' }}>Kannari Music Academy</p>
             </div>
           </div>
@@ -379,8 +379,8 @@ const ParentDashboard = () => {
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               style={{
                 padding: '14px 20px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: '600',
-                backgroundColor: 'transparent', color: activeTab === tab.id ? '#7c3aed' : '#64748b',
-                borderBottom: activeTab === tab.id ? '2px solid #7c3aed' : '2px solid transparent',
+                backgroundColor: 'transparent', color: activeTab === tab.id ? '#7C9BB8' : '#64748b',
+                borderBottom: activeTab === tab.id ? '2px solid #7C9BB8' : '2px solid transparent',
                 transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px'
               }}>
               <i className={`bi ${tab.icon}`} style={{ fontSize: '14px' }}></i>

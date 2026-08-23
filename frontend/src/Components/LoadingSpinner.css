@@ -85,7 +85,7 @@
 
 /* Variant Backgrounds */
 .variant-primary {
-    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+    background: linear-gradient(135deg, #101C2C 0%, #101C2C 100%);
 }
 
 .variant-primary .loading-text {
@@ -102,17 +102,17 @@
 }
 
 .variant-light .loading-text {
-    color: #1e293b;
+    color: #101C2C;
     font-weight: 600;
 }
 
 .variant-light .bar {
-    background: linear-gradient(180deg, #3b82f6 0%, #1e40af 100%);
+    background: linear-gradient(180deg, #101C2C 0%, #101C2C 100%);
     box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
 }
 
 .variant-dark {
-    background: #1e293b;
+    background: #101C2C;
 }
 
 .variant-dark .loading-text {
@@ -120,7 +120,7 @@
 }
 
 .variant-dark .bar {
-    background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
+    background: linear-gradient(180deg, #7C9BB8 0%, #101C2C 100%);
     box-shadow: 0 0 15px rgba(96, 165, 250, 0.5);
 }
 
@@ -132,7 +132,7 @@
 
 .loading-container.variant-primary .bar,
 .loading-container.variant-light .bar {
-    background: linear-gradient(180deg, #3b82f6 0%, #1e40af 100%);
+    background: linear-gradient(180deg, #101C2C 0%, #101C2C 100%);
     box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
 }
 
@@ -184,7 +184,7 @@
 /* Individual Bars */
 .bar {
     display: inline-block;
-    background: linear-gradient(180deg, #3b82f6 0%, #1e40af 100%);
+    background: linear-gradient(180deg, #101C2C 0%, #101C2C 100%);
     animation: musicWave 1s ease-in-out infinite;
     transform-origin: bottom;
     box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
@@ -231,7 +231,7 @@
     font-weight: 600;
     margin: 0;
     letter-spacing: 0.5px;
-    color: #1e293b;
+    color: #101C2C;
     animation: textPulse 2s ease-in-out infinite;
 }
 

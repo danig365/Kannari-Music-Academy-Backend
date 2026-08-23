@@ -164,7 +164,7 @@ const ParentMessages = () => {
         transition: 'width 0.3s', flexShrink: 0,
       }}>
         {/* Header */}
-        <div style={{ padding: '20px 16px', borderBottom: '1px solid #e2e8f0', background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)' }}>
+        <div style={{ padding: '20px 16px', borderBottom: '1px solid #e2e8f0', background: 'linear-gradient(135deg, #7C9BB8 0%, #6d28d9 100%)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ width: '40px', height: '40px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <i className="bi bi-people-fill" style={{ fontSize: '20px', color: '#fff' }}></i>
@@ -179,7 +179,7 @@ const ParentMessages = () => {
         {/* Chat Lock Banner */}
         {chatLock && !chatLock.chat_allowed && (
           <div style={{ padding: '10px 16px', backgroundColor: '#fef3c7', borderBottom: '1px solid #fde68a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <i className="bi bi-lock-fill" style={{ color: '#d97706' }}></i>
+            <i className="bi bi-lock-fill" style={{ color: '#C9A66B' }}></i>
             <div>
               <div style={{ fontSize: '12px', fontWeight: '600', color: '#92400e' }}>Chat Locked</div>
               <div style={{ fontSize: '11px', color: '#a16207' }}>{formatLockCountdown()}</div>
@@ -211,11 +211,11 @@ const ParentMessages = () => {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', backgroundColor: '#8b5cf6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '600', fontSize: '13px', flexShrink: 0 }}>
+                <div style={{ width: '40px', height: '40px', backgroundColor: '#7C9BB8', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '600', fontSize: '13px', flexShrink: 0 }}>
                   {(child.student_name || child.fullname || 'S').substring(0, 2).toUpperCase()}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>{child.student_name || child.fullname}</div>
+                  <div style={{ fontWeight: '600', color: '#101C2C', fontSize: '14px' }}>{child.student_name || child.fullname}</div>
                   <div style={{ fontSize: '12px', color: '#64748b' }}>
                     {child.relationship ? `${child.relationship} • ` : ''}
                     Teacher conversation
@@ -243,7 +243,7 @@ const ParentMessages = () => {
       </div>
 
       {/* Right: Chat panel */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#F7F3EA' }}>
         {!activeChild ? (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
             <i className="bi bi-chat-heart" style={{ fontSize: '64px', color: '#c4b5fd' }}></i>
@@ -260,12 +260,12 @@ const ParentMessages = () => {
                   <i className="bi bi-arrow-left"></i>
                 </button>
               )}
-              <div style={{ width: '36px', height: '36px', backgroundColor: '#8b5cf6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '600', fontSize: '12px' }}>
+              <div style={{ width: '36px', height: '36px', backgroundColor: '#7C9BB8', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '600', fontSize: '12px' }}>
                 {(activeChild.student_name || activeChild.fullname || 'S').substring(0, 2).toUpperCase()}
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>{activeChild.student_name || activeChild.fullname}</div>
-                <div style={{ fontSize: '11px', color: chatStatus.allowed ? '#10b981' : '#ef4444' }}>
+                <div style={{ fontWeight: '600', color: '#101C2C', fontSize: '14px' }}>{activeChild.student_name || activeChild.fullname}</div>
+                <div style={{ fontSize: '11px', color: chatStatus.allowed ? '#10b981' : '#D85C4A' }}>
                   {chatStatus.allowed ? (
                     <><i className="bi bi-unlock me-1"></i>Chat available</>
                   ) : (
@@ -290,7 +290,7 @@ const ParentMessages = () => {
             <div style={{ flex: 1, overflow: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {/* Safety notice */}
               <div style={{ textAlign: 'center', padding: '8px', backgroundColor: '#eff6ff', borderRadius: '8px', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', color: '#3b82f6' }}>
+                <span style={{ fontSize: '11px', color: '#101C2C' }}>
                   <i className="bi bi-shield-check me-1"></i>
                   All messages are monitored for child safety compliance
                 </span>
@@ -308,7 +308,7 @@ const ParentMessages = () => {
                       <div style={{
                         maxWidth: '70%', padding: '10px 14px',
                         borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                        backgroundColor: isMine ? '#7c3aed' : '#fff', color: isMine ? '#fff' : '#1e293b',
+                        backgroundColor: isMine ? '#7C9BB8' : '#fff', color: isMine ? '#fff' : '#101C2C',
                         fontSize: '14px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                         border: isMine ? 'none' : '1px solid #e2e8f0'
                       }}>
@@ -337,15 +337,15 @@ const ParentMessages = () => {
                   onKeyPress={handleKeyPress} placeholder="Type a message to the teacher..."
                   rows={1} style={{ flex: 1, padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: '20px', fontSize: '14px', resize: 'none', outline: 'none', fontFamily: 'inherit', maxHeight: '80px' }} />
                 <button onClick={handleSend} disabled={!newMessage.trim() || sending}
-                  style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', backgroundColor: newMessage.trim() ? '#7c3aed' : '#e2e8f0', color: '#fff', cursor: newMessage.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>
+                  style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', backgroundColor: newMessage.trim() ? '#7C9BB8' : '#e2e8f0', color: '#fff', cursor: newMessage.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>
                   <i className="bi bi-send-fill"></i>
                 </button>
               </div>
             ) : (
-              <div style={{ padding: '14px 16px', borderTop: '1px solid #e2e8f0', backgroundColor: '#fef2f2', textAlign: 'center', fontSize: '13px', color: '#dc2626' }}>
+              <div style={{ padding: '14px 16px', borderTop: '1px solid #e2e8f0', backgroundColor: '#fef2f2', textAlign: 'center', fontSize: '13px', color: '#D85C4A' }}>
                 <i className="bi bi-lock me-2"></i>{chatStatus.reason || 'Messaging unavailable'}
                 {chatLock && !chatLock.chat_allowed && formatLockCountdown() && (
-                  <div style={{ fontSize: '11px', color: '#b91c1c', marginTop: '4px' }}>{formatLockCountdown()}</div>
+                  <div style={{ fontSize: '11px', color: '#D85C4A', marginTop: '4px' }}>{formatLockCountdown()}</div>
                 )}
               </div>
             )}

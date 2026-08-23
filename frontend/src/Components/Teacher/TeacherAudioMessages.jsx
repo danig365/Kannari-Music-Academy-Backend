@@ -108,14 +108,14 @@ const TeacherAudioMessages = () => {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <h2 style={{ margin: 0, color: '#1e293b', fontWeight: '700' }}>Audio Messages</h2>
+          <h2 style={{ margin: 0, color: '#101C2C', fontWeight: '700' }}>Audio Messages</h2>
           <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px' }}>Record and send audio feedback to your students</p>
         </div>
         <button
           onClick={() => setShowRecorder(!showRecorder)}
           style={{
             padding: '10px 20px', borderRadius: '10px', border: 'none', fontWeight: '600', fontSize: '14px', cursor: 'pointer',
-            backgroundColor: showRecorder ? '#f1f5f9' : '#3b82f6', color: showRecorder ? '#64748b' : '#fff'
+            backgroundColor: showRecorder ? '#f1f5f9' : '#101C2C', color: showRecorder ? '#64748b' : '#fff'
           }}
         >
           <i className={`bi ${showRecorder ? 'bi-x-lg' : 'bi-mic'} me-2`}></i>
@@ -125,7 +125,7 @@ const TeacherAudioMessages = () => {
 
       {/* Recorder Panel */}
       {showRecorder && (
-        <div style={{ marginBottom: '24px', backgroundColor: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '24px' }}>
+        <div style={{ marginBottom: '24px', backgroundColor: '#F7F3EA', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '24px' }}>
           <AudioRecorder
             teacherId={teacherId}
             students={students}
@@ -144,7 +144,7 @@ const TeacherAudioMessages = () => {
           <button key={tab.key} onClick={() => setFilter(tab.key)}
             style={{
               padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: '500',
-              backgroundColor: filter === tab.key ? '#1e293b' : '#f1f5f9',
+              backgroundColor: filter === tab.key ? '#101C2C' : '#f1f5f9',
               color: filter === tab.key ? '#fff' : '#64748b'
             }}
           >
@@ -157,7 +157,7 @@ const TeacherAudioMessages = () => {
       {loading ? (
         <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>Loading messages...</div>
       ) : filteredMessages.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px', backgroundColor: '#f8fafc', borderRadius: '16px', border: '2px dashed #e2e8f0' }}>
+        <div style={{ textAlign: 'center', padding: '60px', backgroundColor: '#F7F3EA', borderRadius: '16px', border: '2px dashed #e2e8f0' }}>
           <i className="bi bi-mic" style={{ fontSize: '48px', color: '#cbd5e1', display: 'block', marginBottom: '16px' }}></i>
           <h4 style={{ color: '#64748b', fontWeight: '600' }}>No messages yet</h4>
           <p style={{ color: '#94a3b8', fontSize: '14px' }}>Click "New Message" to record your first audio message</p>
@@ -171,12 +171,12 @@ const TeacherAudioMessages = () => {
                   {msg.student_profile_img ? (
                     <img src={msg.student_profile_img} alt="" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
                   ) : (
-                    <div style={{ width: '36px', height: '36px', backgroundColor: '#8b5cf6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '600', fontSize: '13px' }}>
+                    <div style={{ width: '36px', height: '36px', backgroundColor: '#7C9BB8', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '600', fontSize: '13px' }}>
                       {(msg.student_name || 'S').substring(0, 2).toUpperCase()}
                     </div>
                   )}
                   <div>
-                    <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>To: {msg.student_name || 'Student'}</div>
+                    <div style={{ fontWeight: '600', color: '#101C2C', fontSize: '14px' }}>To: {msg.student_name || 'Student'}</div>
                     <div style={{ fontSize: '12px', color: '#64748b' }}>{timeAgo(msg.created_at)}</div>
                   </div>
                 </div>
@@ -196,7 +196,7 @@ const TeacherAudioMessages = () => {
                     <i className="bi bi-trash"></i>
                   </button>
                   <button onClick={() => reportAudioMessage(msg)}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '16px', padding: '4px' }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#D85C4A', fontSize: '16px', padding: '4px' }}
                     title="Report"
                   >
                     <i className="bi bi-flag"></i>

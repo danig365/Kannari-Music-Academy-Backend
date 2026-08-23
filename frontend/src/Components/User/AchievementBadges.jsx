@@ -230,7 +230,7 @@ const AchievementBadges = ({ studentId, compact = false }) => {
                             style={{ 
                                 background: achievement.is_earned 
                                     ? getTypeGradient(achievement.achievement_type)
-                                    : 'linear-gradient(135deg, #2a2a2a, #1a1a1a)'
+                                    : 'linear-gradient(135deg, #2a2a2a, #101C2C)'
                             }}
                         >
                             {achievement.is_earned ? (
@@ -267,7 +267,7 @@ const AchievementBadges = ({ studentId, compact = false }) => {
                             style={{ 
                                 background: selectedAchievement.is_earned 
                                     ? getTypeGradient(selectedAchievement.achievement_type)
-                                    : 'linear-gradient(135deg, #2a2a2a, #1a1a1a)'
+                                    : 'linear-gradient(135deg, #2a2a2a, #101C2C)'
                             }}
                         >
                             {selectedAchievement.is_earned ? (

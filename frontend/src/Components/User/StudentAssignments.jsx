@@ -8,18 +8,18 @@ import './EnhancedDashboard.css';
 const baseUrl = API_BASE_URL;
 
 const STATUS_BADGES = {
-  assigned:  { label: 'Assigned',  bg: '#dbeafe', color: '#1d4ed8', icon: 'bi-clipboard' },
+  assigned:  { label: 'Assigned',  bg: '#dbeafe', color: '#101C2C', icon: 'bi-clipboard' },
   submitted: { label: 'Submitted', bg: '#fef3c7', color: '#92400e', icon: 'bi-check-circle' },
   late:      { label: 'Late',      bg: '#fee2e2', color: '#991b1b', icon: 'bi-clock-history' },
   graded:    { label: 'Graded',    bg: '#dcfce7', color: '#166534', icon: 'bi-award' },
 };
 
 const TYPE_META = {
-  audio:           { label: 'Audio',           icon: 'bi-mic-fill',                  color: '#8b5cf6' },
-  video:           { label: 'Video',           icon: 'bi-camera-video-fill',         color: '#ec4899' },
-  file_upload:     { label: 'File Upload',     icon: 'bi-file-earmark-arrow-up-fill',color: '#f59e0b' },
-  discussion:      { label: 'Discussion',      icon: 'bi-chat-left-text-fill',       color: '#06b6d4' },
-  multiple_choice: { label: 'Multiple Choice', icon: 'bi-list-check',                color: '#3b82f6' },
+  audio:           { label: 'Audio',           icon: 'bi-mic-fill',                  color: '#7C9BB8' },
+  video:           { label: 'Video',           icon: 'bi-camera-video-fill',         color: '#D85C4A' },
+  file_upload:     { label: 'File Upload',     icon: 'bi-file-earmark-arrow-up-fill',color: '#C9A66B' },
+  discussion:      { label: 'Discussion',      icon: 'bi-chat-left-text-fill',       color: '#7C9BB8' },
+  multiple_choice: { label: 'Multiple Choice', icon: 'bi-list-check',                color: '#101C2C' },
 };
 
 const getTypeMeta = (t) => TYPE_META[t] || TYPE_META.audio;
@@ -170,8 +170,8 @@ const StudentAssignments = () => {
           const studentAnswer = q.student_answer;
           const alreadyAnswered = !!studentAnswer;
           return (
-            <div key={q.id} style={{ marginBottom: '16px', padding: '14px', backgroundColor: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-              <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px', marginBottom: '10px' }}>
+            <div key={q.id} style={{ marginBottom: '16px', padding: '14px', backgroundColor: '#F7F3EA', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+              <div style={{ fontWeight: '600', color: '#101C2C', fontSize: '14px', marginBottom: '10px' }}>
                 Q{idx + 1}. {q.question_text}
                 {q.points > 1 && <span style={{ fontSize: '11px', color: '#64748b', marginLeft: '8px' }}>({q.points} pts)</span>}
               </div>
@@ -187,9 +187,9 @@ const StudentAssignments = () => {
                   let bgColor = '#fff';
                   if (alreadyAnswered) {
                     if (isCorrect) { borderColor = '#22c55e'; bgColor = '#f0fdf4'; }
-                    else if (wasWrong) { borderColor = '#ef4444'; bgColor = '#fef2f2'; }
+                    else if (wasWrong) { borderColor = '#D85C4A'; bgColor = '#fef2f2'; }
                   } else if (isSelected) {
-                    borderColor = '#3b82f6'; bgColor = '#eff6ff';
+                    borderColor = '#101C2C'; bgColor = '#eff6ff';
                   }
 
                   return (
@@ -200,12 +200,12 @@ const StudentAssignments = () => {
                         checked={isSelected}
                         onChange={() => !alreadyAnswered && handleMcAnswer(assignment.id, q.id, opt.letter)}
                         disabled={alreadyAnswered}
-                        style={{ accentColor: '#3b82f6' }}
+                        style={{ accentColor: '#101C2C' }}
                       />
                       <span style={{ fontWeight: '600', color: '#94a3b8', marginRight: '4px' }}>{opt.label}.</span>
                       {text}
                       {alreadyAnswered && isCorrect && <i className="bi bi-check-circle-fill ms-auto" style={{ color: '#22c55e' }}></i>}
-                      {wasWrong && <i className="bi bi-x-circle-fill ms-auto" style={{ color: '#ef4444' }}></i>}
+                      {wasWrong && <i className="bi bi-x-circle-fill ms-auto" style={{ color: '#D85C4A' }}></i>}
                     </label>
                   );
                 })}
@@ -269,7 +269,7 @@ const StudentAssignments = () => {
     const isGraded = submission.points_awarded !== null && submission.points_awarded !== undefined;
 
     return (
-      <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '12px', marginBottom: '12px' }}>
+      <div style={{ backgroundColor: '#F7F3EA', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '12px', marginBottom: '12px' }}>
         <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '6px' }}>
           Submitted: {new Date(submission.submitted_at).toLocaleString()}
         </div>
@@ -282,7 +282,7 @@ const StudentAssignments = () => {
         )}
         {subType === 'file_upload' && submission.file && (
           <a href={submission.file} target="_blank" rel="noopener noreferrer"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', backgroundColor: '#eff6ff', borderRadius: '8px', color: '#2563eb', fontSize: '13px', textDecoration: 'none', marginBottom: '8px' }}>
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', backgroundColor: '#eff6ff', borderRadius: '8px', color: '#101C2C', fontSize: '13px', textDecoration: 'none', marginBottom: '8px' }}>
             <i className="bi bi-file-earmark-arrow-down"></i> Download submitted file
           </a>
         )}
@@ -337,7 +337,7 @@ const StudentAssignments = () => {
 
         <div style={{ padding: '32px', width: '100%' }}>
           <div style={{ marginBottom: '24px' }}>
-            <h2 style={{ margin: 0, color: '#1e293b', fontWeight: '700' }}>My Assignments</h2>
+            <h2 style={{ margin: 0, color: '#101C2C', fontWeight: '700' }}>My Assignments</h2>
             <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14px' }}>Submit assignments in multiple formats and view teacher scores.</p>
           </div>
 
@@ -351,7 +351,7 @@ const StudentAssignments = () => {
           {loading ? (
             <div style={{ textAlign: 'center', color: '#64748b', padding: '48px 0' }}>Loading assignments...</div>
           ) : assignments.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '56px', backgroundColor: '#f8fafc', borderRadius: '16px', border: '2px dashed #e2e8f0', color: '#64748b' }}>
+            <div style={{ textAlign: 'center', padding: '56px', backgroundColor: '#F7F3EA', borderRadius: '16px', border: '2px dashed #e2e8f0', color: '#64748b' }}>
               <i className="bi bi-journal-text" style={{ fontSize: '40px', color: '#cbd5e1', display: 'block', marginBottom: '12px' }}></i>
               No assignments yet.
             </div>
@@ -372,7 +372,7 @@ const StudentAssignments = () => {
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
                         <div>
-                          <div style={{ fontWeight: '600', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ fontWeight: '600', color: '#101C2C', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <i className={`bi ${meta.icon}`} style={{ color: meta.color }}></i>
                             {assignment.display_title || assignment.lesson_title}
                             <i className={`bi bi-chevron-${isExpanded ? 'up' : 'down'}`} style={{ fontSize: '12px', color: '#94a3b8' }}></i>
@@ -400,7 +400,7 @@ const StudentAssignments = () => {
                       <div style={{ padding: '0 18px 18px', borderTop: '1px solid #f1f5f9' }}>
                         {/* Description */}
                         {(assignment.description || assignment.notes) && (
-                          <div style={{ fontSize: '13px', color: '#475569', margin: '12px 0', padding: '10px 14px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
+                          <div style={{ fontSize: '13px', color: '#475569', margin: '12px 0', padding: '10px 14px', backgroundColor: '#F7F3EA', borderRadius: '8px' }}>
                             {assignment.description || assignment.notes}
                           </div>
                         )}

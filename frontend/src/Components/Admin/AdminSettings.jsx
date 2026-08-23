@@ -213,8 +213,8 @@ const AdminSettings = () => {
     return (
         <>
             <div className="mb-4">
-                <h2 style={{fontSize: '28px', fontWeight: '600', color: '#1a1a1a', marginBottom: '8px'}}>
-                    <i className="bi bi-gear me-2" style={{color: '#2563eb'}}></i>
+                <h2 style={{fontSize: '28px', fontWeight: '600', color: '#101C2C', marginBottom: '8px'}}>
+                    <i className="bi bi-gear me-2" style={{color: '#101C2C'}}></i>
                     Settings & Profile
                 </h2>
                 <p style={{color: '#6b7280', fontSize: '14px', marginBottom: 0}}>
@@ -243,7 +243,7 @@ const AdminSettings = () => {
                 <div className="col-md-8">
                     <div className="card" style={{border: 'none', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden'}}>
                         <div className="card-header" style={{backgroundColor: 'white', borderBottom: '1px solid #e5e7eb', padding: '16px 24px'}}>
-                            <h5 className="mb-0" style={{fontSize: '16px', fontWeight: '600', color: '#1a1a1a'}}>
+                            <h5 className="mb-0" style={{fontSize: '16px', fontWeight: '600', color: '#101C2C'}}>
                                 <i className="bi bi-person-badge me-2"></i>
                                 My Profile
                             </h5>
@@ -251,7 +251,7 @@ const AdminSettings = () => {
                         <div className="card-body" style={{padding: '24px'}}>
                             <form onSubmit={handleProfileSubmit}>
                                 <div className="mb-3">
-                                    <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#1a1a1a', marginBottom: '8px'}}>Full Name</label>
+                                    <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#101C2C', marginBottom: '8px'}}>Full Name</label>
                                     <input
                                         type="text"
                                         className="form-control"
@@ -268,7 +268,7 @@ const AdminSettings = () => {
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#1a1a1a', marginBottom: '8px'}}>Email</label>
+                                    <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#101C2C', marginBottom: '8px'}}>Email</label>
                                     <input
                                         type="email"
                                         className="form-control"
@@ -285,7 +285,7 @@ const AdminSettings = () => {
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#1a1a1a', marginBottom: '8px'}}>Phone</label>
+                                    <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#101C2C', marginBottom: '8px'}}>Phone</label>
                                     <input
                                         type="text"
                                         className="form-control"
@@ -301,7 +301,7 @@ const AdminSettings = () => {
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#1a1a1a', marginBottom: '8px'}}>Role</label>
+                                    <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#101C2C', marginBottom: '8px'}}>Role</label>
                                     <input
                                         type="text"
                                         className="form-control"
@@ -312,13 +312,13 @@ const AdminSettings = () => {
                                             border: '1px solid #e5e7eb',
                                             borderRadius: '6px',
                                             fontSize: '14px',
-                                            backgroundColor: '#f9fafb',
+                                            backgroundColor: '#F7F3EA',
                                             color: '#6b7280'
                                         }}
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#1a1a1a', marginBottom: '8px'}}>Profile Image</label>
+                                    <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#101C2C', marginBottom: '8px'}}>Profile Image</label>
                                     <input
                                         type="file"
                                         className="form-control"
@@ -337,7 +337,7 @@ const AdminSettings = () => {
                                     type="submit"
                                     className="btn"
                                     disabled={saving}
-                                    style={{backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', fontWeight: '500', fontSize: '14px', padding: '10px 20px'}}
+                                    style={{backgroundColor: '#101C2C', color: 'white', border: 'none', borderRadius: '6px', fontWeight: '500', fontSize: '14px', padding: '10px 20px'}}
                                 >
                                     {saving ? 'Saving...' : 'Update Profile'}
                                 </button>
@@ -372,9 +372,9 @@ const AdminSettings = () => {
                                     <i className="bi bi-person-fill" style={{color: '#9ca3af'}}></i>
                                 </div>
                             )}
-                            <h5 style={{fontSize: '16px', fontWeight: '600', color: '#1a1a1a', marginBottom: '4px'}}>{admin.full_name}</h5>
+                            <h5 style={{fontSize: '16px', fontWeight: '600', color: '#101C2C', marginBottom: '4px'}}>{admin.full_name}</h5>
                             <p style={{color: '#6b7280', fontSize: '13px', marginBottom: '12px'}}>{admin.email}</p>
-                            <span className="badge" style={{backgroundColor: '#2563eb', color: 'white', padding: '6px 12px', fontSize: '12px', fontWeight: '500'}}>
+                            <span className="badge" style={{backgroundColor: '#101C2C', color: 'white', padding: '6px 12px', fontSize: '12px', fontWeight: '500'}}>
                                 {admin.role?.replace('_', ' ').toUpperCase()}
                             </span>
                         </div>
@@ -385,7 +385,7 @@ const AdminSettings = () => {
             {/* Change Password Section */}
             <div className="card mb-4" style={{border: 'none', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden'}}>
                 <div className="card-header" style={{backgroundColor: 'white', borderBottom: '1px solid #e5e7eb', padding: '16px 24px'}}>
-                    <h5 className="mb-0" style={{fontSize: '16px', fontWeight: '600', color: '#1a1a1a'}}>
+                    <h5 className="mb-0" style={{fontSize: '16px', fontWeight: '600', color: '#101C2C'}}>
                         <i className="bi bi-lock me-2"></i>
                         Change Password
                     </h5>
@@ -394,7 +394,7 @@ const AdminSettings = () => {
                     <form onSubmit={handlePasswordSubmit}>
                         <div className="row g-3">
                             <div className="col-md-4">
-                                <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#1a1a1a', marginBottom: '8px'}}>Current Password</label>
+                                <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#101C2C', marginBottom: '8px'}}>Current Password</label>
                                 <input
                                     type="password"
                                     className="form-control"
@@ -410,7 +410,7 @@ const AdminSettings = () => {
                                 />
                             </div>
                             <div className="col-md-4">
-                                <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#1a1a1a', marginBottom: '8px'}}>New Password</label>
+                                <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#101C2C', marginBottom: '8px'}}>New Password</label>
                                 <input
                                     type="password"
                                     className="form-control"
@@ -427,7 +427,7 @@ const AdminSettings = () => {
                                 />
                             </div>
                             <div className="col-md-4">
-                                <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#1a1a1a', marginBottom: '8px'}}>Confirm Password</label>
+                                <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#101C2C', marginBottom: '8px'}}>Confirm Password</label>
                                 <input
                                     type="password"
                                     className="form-control"
@@ -448,7 +448,7 @@ const AdminSettings = () => {
                             type="submit"
                             className="btn mt-3"
                             disabled={saving}
-                            style={{backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', fontWeight: '500', fontSize: '14px', padding: '10px 20px'}}
+                            style={{backgroundColor: '#101C2C', color: 'white', border: 'none', borderRadius: '6px', fontWeight: '500', fontSize: '14px', padding: '10px 20px'}}
                         >
                             {saving ? 'Updating...' : 'Update Password'}
                         </button>
@@ -458,7 +458,7 @@ const AdminSettings = () => {
 
             {/* System Settings Section */}
             <div className="mb-4 mt-5">
-                <h3 style={{fontSize: '20px', fontWeight: '600', color: '#1a1a1a', marginBottom: '16px'}}>
+                <h3 style={{fontSize: '20px', fontWeight: '600', color: '#101C2C', marginBottom: '16px'}}>
                     <i className="bi bi-toggles me-2"></i>
                     System Settings
                 </h3>
@@ -468,7 +468,7 @@ const AdminSettings = () => {
                         {/* General Settings */}
                         <div className="card mb-4" style={{border: 'none', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden', marginBottom: '24px'}}>
                             <div className="card-header" style={{backgroundColor: 'white', borderBottom: '1px solid #e5e7eb', padding: '16px 24px'}}>
-                                <h5 className="mb-0" style={{fontSize: '16px', fontWeight: '600', color: '#1a1a1a'}}>
+                                <h5 className="mb-0" style={{fontSize: '16px', fontWeight: '600', color: '#101C2C'}}>
                                     <i className="bi bi-info-circle me-2"></i>
                                     General Settings
                                 </h5>
@@ -476,7 +476,7 @@ const AdminSettings = () => {
                             <div className="card-body" style={{padding: '24px'}}>
                                 <div className="row g-3">
                                     <div className="col-md-6">
-                                        <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#1a1a1a', marginBottom: '8px'}}>Site Name</label>
+                                        <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#101C2C', marginBottom: '8px'}}>Site Name</label>
                                         <input
                                             type="text"
                                             className="form-control"
@@ -492,7 +492,7 @@ const AdminSettings = () => {
                                         />
                                     </div>
                                     <div className="col-md-6">
-                                        <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#1a1a1a', marginBottom: '8px'}}>Contact Email</label>
+                                        <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#101C2C', marginBottom: '8px'}}>Contact Email</label>
                                         <input
                                             type="email"
                                             className="form-control"
@@ -508,7 +508,7 @@ const AdminSettings = () => {
                                         />
                                     </div>
                                     <div className="col-md-6">
-                                        <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#1a1a1a', marginBottom: '8px'}}>Contact Phone</label>
+                                        <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#101C2C', marginBottom: '8px'}}>Contact Phone</label>
                                         <input
                                             type="text"
                                             className="form-control"
@@ -524,7 +524,7 @@ const AdminSettings = () => {
                                         />
                                     </div>
                                     <div className="col-md-6">
-                                        <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#1a1a1a', marginBottom: '8px'}}>Address</label>
+                                        <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#101C2C', marginBottom: '8px'}}>Address</label>
                                         <input
                                             type="text"
                                             className="form-control"
@@ -546,7 +546,7 @@ const AdminSettings = () => {
                         {/* Localization */}
                         <div className="card mb-4" style={{border: 'none', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden', marginBottom: '24px'}}>
                             <div className="card-header" style={{backgroundColor: 'white', borderBottom: '1px solid #e5e7eb', padding: '16px 24px'}}>
-                                <h5 className="mb-0" style={{fontSize: '16px', fontWeight: '600', color: '#1a1a1a'}}>
+                                <h5 className="mb-0" style={{fontSize: '16px', fontWeight: '600', color: '#101C2C'}}>
                                     <i className="bi bi-globe me-2"></i>
                                     Localization
                                 </h5>
@@ -554,7 +554,7 @@ const AdminSettings = () => {
                             <div className="card-body" style={{padding: '24px'}}>
                                 <div className="row g-3">
                                     <div className="col-md-6">
-                                        <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#1a1a1a', marginBottom: '8px'}}>Default Language</label>
+                                        <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#101C2C', marginBottom: '8px'}}>Default Language</label>
                                         <select
                                             className="form-select"
                                             name="default_language"
@@ -565,7 +565,7 @@ const AdminSettings = () => {
                                                 border: '1px solid #e5e7eb',
                                                 borderRadius: '6px',
                                                 fontSize: '14px',
-                                                backgroundColor: '#f9fafb'
+                                                backgroundColor: '#F7F3EA'
                                             }}
                                         >
                                             <option value="en">English</option>
@@ -576,7 +576,7 @@ const AdminSettings = () => {
                                         </select>
                                     </div>
                                     <div className="col-md-6">
-                                        <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#1a1a1a', marginBottom: '8px'}}>Timezone</label>
+                                        <label className="form-label" style={{fontSize: '14px', fontWeight: '500', color: '#101C2C', marginBottom: '8px'}}>Timezone</label>
                                         <select
                                             className="form-select"
                                             name="timezone"
@@ -587,7 +587,7 @@ const AdminSettings = () => {
                                                 border: '1px solid #e5e7eb',
                                                 borderRadius: '6px',
                                                 fontSize: '14px',
-                                                backgroundColor: '#f9fafb'
+                                                backgroundColor: '#F7F3EA'
                                             }}
                                         >
                                             <option value="UTC">UTC</option>
@@ -604,7 +604,7 @@ const AdminSettings = () => {
                         {/* System Options */}
                         <div className="card mb-4" style={{border: 'none', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden', marginBottom: '24px'}}>
                             <div className="card-header" style={{backgroundColor: 'white', borderBottom: '1px solid #e5e7eb', padding: '16px 24px'}}>
-                                <h5 className="mb-0" style={{fontSize: '16px', fontWeight: '600', color: '#1a1a1a'}}>
+                                <h5 className="mb-0" style={{fontSize: '16px', fontWeight: '600', color: '#101C2C'}}>
                                     <i className="bi bi-toggles me-2"></i>
                                     System Options
                                 </h5>
@@ -623,7 +623,7 @@ const AdminSettings = () => {
                                                 style={{cursor: 'pointer'}}
                                             />
                                             <label className="form-check-label" htmlFor="maintenanceMode" style={{cursor: 'pointer'}}>
-                                                <strong style={{color: '#1a1a1a'}}>Maintenance Mode</strong>
+                                                <strong style={{color: '#101C2C'}}>Maintenance Mode</strong>
                                                 <br />
                                                 <small style={{color: '#6b7280', fontSize: '13px'}}>
                                                     When enabled, only admins can access the site
@@ -643,7 +643,7 @@ const AdminSettings = () => {
                                                 style={{cursor: 'pointer'}}
                                             />
                                             <label className="form-check-label" htmlFor="allowRegistration" style={{cursor: 'pointer'}}>
-                                                <strong style={{color: '#1a1a1a'}}>Allow Registration</strong>
+                                                <strong style={{color: '#101C2C'}}>Allow Registration</strong>
                                                 <br />
                                                 <small style={{color: '#6b7280', fontSize: '13px'}}>
                                                     Allow new users to register
@@ -661,7 +661,7 @@ const AdminSettings = () => {
                                 type="submit"
                                 className="btn btn-lg"
                                 disabled={saving}
-                                style={{backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', fontWeight: '500', fontSize: '14px', padding: '12px 28px'}}
+                                style={{backgroundColor: '#101C2C', color: 'white', border: 'none', borderRadius: '6px', fontWeight: '500', fontSize: '14px', padding: '12px 28px'}}
                             >
                                 {saving ? (
                                     <>

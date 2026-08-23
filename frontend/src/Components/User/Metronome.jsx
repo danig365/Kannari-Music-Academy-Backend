@@ -106,7 +106,7 @@ const Metronome = () => {
     <div className="container-fluid" style={{ padding: 0 }}>
       <div className="row" style={{ margin: 0, minHeight: '100vh' }}>
         <Sidebar />
-        <section className='col-md-9 ms-sm-auto col-lg-10 px-md-4' style={{ background: '#0f172a', minHeight: '100vh' }}>
+        <section className='col-md-9 ms-sm-auto col-lg-10 px-md-4' style={{ background: '#101C2C', minHeight: '100vh' }}>
           <div className="met-wrapper">
 
             {/* Header */}

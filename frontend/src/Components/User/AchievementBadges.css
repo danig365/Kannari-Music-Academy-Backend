@@ -8,7 +8,7 @@
     background: #FFFFFF;
     border-radius: 16px;
     padding: 24px;
-    color: #111827;
+    color: #101C2C;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
     border: 1px solid #F3F4F6;
     border-left: 4px solid #FFA500;
@@ -94,7 +94,7 @@
     color: #6B7280;
     font-size: 13px;
     padding: 12px;
-    background: #F9FAFB;
+    background: #F7F3EA;
     border-radius: 8px;
     width: 100%;
     border: 1px solid #E5E7EB;
@@ -122,7 +122,7 @@
 
 .more-badges:hover {
     background: #E5E7EB;
-    color: #111827;
+    color: #101C2C;
 }
 
 .compact-progress {
@@ -182,7 +182,7 @@
 .view-all-btn:hover {
     background: #E5E7EB;
     border-color: #D1D5DB;
-    color: #111827;
+    color: #101C2C;
 }
 
 /* Full View Styles */
@@ -190,7 +190,7 @@
     background: #FFFFFF;
     border-radius: 16px;
     padding: 24px;
-    color: #111827;
+    color: #101C2C;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
     border: 1px solid #F3F4F6;
     border-left: 4px solid #FFA500;
@@ -225,7 +225,7 @@
     margin: 0;
     font-size: 18px;
     font-weight: 600;
-    color: #111827;
+    color: #101C2C;
 }
 
 .header-stats {
@@ -277,7 +277,7 @@
 }
 
 .badge-item {
-    background: #F9FAFB;
+    background: #F7F3EA;
     border-radius: 12px;
     padding: 16px;
     display: flex;
@@ -353,7 +353,7 @@
     display: block;
     font-size: 13px;
     font-weight: 500;
-    color: #111827;
+    color: #101C2C;
     margin-bottom: 4px;
 }
 
@@ -423,7 +423,7 @@
 
 .modal-close:hover {
     background: #E5E7EB;
-    color: #111827;
+    color: #101C2C;
 }
 
 .modal-badge {
@@ -459,7 +459,7 @@
 }
 
 .achievement-modal h4 {
-    color: #111827;
+    color: #101C2C;
     font-size: 20px;
     font-weight: 600;
     margin-bottom: 8px;
@@ -476,7 +476,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: #F9FAFB;
+    background: #F7F3EA;
     padding: 8px 16px;
     border-radius: 20px;
     font-size: 13px;
@@ -521,7 +521,7 @@
     background: rgba(59, 130, 246, 0.08);
     border-radius: 10px;
     font-size: 13px;
-    color: #1E40AF;
+    color: #101C2C;
     border: 1px solid rgba(59, 130, 246, 0.2);
 }
 

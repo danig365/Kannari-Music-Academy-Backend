@@ -128,7 +128,7 @@ const PaymentForm = ({ plan, studentId, hasCardOnFile, onSuccess, onCancel }) =>
             {hasCardOnFile ? (
                 /* Card-on-file indicator */
                 <div style={{
-                    padding: '14px 16px', background: '#f8fafc', border: '1px solid #e2e8f0',
+                    padding: '14px 16px', background: '#F7F3EA', border: '1px solid #e2e8f0',
                     borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '12px',
                     marginBottom: '4px',
                 }}>
@@ -187,7 +187,7 @@ const PaymentForm = ({ plan, studentId, hasCardOnFile, onSuccess, onCancel }) =>
                                         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                                         '::placeholder': { color: '#adb5bd' }
                                     },
-                                    invalid: { color: '#dc3545' }
+                                    invalid: { color: '#D85C4A' }
                                 }
                             }}
                         />
@@ -325,7 +325,7 @@ const StudentSubscriptions = () => {
             html: `<p style="font-size:14px;color:#374151">Submit a request for this plan. An admin will review and activate your access, and arrange payment with you directly.</p>`,
             showCancelButton: true,
             confirmButtonText: 'Send Request',
-            confirmButtonColor: '#2563eb',
+            confirmButtonColor: '#101C2C',
         });
         if (!result.isConfirmed) return;
         try {
@@ -354,7 +354,7 @@ const StudentSubscriptions = () => {
             confirmButtonText: 'Got it!',
             allowOutsideClick: false,
             background: '#ffffff',
-            color: '#111827'
+            color: '#101C2C'
         }).then(() => {
             setSelectedPlan(null);
             if (studentId) {
@@ -575,7 +575,7 @@ const StudentSubscriptions = () => {
                                     )}
                                     {plan.max_audio_messages_per_month > 0 && (
                                         <li className="feature">
-                                            <i className="bi bi-mic-fill text-purple me-2" aria-hidden="true" style={{ color: '#8b5cf6' }}></i>
+                                            <i className="bi bi-mic-fill text-purple me-2" aria-hidden="true" style={{ color: '#7C9BB8' }}></i>
                                             Audio Messages ({plan.max_audio_messages_per_month}/mo)
                                         </li>
                                     )}
@@ -698,7 +698,7 @@ const StudentSubscriptions = () => {
                                                     alignItems: 'center',
                                                     gap: '10px'
                                                 }}>
-                                                    <i className="bi bi-exclamation-triangle-fill" style={{ color: '#f59e0b' }}></i>
+                                                    <i className="bi bi-exclamation-triangle-fill" style={{ color: '#C9A66B' }}></i>
                                                     <span style={{ color: '#92400e', fontSize: '14px' }}>
                                                         Expiring in {sub.days_remaining} days - Renew now to avoid interruption
                                                     </span>
@@ -720,7 +720,7 @@ const StudentSubscriptions = () => {
                                                         width: '48px',
                                                         height: '48px',
                                                         borderRadius: '50%',
-                                                        background: '#3b82f6',
+                                                        background: '#101C2C',
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
@@ -745,7 +745,7 @@ const StudentSubscriptions = () => {
                                                         <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                                                             Your Assigned Teacher
                                                         </div>
-                                                        <div style={{ fontWeight: 600, color: '#1e40af' }}>
+                                                        <div style={{ fontWeight: 600, color: '#101C2C' }}>
                                                             {sub.assigned_teacher_details.full_name}
                                                         </div>
                                                     </div>
@@ -788,16 +788,16 @@ const StudentSubscriptions = () => {
                                                         <i className="bi bi-bar-chart me-2"></i>Usage This Period
                                                     </h6>
                                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                                        <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px' }}>
-                                                            <div style={{ fontSize: '20px', fontWeight: 700, color: '#0f172a' }}>
+                                                        <div style={{ background: '#F7F3EA', padding: '12px', borderRadius: '8px' }}>
+                                                            <div style={{ fontSize: '20px', fontWeight: 700, color: '#101C2C' }}>
                                                                 {sub.usage_summary.courses_used || 0}
                                                             </div>
                                                             <div style={{ fontSize: '12px', color: '#64748b' }}>
                                                                 / {sub.usage_summary.courses_limit || '∞'} courses
                                                             </div>
                                                         </div>
-                                                        <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px' }}>
-                                                            <div style={{ fontSize: '20px', fontWeight: 700, color: '#0f172a' }}>
+                                                        <div style={{ background: '#F7F3EA', padding: '12px', borderRadius: '8px' }}>
+                                                            <div style={{ fontSize: '20px', fontWeight: 700, color: '#101C2C' }}>
                                                                 {sub.usage_summary.lessons_used || 0}
                                                             </div>
                                                             <div style={{ fontSize: '12px', color: '#64748b' }}>
@@ -817,7 +817,7 @@ const StudentSubscriptions = () => {
                                                                 <div style={{
                                                                     height: '100%',
                                                                     width: `${Math.min(((sub.usage_summary.lessons_this_week || 0) / sub.usage_summary.lessons_per_week) * 100, 100)}%`,
-                                                                    background: '#8b5cf6',
+                                                                    background: '#7C9BB8',
                                                                     borderRadius: '4px'
                                                                 }}></div>
                                                             </div>

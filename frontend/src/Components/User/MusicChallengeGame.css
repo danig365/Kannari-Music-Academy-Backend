@@ -29,7 +29,7 @@
   justify-content: center;
   height: 60vh;
   font-size: 1.2rem;
-  color: #d97706;
+  color: #C9A66B;
 }
 
 /* ─── Header ─────────────────────────────────────────────────── */
@@ -47,17 +47,17 @@
 }
 
 .mc-back-btn {
-  color: #fbbf24;
+  color: #C9A66B;
   text-decoration: none;
   font-size: 0.9rem;
   transition: color 0.2s;
 }
-.mc-back-btn:hover { color: #f59e0b; }
+.mc-back-btn:hover { color: #C9A66B; }
 
 .mc-title {
   font-size: 1.25rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+  background: linear-gradient(135deg, #C9A66B, #C9A66B, #C9A66B);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -77,10 +77,10 @@
 }
 
 .mc-score-icon { font-size: 1.1rem; }
-.mc-score-val { color: #fbbf24; }
+.mc-score-val { color: #C9A66B; }
 
 .mc-streak-badge {
-  background: linear-gradient(135deg, #ef4444, #f97316);
+  background: linear-gradient(135deg, #D85C4A, #f97316);
   color: #fff;
   border-radius: 12px;
   padding: 2px 8px;
@@ -115,7 +115,7 @@
 .mc-level-title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #fbbf24;
+  color: #C9A66B;
   margin-bottom: 16px;
 }
 
@@ -141,7 +141,7 @@
 .mc-stat-val {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #fbbf24;
+  color: #C9A66B;
 }
 
 .mc-stat-label {
@@ -176,13 +176,13 @@
 }
 
 .mc-level-btn:hover:not(:disabled) {
-  border-color: #fbbf24;
+  border-color: #C9A66B;
   background: rgba(251, 191, 36, 0.15);
   transform: translateY(-2px);
 }
 
 .mc-level-btn.selected {
-  border-color: #f59e0b;
+  border-color: #C9A66B;
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.3));
   box-shadow: 0 0 18px rgba(251, 191, 36, 0.35);
   transform: scale(1.08);
@@ -201,7 +201,7 @@
 
 .mc-level-hint {
   font-size: 0.8rem;
-  color: #d97706;
+  color: #C9A66B;
   text-align: center;
   margin: 0;
 }
@@ -215,7 +215,7 @@
   padding: 16px 32px;
   border: none;
   border-radius: 16px;
-  background: linear-gradient(135deg, #f59e0b, #d97706, #b45309);
+  background: linear-gradient(135deg, #C9A66B, #C9A66B, #b45309);
   color: #fff;
   font-size: 1.2rem;
   font-weight: 800;
@@ -240,13 +240,13 @@
   border-radius: 16px;
 }
 .mc-subscribe-prompt .mc-subscribe-icon { font-size: 2.5rem; margin-bottom: 8px; }
-.mc-subscribe-prompt h4 { color: #fbbf24; margin: 0 0 6px; font-size: 1.15rem; }
+.mc-subscribe-prompt h4 { color: #C9A66B; margin: 0 0 6px; font-size: 1.15rem; }
 .mc-subscribe-prompt p { color: #94a3b8; margin: 0 0 16px; font-size: 0.9rem; }
 .mc-subscribe-btn {
   display: inline-block;
   padding: 12px 32px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: linear-gradient(135deg, #C9A66B, #C9A66B);
   color: #fff;
   font-weight: 700;
   font-size: 1rem;
@@ -274,7 +274,7 @@
 .mc-countdown-num {
   font-size: 8rem;
   font-weight: 900;
-  color: #fbbf24;
+  color: #C9A66B;
   text-shadow: 0 0 60px rgba(251, 191, 36, 0.6), 0 0 120px rgba(251, 191, 36, 0.3);
   animation: mc-count-pop 0.7s ease-out;
 }
@@ -304,7 +304,7 @@
 .mc-q-counter {
   font-size: 0.85rem;
   font-weight: 700;
-  color: #d97706;
+  color: #C9A66B;
   white-space: nowrap;
 }
 
@@ -322,8 +322,8 @@
   transition: background 0.3s;
 }
 
-.mc-progress-dot.done    { background: #f59e0b; }
-.mc-progress-dot.current { background: #fbbf24; box-shadow: 0 0 8px rgba(251, 191, 36, 0.5); }
+.mc-progress-dot.done    { background: #C9A66B; }
+.mc-progress-dot.current { background: #C9A66B; box-shadow: 0 0 8px rgba(251, 191, 36, 0.5); }
 
 /* ─── Timer Bar ──────────────────────────────────────────────── */
 .mc-timer-wrap {
@@ -339,7 +339,7 @@
 .mc-timer-bar {
   height: 100%;
   border-radius: 12px;
-  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  background: linear-gradient(90deg, #C9A66B, #C9A66B);
   transition: width 0.05s linear, background 0.3s;
   box-shadow: 0 0 16px rgba(251, 191, 36, 0.4);
 }
@@ -350,7 +350,7 @@
 }
 
 .mc-timer-bar.danger {
-  background: linear-gradient(90deg, #ef4444, #f87171);
+  background: linear-gradient(90deg, #D85C4A, #D85C4A);
   box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
   animation: mc-timer-shake 0.15s ease infinite alternate;
 }
@@ -377,8 +377,8 @@
   align-items: center;
   gap: 6px;
   background: rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--cat-color, #fbbf24);
-  color: var(--cat-color, #fbbf24);
+  border: 1px solid var(--cat-color, #C9A66B);
+  color: var(--cat-color, #C9A66B);
   border-radius: 20px;
   padding: 4px 14px;
   font-size: 0.8rem;
@@ -433,7 +433,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .mc-choice-btn:hover:not(:disabled) {
-    border-color: #fbbf24;
+    border-color: #C9A66B;
     background: rgba(251, 191, 36, 0.12);
     transform: translateY(-2px);
     box-shadow: 0 4px 16px rgba(251, 191, 36, 0.2);
@@ -452,7 +452,7 @@
 }
 
 .mc-choice-btn.wrong {
-  border-color: #ef4444;
+  border-color: #D85C4A;
   background: rgba(239, 68, 68, 0.2);
   box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
   animation: mc-choice-shake 0.3s ease;
@@ -484,7 +484,7 @@
   height: 28px;
   border-radius: 8px;
   background: rgba(251, 191, 36, 0.15);
-  color: #fbbf24;
+  color: #C9A66B;
   font-size: 0.8rem;
   font-weight: 800;
   flex-shrink: 0;
@@ -542,11 +542,11 @@
   gap: 10px;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #fbbf24;
+  color: #C9A66B;
 }
 
 .mc-speed-bonus {
-  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  background: linear-gradient(135deg, #101C2C, #7C9BB8);
   color: #fff;
   border-radius: 10px;
   padding: 2px 8px;
@@ -555,7 +555,7 @@
 }
 
 .mc-streak-bonus {
-  background: linear-gradient(135deg, #ef4444, #f97316);
+  background: linear-gradient(135deg, #D85C4A, #f97316);
   color: #fff;
   border-radius: 10px;
   padding: 2px 8px;
@@ -579,7 +579,7 @@
 .mc-summary-header h2 {
   font-size: 2rem;
   font-weight: 900;
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  background: linear-gradient(135deg, #C9A66B, #C9A66B);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -588,7 +588,7 @@
 
 .mc-summary-subtitle {
   font-size: 1rem;
-  color: #d97706;
+  color: #C9A66B;
 }
 
 .mc-summary-stats {
@@ -620,7 +620,7 @@
 .mc-summary-val {
   font-size: 1.8rem;
   font-weight: 800;
-  color: #fbbf24;
+  color: #C9A66B;
 }
 
 .mc-summary-stat.hero .mc-summary-val { font-size: 2.2rem; }
@@ -643,7 +643,7 @@
   border-radius: 12px;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #fbbf24;
+  color: #C9A66B;
   animation: mc-coins-glow 1.5s ease infinite alternate;
 }
 
@@ -680,7 +680,7 @@
 .mc-breakdown h3 {
   font-size: 1rem;
   font-weight: 700;
-  color: #fbbf24;
+  color: #C9A66B;
   margin-bottom: 12px;
 }
 
@@ -701,14 +701,14 @@
 }
 
 .mc-breakdown-item.correct { border-left-color: #22c55e; }
-.mc-breakdown-item.wrong   { border-left-color: #ef4444; }
+.mc-breakdown-item.wrong   { border-left-color: #D85C4A; }
 
 .mc-bd-num {
   width: 28px;
   height: 28px;
   border-radius: 8px;
   background: rgba(251, 191, 36, 0.12);
-  color: #d97706;
+  color: #C9A66B;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -742,11 +742,11 @@
 
 .mc-bd-cat     { font-weight: 700; }
 .mc-bd-time    { color: #94a3b8; }
-.mc-bd-timeout { color: #ef4444; font-weight: 700; }
-.mc-bd-pts     { color: #fbbf24; font-weight: 700; }
+.mc-bd-timeout { color: #D85C4A; font-weight: 700; }
+.mc-bd-pts     { color: #C9A66B; font-weight: 700; }
 
 .mc-bd-speed {
-  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  background: linear-gradient(135deg, #101C2C, #7C9BB8);
   color: #fff;
   border-radius: 8px;
   padding: 1px 6px;
@@ -770,7 +770,7 @@
   padding: 14px 36px;
   border: none;
   border-radius: 14px;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: linear-gradient(135deg, #C9A66B, #C9A66B);
   color: #fff;
   font-size: 1.05rem;
   font-weight: 800;
@@ -789,7 +789,7 @@
   border: 2px solid rgba(251, 191, 36, 0.3);
   border-radius: 14px;
   background: transparent;
-  color: #fbbf24;
+  color: #C9A66B;
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
@@ -797,7 +797,7 @@
 }
 
 .mc-menu-btn:hover {
-  border-color: #fbbf24;
+  border-color: #C9A66B;
   background: rgba(251, 191, 36, 0.1);
 }
 

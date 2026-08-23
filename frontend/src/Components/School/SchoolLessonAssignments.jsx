@@ -10,18 +10,18 @@ import { API_BASE_URL } from '../../config';
 const baseUrl = API_BASE_URL;
 
 const SUBMISSION_TYPES = [
-    { value: 'audio', label: 'Audio Recording', icon: 'bi-mic-fill', color: '#8b5cf6' },
-    { value: 'video', label: 'Video Recording', icon: 'bi-camera-video-fill', color: '#ec4899' },
-    { value: 'file_upload', label: 'File Upload', icon: 'bi-file-earmark-arrow-up-fill', color: '#f59e0b' },
-    { value: 'discussion', label: 'Discussion Thread', icon: 'bi-chat-left-text-fill', color: '#06b6d4' },
-    { value: 'multiple_choice', label: 'Multiple Choice', icon: 'bi-list-check', color: '#3b82f6' },
+    { value: 'audio', label: 'Audio Recording', icon: 'bi-mic-fill', color: '#7C9BB8' },
+    { value: 'video', label: 'Video Recording', icon: 'bi-camera-video-fill', color: '#D85C4A' },
+    { value: 'file_upload', label: 'File Upload', icon: 'bi-file-earmark-arrow-up-fill', color: '#C9A66B' },
+    { value: 'discussion', label: 'Discussion Thread', icon: 'bi-chat-left-text-fill', color: '#7C9BB8' },
+    { value: 'multiple_choice', label: 'Multiple Choice', icon: 'bi-list-check', color: '#101C2C' },
 ];
 
 const STATUS_BADGES = {
-    assigned: { label: 'Assigned', bg: '#dbeafe', color: '#1d4ed8', icon: 'bi-clipboard' },
+    assigned: { label: 'Assigned', bg: '#dbeafe', color: '#101C2C', icon: 'bi-clipboard' },
     submitted: { label: 'Submitted', bg: '#dcfce7', color: '#166534', icon: 'bi-check-circle' },
     late: { label: 'Late', bg: '#fee2e2', color: '#991b1b', icon: 'bi-clock-history' },
-    graded: { label: 'Graded', bg: '#f3e8ff', color: '#7c3aed', icon: 'bi-award' },
+    graded: { label: 'Graded', bg: '#f3e8ff', color: '#7C9BB8', icon: 'bi-award' },
 };
 
 const getTypeInfo = (type) => SUBMISSION_TYPES.find(t => t.value === type) || SUBMISSION_TYPES[0];
@@ -366,9 +366,9 @@ const SchoolLessonAssignments = () => {
 
                             {/* ========== MC Questions Builder ========== */}
                             {formData.submission_type === 'multiple_choice' && (
-                                <div style={{ marginTop: '20px', padding: '18px', backgroundColor: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                                <div style={{ marginTop: '20px', padding: '18px', backgroundColor: '#F7F3EA', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
                                     <div className="d-flex justify-content-between align-items-center mb-3">
-                                        <h6 className="mb-0 fw-bold"><i className="bi bi-list-check me-2" style={{ color: '#3b82f6' }}></i>Multiple Choice Questions ({mcQuestions.length})</h6>
+                                        <h6 className="mb-0 fw-bold"><i className="bi bi-list-check me-2" style={{ color: '#101C2C' }}></i>Multiple Choice Questions ({mcQuestions.length})</h6>
                                         <button type="button" className="btn btn-sm btn-primary"
                                             onClick={() => setMcQuestions(prev => [...prev, { question_text: '', option_a: '', option_b: '', option_c: '', option_d: '', correct_option: 'a', points: 1 }])}>
                                             <i className="bi bi-plus me-1"></i>Add Question

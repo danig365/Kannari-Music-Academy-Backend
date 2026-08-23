@@ -8,7 +8,7 @@
   padding: 0;
   width: calc(100% - 250px);
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  background: linear-gradient(135deg, #101C2C 0%, #101C2C 50%, #101C2C 100%);
   color: #f1f5f9;
   font-family: 'Nunito', 'Segoe UI', sans-serif;
   position: relative;
@@ -54,14 +54,14 @@
 }
 
 .nn-back-btn:hover {
-  color: #06bbcc;
+  color: #101C2C;
 }
 
 .nn-title {
   font-size: 1.5rem;
   font-weight: 800;
   margin: 0;
-  background: linear-gradient(90deg, #06bbcc, #a78bfa);
+  background: linear-gradient(90deg, #101C2C, #a78bfa);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -80,7 +80,7 @@
   border-radius: 20px;
   padding: 6px 14px;
   font-weight: 700;
-  color: #fbbf24;
+  color: #C9A66B;
   font-size: 0.95rem;
 }
 
@@ -146,7 +146,7 @@
   display: block;
   font-size: 1.3rem;
   font-weight: 800;
-  color: #06bbcc;
+  color: #101C2C;
 }
 
 .nn-stat-lbl {
@@ -192,15 +192,15 @@
 }
 
 .nn-level-btn:hover:not(:disabled) {
-  border-color: #06bbcc;
+  border-color: #101C2C;
   background: rgba(6, 187, 204, 0.15);
   transform: translateY(-2px);
 }
 
 .nn-level-active {
-  border-color: #06bbcc !important;
+  border-color: #101C2C !important;
   background: rgba(6, 187, 204, 0.25) !important;
-  color: #06bbcc !important;
+  color: #101C2C !important;
   box-shadow: 0 0 12px rgba(6, 187, 204, 0.3);
 }
 
@@ -217,7 +217,7 @@
   cursor: not-allowed;
   border-color: rgba(245, 158, 11, 0.3);
   background: rgba(245, 158, 11, 0.05);
-  color: #fbbf24;
+  color: #C9A66B;
   font-size: 0.85rem;
 }
 
@@ -227,7 +227,7 @@
   padding: 14px 40px;
   border-radius: 14px;
   border: none;
-  background: linear-gradient(135deg, #06bbcc, #0891b2);
+  background: linear-gradient(135deg, #101C2C, #0891b2);
   color: #fff;
   font-weight: 700;
   font-size: 1.1rem;
@@ -251,13 +251,13 @@
   border-radius: 16px;
 }
 .nn-subscribe-prompt .nn-subscribe-icon { font-size: 2.5rem; margin-bottom: 8px; }
-.nn-subscribe-prompt h4 { color: #fbbf24; margin: 0 0 6px; font-size: 1.15rem; }
+.nn-subscribe-prompt h4 { color: #C9A66B; margin: 0 0 6px; font-size: 1.15rem; }
 .nn-subscribe-prompt p { color: #94a3b8; margin: 0 0 16px; font-size: 0.9rem; }
 .nn-subscribe-btn {
   display: inline-block;
   padding: 12px 32px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: linear-gradient(135deg, #C9A66B, #C9A66B);
   color: #fff;
   font-weight: 700;
   font-size: 1rem;
@@ -272,7 +272,7 @@
 }
 
 .nn-error {
-  color: #f87171;
+  color: #D85C4A;
   margin-top: 12px;
   font-size: 0.9rem;
 }
@@ -288,7 +288,7 @@
 .nn-countdown-num {
   font-size: 6rem;
   font-weight: 900;
-  background: linear-gradient(135deg, #06bbcc, #a78bfa);
+  background: linear-gradient(135deg, #101C2C, #a78bfa);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -334,7 +334,7 @@
 
 .nn-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #06bbcc, #a78bfa);
+  background: linear-gradient(90deg, #101C2C, #a78bfa);
   border-radius: 3px;
   transition: width 0.4s ease;
 }
@@ -409,11 +409,11 @@
 }
 
 .nn-score-value {
-  color: #06bbcc;
+  color: #101C2C;
 }
 
 .nn-streak-hot {
-  color: #f59e0b !important;
+  color: #C9A66B !important;
   animation: streakGlow 0.6s ease infinite alternate;
 }
 
@@ -430,7 +430,7 @@
   position: absolute;
   top: -8px;
   right: -4px;
-  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  background: linear-gradient(135deg, #C9A66B, #D85C4A);
   color: #fff;
   font-size: 0.65rem;
   font-weight: 700;
@@ -486,7 +486,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .nn-choice-btn:hover:not(:disabled) {
-    border-color: #06bbcc;
+    border-color: #101C2C;
     background: rgba(6, 187, 204, 0.12);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(6, 187, 204, 0.2);
@@ -512,9 +512,9 @@
 }
 
 .nn-choice-incorrect {
-  border-color: #ef4444 !important;
+  border-color: #D85C4A !important;
   background: rgba(239, 68, 68, 0.2) !important;
-  color: #ef4444 !important;
+  color: #D85C4A !important;
   animation: wrongShake 0.4s ease;
 }
 
@@ -562,7 +562,7 @@
 .nn-fb-incorrect {
   background: rgba(239, 68, 68, 0.15);
   border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #ef4444;
+  color: #D85C4A;
 }
 
 .nn-fb-icon {
@@ -601,7 +601,7 @@
 
 .nn-level-up-banner {
   display: inline-block;
-  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  background: linear-gradient(135deg, #C9A66B, #D85C4A);
   color: #fff;
   font-weight: 800;
   font-size: 1.1rem;
@@ -634,7 +634,7 @@
   display: block;
   font-size: 1.5rem;
   font-weight: 800;
-  color: #06bbcc;
+  color: #101C2C;
 }
 
 .nn-ss-label {
@@ -647,7 +647,7 @@
 }
 
 .nn-summary-coins .nn-ss-val {
-  color: #fbbf24;
+  color: #C9A66B;
 }
 
 .nn-summary-breakdown {
@@ -664,7 +664,7 @@
 }
 
 .nn-sb-wrong {
-  color: #ef4444;
+  color: #D85C4A;
   font-weight: 700;
 }
 
@@ -682,11 +682,11 @@
 
 .nn-badges-section h5 {
   margin-bottom: 8px;
-  color: #fbbf24;
+  color: #C9A66B;
 }
 
 .nn-badge-item {
-  color: #fbbf24;
+  color: #C9A66B;
   font-size: 0.95rem;
 }
 

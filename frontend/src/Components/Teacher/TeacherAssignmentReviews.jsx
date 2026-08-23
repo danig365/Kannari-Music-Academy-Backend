@@ -5,7 +5,7 @@ import { API_BASE_URL } from '../../config';
 const baseUrl = API_BASE_URL;
 
 const STATUS_BADGES = {
-  assigned:  { label: 'Assigned',  bg: '#dbeafe', color: '#1d4ed8', icon: 'bi-clipboard' },
+  assigned:  { label: 'Assigned',  bg: '#dbeafe', color: '#101C2C', icon: 'bi-clipboard' },
   submitted: { label: 'Submitted', bg: '#fef3c7', color: '#92400e', icon: 'bi-check-circle' },
   late:      { label: 'Late',      bg: '#fee2e2', color: '#991b1b', icon: 'bi-clock-history' },
   graded:    { label: 'Graded',    bg: '#dcfce7', color: '#166534', icon: 'bi-award' },
@@ -13,11 +13,11 @@ const STATUS_BADGES = {
 };
 
 const TYPE_META = {
-  audio:           { label: 'Audio',           icon: 'bi-mic-fill',                  color: '#8b5cf6' },
-  video:           { label: 'Video',           icon: 'bi-camera-video-fill',         color: '#ec4899' },
-  file_upload:     { label: 'File Upload',     icon: 'bi-file-earmark-arrow-up-fill',color: '#f59e0b' },
-  discussion:      { label: 'Discussion',      icon: 'bi-chat-left-text-fill',       color: '#06b6d4' },
-  multiple_choice: { label: 'Multiple Choice', icon: 'bi-list-check',                color: '#3b82f6' },
+  audio:           { label: 'Audio',           icon: 'bi-mic-fill',                  color: '#7C9BB8' },
+  video:           { label: 'Video',           icon: 'bi-camera-video-fill',         color: '#D85C4A' },
+  file_upload:     { label: 'File Upload',     icon: 'bi-file-earmark-arrow-up-fill',color: '#C9A66B' },
+  discussion:      { label: 'Discussion',      icon: 'bi-chat-left-text-fill',       color: '#7C9BB8' },
+  multiple_choice: { label: 'Multiple Choice', icon: 'bi-list-check',                color: '#101C2C' },
 };
 
 const getTypeMeta = (t) => TYPE_META[t] || TYPE_META.audio;
@@ -145,7 +145,7 @@ const TeacherAssignmentReviews = () => {
           <div>
             <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '4px' }}><i className="bi bi-file-earmark me-1"></i>Uploaded File</div>
             <a href={submission.file} target="_blank" rel="noopener noreferrer"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 18px', backgroundColor: '#eff6ff', borderRadius: '10px', color: '#2563eb', fontWeight: '600', fontSize: '13px', textDecoration: 'none', border: '1px solid #bfdbfe' }}>
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 18px', backgroundColor: '#eff6ff', borderRadius: '10px', color: '#101C2C', fontWeight: '600', fontSize: '13px', textDecoration: 'none', border: '1px solid #bfdbfe' }}>
               <i className="bi bi-file-earmark-arrow-down" style={{ fontSize: '18px' }}></i>
               Download Submission
             </a>
@@ -156,7 +156,7 @@ const TeacherAssignmentReviews = () => {
         {subType === 'discussion' && submission.text_content && (
           <div>
             <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '4px' }}><i className="bi bi-chat-left-text me-1"></i>Discussion Response</div>
-            <div style={{ padding: '12px 16px', backgroundColor: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '14px', color: '#334155', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+            <div style={{ padding: '12px 16px', backgroundColor: '#F7F3EA', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '14px', color: '#334155', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
               {submission.text_content}
             </div>
           </div>
@@ -188,7 +188,7 @@ const TeacherAssignmentReviews = () => {
   return (
     <div>
       <div style={{ marginBottom: '24px' }}>
-        <h2 style={{ margin: 0, color: '#1e293b', fontWeight: '700' }}>
+        <h2 style={{ margin: 0, color: '#101C2C', fontWeight: '700' }}>
           <i className="bi bi-journal-check me-2"></i>Assignment Reviews
         </h2>
         <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14px' }}>Review all submission types, grade with points and feedback.</p>
@@ -213,7 +213,7 @@ const TeacherAssignmentReviews = () => {
             onClick={() => setFilter(tab.key)}
             style={{
               padding: '8px 18px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', cursor: 'pointer',
-              border: filter === tab.key ? '2px solid #6366f1' : '1px solid #e2e8f0',
+              border: filter === tab.key ? '2px solid #7C9BB8' : '1px solid #e2e8f0',
               backgroundColor: filter === tab.key ? '#eef2ff' : '#fff',
               color: filter === tab.key ? '#4f46e5' : '#64748b',
               transition: 'all 0.2s'
@@ -227,7 +227,7 @@ const TeacherAssignmentReviews = () => {
       {loading ? (
         <div style={{ textAlign: 'center', color: '#64748b', padding: '48px 0' }}>Loading submissions...</div>
       ) : filteredSubmissions.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '56px', backgroundColor: '#f8fafc', borderRadius: '16px', border: '2px dashed #e2e8f0', color: '#64748b' }}>
+        <div style={{ textAlign: 'center', padding: '56px', backgroundColor: '#F7F3EA', borderRadius: '16px', border: '2px dashed #e2e8f0', color: '#64748b' }}>
           <i className="bi bi-inbox" style={{ fontSize: '40px', color: '#cbd5e1', display: 'block', marginBottom: '12px' }}></i>
           {submissions.length > 0 ? 'No submissions match your filter.' : 'No student submissions yet.'}
         </div>
@@ -257,7 +257,7 @@ const TeacherAssignmentReviews = () => {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
                     <div>
-                      <div style={{ fontWeight: '600', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ fontWeight: '600', color: '#101C2C', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <i className={`bi ${typeMeta.icon}`} style={{ color: typeMeta.color }}></i>
                         {submission.assignment_title || submission.assignment_lesson_title || 'Assignment'}
                         <i className={`bi bi-chevron-${isExpanded ? 'up' : 'down'}`} style={{ fontSize: '12px', color: '#94a3b8' }}></i>
@@ -295,7 +295,7 @@ const TeacherAssignmentReviews = () => {
 
                       {/* Submission notes */}
                       {submission.submission_notes && submission.submission_notes !== 'Auto-graded multiple choice' && (
-                        <div style={{ fontSize: '13px', color: '#475569', marginBottom: '12px', padding: '8px 12px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
+                        <div style={{ fontSize: '13px', color: '#475569', marginBottom: '12px', padding: '8px 12px', backgroundColor: '#F7F3EA', borderRadius: '8px' }}>
                           <i className="bi bi-sticky me-1"></i>{submission.submission_notes}
                         </div>
                       )}

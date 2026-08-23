@@ -89,7 +89,7 @@ const StudentCoursePlayer = () => {
                     icon: 'warning',
                     title: 'Login Required',
                     text: 'Please login to access course content',
-                    confirmButtonColor: '#3b82f6'
+                    confirmButtonColor: '#101C2C'
                 }).then(() => navigate('/student/login'));
                 return;
             }
@@ -108,7 +108,7 @@ const StudentCoursePlayer = () => {
                         icon: 'error',
                         title: 'Access Denied',
                         text: 'You must enroll in this course to access the lessons',
-                        confirmButtonColor: '#3b82f6'
+                        confirmButtonColor: '#101C2C'
                     }).then(() => navigate(`/detail/${course_id}`));
                     setLoading(false);
                     return;
@@ -131,14 +131,14 @@ const StudentCoursePlayer = () => {
                         icon: 'error',
                         title: 'Access Denied',
                         text: errorMsg,
-                        confirmButtonColor: '#3b82f6'
+                        confirmButtonColor: '#101C2C'
                     }).then(() => navigate(`/detail/${course_id}`));
                 } else {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error Loading Content',
                         text: errorMsg,
-                        confirmButtonColor: '#3b82f6'
+                        confirmButtonColor: '#101C2C'
                     });
                 }
             } finally {
@@ -202,7 +202,7 @@ const StudentCoursePlayer = () => {
                     icon: 'error',
                     title: 'Error Loading Content',
                     text: errorMsg,
-                    confirmButtonColor: '#3b82f6'
+                    confirmButtonColor: '#101C2C'
                 });
             } finally {
                 setLoading(false);
@@ -405,7 +405,7 @@ const StudentCoursePlayer = () => {
             recorder.start(100);
             setBlockRecState(prev => ({ ...prev, [blockId]: { isRecording: true, duration: 0, recordedBlob: null, recordedUrl: null, sending: false, showUpload: prev[blockId]?.showUpload || false, uploadFile: null } }));
         } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Recording unavailable', text: 'Please allow microphone/camera access.', confirmButtonColor: '#3b82f6' });
+            Swal.fire({ icon: 'error', title: 'Recording unavailable', text: 'Please allow microphone/camera access.', confirmButtonColor: '#101C2C' });
         }
     };
 
@@ -435,7 +435,7 @@ const StudentCoursePlayer = () => {
             setBlockRecState(prev => ({ ...prev, [blockId]: { ...prev[blockId], submitted: true, sending: false } }));
             Swal.fire({ icon: 'success', title: 'Submitted!', text: 'Your recording was sent to your teacher.', timer: 2000, showConfirmButton: false });
         } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Submission failed', text: err?.response?.data?.message || 'Please try again.', confirmButtonColor: '#3b82f6' });
+            Swal.fire({ icon: 'error', title: 'Submission failed', text: err?.response?.data?.message || 'Please try again.', confirmButtonColor: '#101C2C' });
             setBlockRecState(prev => ({ ...prev, [blockId]: { ...prev[blockId], sending: false } }));
         }
     };
@@ -452,7 +452,7 @@ const StudentCoursePlayer = () => {
             setBlockRecState(prev => ({ ...prev, [blockId]: { ...prev[blockId], sending: false, submitted: true, uploadFile: null } }));
             Swal.fire({ icon: 'success', title: 'Submitted!', text: 'Your file was sent to your teacher.', timer: 2000, showConfirmButton: false });
         } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Submission failed', text: err?.response?.data?.message || 'Please try again.', confirmButtonColor: '#3b82f6' });
+            Swal.fire({ icon: 'error', title: 'Submission failed', text: err?.response?.data?.message || 'Please try again.', confirmButtonColor: '#101C2C' });
             setBlockRecState(prev => ({ ...prev, [blockId]: { ...prev[blockId], sending: false } }));
         }
     };
@@ -467,7 +467,7 @@ const StudentCoursePlayer = () => {
                 {blockTitle && (
                     <div style={{ padding: '12px 16px', background: `${color}0d`, borderBottom: `1px solid ${color}25`, display: 'flex', alignItems: 'center', gap: 8 }}>
                         <i className={`bi ${icon}`} style={{ color, fontSize: 16 }}></i>
-                        <span style={{ fontWeight: 700, fontSize: 14, color: '#1e293b' }}>{blockTitle}</span>
+                        <span style={{ fontWeight: 700, fontSize: 14, color: '#101C2C' }}>{blockTitle}</span>
                     </div>
                 )}
                 <div style={{ padding: '16px' }}>{content}</div>
@@ -479,7 +479,7 @@ const StudentCoursePlayer = () => {
             case 'video': {
                 const ytMatch = (cfg.youtube_url || '').match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/);
                 const ytId = ytMatch?.[1];
-                return blockCard('bi-play-circle-fill', '#ef4444', <>
+                return blockCard('bi-play-circle-fill', '#D85C4A', <>
                     {ytId ? (
                         <div style={{ position: 'relative', paddingBottom: '56.25%', width: '100%', background: '#000', borderRadius: 10, overflow: 'hidden' }}>
                             <iframe style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
@@ -497,7 +497,7 @@ const StudentCoursePlayer = () => {
             case 'audio': {
                 if (!block.file) return null;
                 const src = block.file.startsWith('http') ? block.file : `${mediaUrl}${block.file.startsWith('/') ? '' : '/'}${block.file}`;
-                return blockCard('bi-music-note-beamed', '#8b5cf6', <>
+                return blockCard('bi-music-note-beamed', '#7C9BB8', <>
                     <audio controls style={{ width: '100%', borderRadius: 8 }}>
                         <source src={src} />
                     </audio>
@@ -508,7 +508,7 @@ const StudentCoursePlayer = () => {
             case 'image': {
                 if (!block.file) return null;
                 const src = block.file.startsWith('http') ? block.file : `${mediaUrl}${block.file.startsWith('/') ? '' : '/'}${block.file}`;
-                return blockCard('bi-image', '#06b6d4', <>
+                return blockCard('bi-image', '#7C9BB8', <>
                     <img src={src} alt={cfg.alt_text || blockTitle || 'Image'} style={{ maxWidth: '100%', width: '100%', height: 'auto', borderRadius: 10, display: 'block', margin: '0 auto', objectFit: 'contain' }} />
                     {cfg.caption && <p style={{ margin: '10px 0 0', fontSize: 13, color: '#64748b' }}>{cfg.caption}</p>}
                 </>);
@@ -525,8 +525,8 @@ const StudentCoursePlayer = () => {
                     {audioSrc && <audio controls style={{ width: '100%', marginBottom: 12 }}><source src={audioSrc} /></audio>}
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                         <button onClick={() => setBlockRamAction(block.id, 'done')} style={{ background: '#16a34a', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>✅ Done</button>
-                        <button onClick={() => setBlockRamAction(block.id, 'again')} style={{ background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>🔁 Practice Again</button>
-                        <button onClick={() => setBlockRamAction(block.id, 'got_it')} style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>⭐ I Got It</button>
+                        <button onClick={() => setBlockRamAction(block.id, 'again')} style={{ background: '#C9A66B', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>🔁 Practice Again</button>
+                        <button onClick={() => setBlockRamAction(block.id, 'got_it')} style={{ background: '#101C2C', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>⭐ I Got It</button>
                     </div>
                 </>);
             }
@@ -539,9 +539,9 @@ const StudentCoursePlayer = () => {
                 const doneCount = checked.filter(Boolean).length;
                 return (
                     <div key={block.id} style={{ borderRadius: 14, border: `1.5px solid ${allDone ? '#86efac' : '#e2e8f0'}`, background: allDone ? '#f0fdf4' : '#fff', overflow: 'hidden' }}>
-                        <div style={{ padding: '12px 16px', background: allDone ? '#dcfce7' : '#f8fafc', borderBottom: `1px solid ${allDone ? '#86efac' : '#e2e8f0'}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ padding: '12px 16px', background: allDone ? '#dcfce7' : '#F7F3EA', borderBottom: `1px solid ${allDone ? '#86efac' : '#e2e8f0'}`, display: 'flex', alignItems: 'center', gap: 8 }}>
                             <i className="bi bi-check2-square" style={{ color: allDone ? '#16a34a' : '#64748b', fontSize: 16 }}></i>
-                            <span style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', flex: 1 }}>{blockTitle || 'Checklist'}</span>
+                            <span style={{ fontWeight: 700, fontSize: 14, color: '#101C2C', flex: 1 }}>{blockTitle || 'Checklist'}</span>
                             <span style={{ fontSize: 12, color: allDone ? '#166534' : '#64748b', fontWeight: 600 }}>{doneCount}/{items.length}</span>
                             {allDone && <span style={{ background: '#16a34a', color: '#fff', borderRadius: 999, padding: '2px 10px', fontSize: 12, fontWeight: 700 }}>✓ Complete!</span>}
                         </div>
@@ -572,18 +572,18 @@ const StudentCoursePlayer = () => {
                 const label = cfg.label || blockTitle || '';
                 return (
                     <div key={block.id} style={{ borderRadius: 14, border: `1.5px solid ${done ? '#86efac' : '#e2e8f0'}`, background: '#fff', overflow: 'hidden' }}>
-                        <div style={{ padding: '12px 16px', background: done ? '#f0fdf4' : '#f8fafc', borderBottom: `1px solid ${done ? '#86efac' : '#e2e8f0'}`, display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <i className="bi bi-stopwatch-fill" style={{ color: done ? '#16a34a' : '#f59e0b', fontSize: 16 }}></i>
-                            <span style={{ fontWeight: 700, fontSize: 14, color: '#1e293b' }}>{label || 'Timer'}</span>
+                        <div style={{ padding: '12px 16px', background: done ? '#f0fdf4' : '#F7F3EA', borderBottom: `1px solid ${done ? '#86efac' : '#e2e8f0'}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <i className="bi bi-stopwatch-fill" style={{ color: done ? '#16a34a' : '#C9A66B', fontSize: 16 }}></i>
+                            <span style={{ fontWeight: 700, fontSize: 14, color: '#101C2C' }}>{label || 'Timer'}</span>
                         </div>
                         <div style={{ padding: '20px 16px', textAlign: 'center' }}>
-                            <div style={{ fontSize: 52, fontWeight: 800, fontFamily: 'monospace', color: done ? '#16a34a' : tState.running ? '#ef4444' : '#1e293b', letterSpacing: 2, marginBottom: 14 }}>{mins}:{secs}</div>
+                            <div style={{ fontSize: 52, fontWeight: 800, fontFamily: 'monospace', color: done ? '#16a34a' : tState.running ? '#D85C4A' : '#101C2C', letterSpacing: 2, marginBottom: 14 }}>{mins}:{secs}</div>
                             <div style={{ height: 8, background: '#f1f5f9', borderRadius: 4, marginBottom: 18, overflow: 'hidden' }}>
-                                <div style={{ width: `${pct}%`, height: '100%', background: done ? '#16a34a' : '#3b82f6', borderRadius: 4, transition: 'width 0.9s linear' }} />
+                                <div style={{ width: `${pct}%`, height: '100%', background: done ? '#16a34a' : '#101C2C', borderRadius: 4, transition: 'width 0.9s linear' }} />
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
-                                {!done && !tState.running && <button type="button" onClick={() => startBlockTimer(block.id, totalSeconds)} style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 22px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>▶ Start</button>}
-                                {!done && tState.running && <button type="button" onClick={() => pauseBlockTimer(block.id)} style={{ background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 22px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>⏸ Pause</button>}
+                                {!done && !tState.running && <button type="button" onClick={() => startBlockTimer(block.id, totalSeconds)} style={{ background: '#101C2C', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 22px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>▶ Start</button>}
+                                {!done && tState.running && <button type="button" onClick={() => pauseBlockTimer(block.id)} style={{ background: '#C9A66B', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 22px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>⏸ Pause</button>}
                                 <button type="button" onClick={() => resetBlockTimer(block.id, totalSeconds)} style={{ background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: 8, padding: '9px 22px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>↺ Reset</button>
                             </div>
                             {done && <div style={{ marginTop: 12, color: '#16a34a', fontWeight: 700, fontSize: 14 }}>✓ Timer complete!</div>}
@@ -601,12 +601,12 @@ const StudentCoursePlayer = () => {
                 if (qState.submitted) {
                     const pct = Math.round((qState.score / (qState.totalPoints || 1)) * 100);
                     const pass = pct >= 70;
-                    return blockCard('bi-patch-question-fill', '#4285f4', <>
+                    return blockCard('bi-patch-question-fill', '#101C2C', <>
                         <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
                             <div style={{ fontSize: 48 }}>{pct === 100 ? '🏆' : pass ? '🎉' : '📝'}</div>
-                            <div style={{ fontWeight: 800, fontSize: 22, color: pass ? '#16a34a' : '#ef4444', marginTop: 8 }}>{pct}%</div>
+                            <div style={{ fontWeight: 800, fontSize: 22, color: pass ? '#16a34a' : '#D85C4A', marginTop: 8 }}>{pct}%</div>
                             <div style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{qState.score} / {qState.totalPoints} points</div>
-                            <div style={{ marginTop: 6, fontSize: 14, fontWeight: 600, color: pass ? '#16a34a' : '#dc2626' }}>{pass ? 'Well done!' : 'Keep practicing!'}</div>
+                            <div style={{ marginTop: 6, fontSize: 14, fontWeight: 600, color: pass ? '#16a34a' : '#D85C4A' }}>{pass ? 'Well done!' : 'Keep practicing!'}</div>
                         </div>
                         <div style={{ marginBottom: 16 }}>
                             {questions.map((q, qi) => {
@@ -614,7 +614,7 @@ const StudentCoursePlayer = () => {
                                 const isCorrect = chosen === q.correct;
                                 return (
                                     <div key={qi} style={{ marginBottom: 10, padding: '10px 12px', borderRadius: 10, background: isCorrect ? '#f0fdf4' : '#fff5f5', border: `1px solid ${isCorrect ? '#86efac' : '#fca5a5'}` }}>
-                                        <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', marginBottom: 6 }}>Q{qi + 1}: {q.text}</div>
+                                        <div style={{ fontSize: 13, fontWeight: 600, color: '#101C2C', marginBottom: 6 }}>Q{qi + 1}: {q.text}</div>
                                         {(q.options || []).map((opt, oi) => (
                                             <div key={oi} style={{ fontSize: 12, padding: '3px 8px', borderRadius: 6, marginBottom: 3,
                                                 background: oi === q.correct ? '#dcfce7' : (oi === chosen && !isCorrect ? '#fee2e2' : 'transparent'),
@@ -629,35 +629,35 @@ const StudentCoursePlayer = () => {
                                 );
                             })}
                         </div>
-                        <button type="button" onClick={() => retryBlockQuiz(block.id)} style={{ width: '100%', background: '#4285f4', color: '#fff', border: 'none', borderRadius: 10, padding: '10px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>Try Again</button>
+                        <button type="button" onClick={() => retryBlockQuiz(block.id)} style={{ width: '100%', background: '#101C2C', color: '#fff', border: 'none', borderRadius: 10, padding: '10px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>Try Again</button>
                     </>);
                 }
 
                 const q = questions[qState.currentQ];
                 const chosen = qState.answers[qState.currentQ];
-                return blockCard('bi-patch-question-fill', '#4285f4', <>
+                return blockCard('bi-patch-question-fill', '#101C2C', <>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                         <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>Question {qState.currentQ + 1} of {questions.length}</span>
-                        <span style={{ fontSize: 12, color: '#4285f4', fontWeight: 700, background: '#eff6ff', borderRadius: 999, padding: '3px 10px' }}>{q.points || 1} pt{(q.points || 1) !== 1 ? 's' : ''}</span>
+                        <span style={{ fontSize: 12, color: '#101C2C', fontWeight: 700, background: '#eff6ff', borderRadius: 999, padding: '3px 10px' }}>{q.points || 1} pt{(q.points || 1) !== 1 ? 's' : ''}</span>
                     </div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: '#1e293b', marginBottom: 16, lineHeight: 1.5 }}>{q.text}</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: '#101C2C', marginBottom: 16, lineHeight: 1.5 }}>{q.text}</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }}>
                         {(q.options || []).map((opt, oi) => (
                             <button key={oi} type="button" onClick={() => answerBlockQuiz(block.id, qState.currentQ, oi)}
-                                style={{ textAlign: 'left', padding: '10px 14px', borderRadius: 10, border: `2px solid ${chosen === oi ? '#4285f4' : '#e2e8f0'}`, background: chosen === oi ? '#eff6ff' : '#fff', color: chosen === oi ? '#1d4ed8' : '#334155', fontWeight: chosen === oi ? 700 : 400, cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <span style={{ width: 24, height: 24, borderRadius: 6, border: `2px solid ${chosen === oi ? '#4285f4' : '#d1d5db'}`, background: chosen === oi ? '#4285f4' : '#fff', color: chosen === oi ? '#fff' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 11, fontWeight: 800 }}>{['A','B','C','D'][oi]}</span>
+                                style={{ textAlign: 'left', padding: '10px 14px', borderRadius: 10, border: `2px solid ${chosen === oi ? '#101C2C' : '#e2e8f0'}`, background: chosen === oi ? '#eff6ff' : '#fff', color: chosen === oi ? '#101C2C' : '#334155', fontWeight: chosen === oi ? 700 : 400, cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <span style={{ width: 24, height: 24, borderRadius: 6, border: `2px solid ${chosen === oi ? '#101C2C' : '#d1d5db'}`, background: chosen === oi ? '#101C2C' : '#fff', color: chosen === oi ? '#fff' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 11, fontWeight: 800 }}>{['A','B','C','D'][oi]}</span>
                                 {opt}
                             </button>
                         ))}
                     </div>
                     <button type="button" disabled={chosen === undefined || chosen === null}
                         onClick={() => advanceBlockQuiz(block.id, questions)}
-                        style={{ width: '100%', background: (chosen !== undefined && chosen !== null) ? '#4285f4' : '#e2e8f0', color: (chosen !== undefined && chosen !== null) ? '#fff' : '#94a3b8', border: 'none', borderRadius: 10, padding: '11px', fontWeight: 700, cursor: (chosen !== undefined && chosen !== null) ? 'pointer' : 'not-allowed', fontSize: 14 }}>
+                        style={{ width: '100%', background: (chosen !== undefined && chosen !== null) ? '#101C2C' : '#e2e8f0', color: (chosen !== undefined && chosen !== null) ? '#fff' : '#94a3b8', border: 'none', borderRadius: 10, padding: '11px', fontWeight: 700, cursor: (chosen !== undefined && chosen !== null) ? 'pointer' : 'not-allowed', fontSize: 14 }}>
                         {qState.currentQ < questions.length - 1 ? 'Next Question →' : 'Submit Quiz'}
                     </button>
                     <div style={{ marginTop: 10, display: 'flex', gap: 4, justifyContent: 'center' }}>
                         {questions.map((_, qi) => (
-                            <div key={qi} style={{ width: 8, height: 8, borderRadius: '50%', background: qi === qState.currentQ ? '#4285f4' : (qState.answers[qi] !== undefined ? '#93c5fd' : '#e2e8f0') }} />
+                            <div key={qi} style={{ width: 8, height: 8, borderRadius: '50%', background: qi === qState.currentQ ? '#101C2C' : (qState.answers[qi] !== undefined ? '#7C9BB8' : '#e2e8f0') }} />
                         ))}
                     </div>
                 </>);
@@ -670,7 +670,7 @@ const StudentCoursePlayer = () => {
                 const { isRecording: bIsRec, duration: bDur, recordedBlob: bBlob, recordedUrl: bUrl, sending: bSending, submitted: bSubmitted, showUpload: bShowUpload, uploadFile: bUploadFile } = bRec;
                 const supportsRec = !!(navigator.mediaDevices && window.MediaRecorder);
 
-                return blockCard(subType === 'video' ? 'bi-camera-video-fill' : 'bi-mic-fill', '#8b5cf6', <>
+                return blockCard(subType === 'video' ? 'bi-camera-video-fill' : 'bi-mic-fill', '#7C9BB8', <>
                     {prompt && <p style={{ fontSize: 14, color: '#334155', marginBottom: 14, lineHeight: 1.6 }}>{prompt}</p>}
                     {bSubmitted ? (
                         <div style={{ textAlign: 'center', padding: '16px', background: '#f0fdf4', borderRadius: 10, border: '1px solid #86efac' }}>
@@ -706,17 +706,17 @@ const StudentCoursePlayer = () => {
                                 </div>
                             )}
                             {supportsRec && !bIsRec && !bBlob && (
-                                <button type="button" onClick={() => startBlockRecording(block.id, subType)} style={{ flex: 1, background: '#8b5cf6', color: '#fff', border: 'none', borderRadius: 8, padding: '9px', fontWeight: 700, cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                                <button type="button" onClick={() => startBlockRecording(block.id, subType)} style={{ flex: 1, background: '#7C9BB8', color: '#fff', border: 'none', borderRadius: 8, padding: '9px', fontWeight: 700, cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                                     <i className={`bi ${subType === 'video' ? 'bi-camera-video' : 'bi-record-circle'}`}></i> Start Recording
                                 </button>
                             )}
                             {supportsRec && bIsRec && (
-                                <button type="button" onClick={() => stopBlockRecording(block.id)} style={{ flex: 1, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '9px', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
+                                <button type="button" onClick={() => stopBlockRecording(block.id)} style={{ flex: 1, background: '#D85C4A', color: '#fff', border: 'none', borderRadius: 8, padding: '9px', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
                                     <i className="bi bi-stop-circle"></i> Stop ({formatRecordingTime(bDur || 0)})
                                 </button>
                             )}
                             {supportsRec && bBlob && !bIsRec && (<>
-                                <button type="button" onClick={() => clearBlockRecording(block.id)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 8, padding: '9px 14px', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>Discard</button>
+                                <button type="button" onClick={() => clearBlockRecording(block.id)} style={{ background: '#fee2e2', color: '#D85C4A', border: 'none', borderRadius: 8, padding: '9px 14px', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>Discard</button>
                                 <button type="button" onClick={() => submitBlockRecording(block.id, subType)} disabled={bSending} style={{ flex: 1, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 8, padding: '9px', fontWeight: 700, cursor: bSending ? 'default' : 'pointer', fontSize: 13 }}>
                                     {bSending ? 'Submitting...' : 'Submit'}
                                 </button>
@@ -747,14 +747,14 @@ const StudentCoursePlayer = () => {
                 const achId = cfg.achievement_id;
                 const isCompleted = currentLesson?.is_completed;
                 return (
-                    <div key={block.id} style={{ borderRadius: 14, border: `1.5px solid ${isCompleted ? '#fbbf24' : '#e2e8f0'}`, background: isCompleted ? 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)' : '#f8fafc', padding: '20px 16px', textAlign: 'center' }}>
+                    <div key={block.id} style={{ borderRadius: 14, border: `1.5px solid ${isCompleted ? '#C9A66B' : '#e2e8f0'}`, background: isCompleted ? 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)' : '#F7F3EA', padding: '20px 16px', textAlign: 'center' }}>
                         <div style={{ fontSize: 48, marginBottom: 8 }}>{isCompleted ? '🏆' : '🔒'}</div>
                         <div style={{ fontWeight: 800, fontSize: 16, color: isCompleted ? '#92400e' : '#94a3b8', marginBottom: 6 }}>{blockTitle || 'Achievement Badge'}</div>
                         {isCompleted ? (
                             <div style={{ color: '#78350f', fontSize: 13 }}>
                                 You've earned this badge for completing the lesson!
                                 <div style={{ marginTop: 10 }}>
-                                    <Link to="/student/my-achievements" style={{ background: '#f59e0b', color: '#fff', borderRadius: 8, padding: '8px 20px', fontWeight: 700, fontSize: 13, textDecoration: 'none', display: 'inline-block' }}>View My Achievements</Link>
+                                    <Link to="/student/my-achievements" style={{ background: '#C9A66B', color: '#fff', borderRadius: 8, padding: '8px 20px', fontWeight: 700, fontSize: 13, textDecoration: 'none', display: 'inline-block' }}>View My Achievements</Link>
                                 </div>
                             </div>
                         ) : (
@@ -789,9 +789,9 @@ const StudentCoursePlayer = () => {
                 const pct = target > 0 ? Math.round((count / target) * 100) : 0;
                 return (
                     <div key={block.id} style={{ borderRadius: 14, border: `1.5px solid ${done ? '#86efac' : '#e2e8f0'}`, background: done ? '#f0fdf4' : '#fff', overflow: 'hidden' }}>
-                        <div style={{ padding: '12px 16px', background: done ? '#dcfce7' : '#f8fafc', borderBottom: `1px solid ${done ? '#86efac' : '#e2e8f0'}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ padding: '12px 16px', background: done ? '#dcfce7' : '#F7F3EA', borderBottom: `1px solid ${done ? '#86efac' : '#e2e8f0'}`, display: 'flex', alignItems: 'center', gap: 8 }}>
                             <i className="bi bi-hand-index-thumb-fill" style={{ color: done ? '#16a34a' : '#0e7490', fontSize: 16 }}></i>
-                            <span style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', flex: 1 }}>{blockTitle || 'Practice Counter'}</span>
+                            <span style={{ fontWeight: 700, fontSize: 14, color: '#101C2C', flex: 1 }}>{blockTitle || 'Practice Counter'}</span>
                             <span style={{ fontSize: 12, color: done ? '#166534' : '#64748b', fontWeight: 600 }}>{count}/{target}</span>
                             {done && <span style={{ background: '#16a34a', color: '#fff', borderRadius: 999, padding: '2px 10px', fontSize: 12, fontWeight: 700 }}>✓ Complete!</span>}
                         </div>
@@ -860,7 +860,7 @@ const StudentCoursePlayer = () => {
         canvas.height = window.innerHeight;
         
         const particles = [];
-        const colors = ['#4ade80', '#22c55e', '#667eea', '#764ba2', '#f59e0b', '#ec4899'];
+        const colors = ['#4ade80', '#22c55e', '#101C2C', '#7C9BB8', '#C9A66B', '#D85C4A'];
         const count = intensity === 'large' ? 150 : intensity === 'medium' ? 80 : 40;
         
         for (let i = 0; i < count; i++) {
@@ -934,7 +934,7 @@ const StudentCoursePlayer = () => {
                 icon: 'error',
                 title: 'Error',
                 text: 'Failed to mark lesson as complete',
-                confirmButtonColor: '#3b82f6'
+                confirmButtonColor: '#101C2C'
             });
         }
     };
@@ -991,7 +991,7 @@ const StudentCoursePlayer = () => {
                     position: 'top-end',
                     iconHtml: '🏆',
                     title: `Achievement Unlocked!`,
-                    html: `<div style="font-weight:600;font-size:14px;margin-bottom:2px">${ach.name}</div><div style="font-size:13px;color:#fbbf24">+${ach.points} XP</div><div style="font-size:11px;color:#94a3b8;margin-top:2px">${ach.description}</div>`,
+                    html: `<div style="font-weight:600;font-size:14px;margin-bottom:2px">${ach.name}</div><div style="font-size:13px;color:#C9A66B">+${ach.points} XP</div><div style="font-size:11px;color:#94a3b8;margin-top:2px">${ach.description}</div>`,
                     showConfirmButton: false,
                     timer: 4000,
                     timerProgressBar: true,
@@ -1012,7 +1012,7 @@ const StudentCoursePlayer = () => {
                 html: `<div style="text-align:center"><p style="font-size:18px;margin-bottom:10px">Congratulations! You have completed this entire course!</p><div style="font-size:48px;margin:20px 0">🏆</div><p style="color:#a0aec0">You're officially a graduate!</p></div>`,
                 timer: 5000,
                 showConfirmButton: false,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                 color: '#fff'
             });
         } else if (moduleCompleted) {
@@ -1099,7 +1099,7 @@ const StudentCoursePlayer = () => {
                     text: unlockOn
                         ? `The next module unlocks on ${unlockOn}. One new module opens each week.`
                         : 'The next module is not yet available.',
-                    confirmButtonColor: '#3b82f6'
+                    confirmButtonColor: '#101C2C'
                 });
                 return;
             }
@@ -1120,7 +1120,7 @@ const StudentCoursePlayer = () => {
                 icon: 'warning',
                 title: 'Download blocked',
                 text: error?.response?.data?.message || 'Your subscription does not allow this download.',
-                confirmButtonColor: '#3b82f6'
+                confirmButtonColor: '#101C2C'
             });
         }
     };
@@ -1282,7 +1282,7 @@ const StudentCoursePlayer = () => {
                 icon: 'error',
                 title: 'Recording unavailable',
                 text: 'Please allow microphone/camera access to record.',
-                confirmButtonColor: '#3b82f6'
+                confirmButtonColor: '#101C2C'
             });
         }
     };
@@ -1338,7 +1338,7 @@ const StudentCoursePlayer = () => {
                 icon: 'error',
                 title: 'Submission failed',
                 text: err?.response?.data?.message || 'Please try again.',
-                confirmButtonColor: '#3b82f6'
+                confirmButtonColor: '#101C2C'
             });
         } finally {
             setSendingSubmission(false);
@@ -1378,7 +1378,7 @@ const StudentCoursePlayer = () => {
                 icon: 'error',
                 title: 'Submission failed',
                 text: err?.response?.data?.message || 'Please try again.',
-                confirmButtonColor: '#3b82f6'
+                confirmButtonColor: '#101C2C'
             });
         } finally {
             setSendingSubmission(false);
@@ -1548,7 +1548,7 @@ const StudentCoursePlayer = () => {
                     {watchUrl && (
                         <div style={{ marginTop: '10px', textAlign: 'center' }}>
                             <a href={watchUrl} target="_blank" rel="noopener noreferrer"
-                               style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#dc2626', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}>
+                               style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#D85C4A', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}>
                                 <i className="bi bi-youtube"></i> Video not loading? Watch on YouTube
                             </a>
                         </div>
@@ -1576,12 +1576,12 @@ const StudentCoursePlayer = () => {
 
         const getContentTypeColor = (type) => {
             const colors = {
-                'video': '#ef4444',
-                'audio': '#8b5cf6',
+                'video': '#D85C4A',
+                'audio': '#7C9BB8',
                 'pdf': '#ea580c',
-                'image': '#06b6d4'
+                'image': '#7C9BB8'
             };
-            return colors[type] || '#3b82f6';
+            return colors[type] || '#101C2C';
         };
 
         // YouTube watch button (opens popup modal)
@@ -1661,7 +1661,7 @@ const StudentCoursePlayer = () => {
                             {/* Step 1: Teacher voice */}
                             <div style={{
                                 padding: '18px', border: '1px solid #e2e8f0',
-                                borderRadius: '12px', background: '#f8fafc', marginBottom: '16px'
+                                borderRadius: '12px', background: '#F7F3EA', marginBottom: '16px'
                             }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
                                     <div style={{
@@ -1671,7 +1671,7 @@ const StudentCoursePlayer = () => {
                                         color: '#fff', fontWeight: 700, fontSize: '14px', flexShrink: 0
                                     }}>1</div>
                                     <div>
-                                        <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '14px' }}>Listen to your teacher</div>
+                                        <div style={{ fontWeight: 700, color: '#101C2C', fontSize: '14px' }}>Listen to your teacher</div>
                                         <div style={{ color: '#64748b', fontSize: '12px' }}>Teacher explains the exercise — listen carefully before playing</div>
                                     </div>
                                 </div>
@@ -1690,17 +1690,17 @@ const StudentCoursePlayer = () => {
                             {/* Step 2: Play along */}
                             <div style={{
                                 padding: '18px', border: '1px solid #e2e8f0',
-                                borderRadius: '12px', background: '#f8fafc'
+                                borderRadius: '12px', background: '#F7F3EA'
                             }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
                                     <div style={{
                                         width: '32px', height: '32px', borderRadius: '50%',
-                                        background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                        background: 'linear-gradient(135deg, #101C2C 0%, #101C2C 100%)',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         color: '#fff', fontWeight: 700, fontSize: '14px', flexShrink: 0
                                     }}>2</div>
                                     <div>
-                                        <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '14px' }}>Play along with the track</div>
+                                        <div style={{ fontWeight: 700, color: '#101C2C', fontSize: '14px' }}>Play along with the track</div>
                                         <div style={{ color: '#64748b', fontSize: '12px' }}>Now play along — use speed &amp; loop controls to practice</div>
                                     </div>
                                 </div>
@@ -1726,7 +1726,7 @@ const StudentCoursePlayer = () => {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Speed</span>
                                             {[0.75, 1, 1.25, 1.5].map(rate => (
-                                                <button key={rate} type="button" onClick={() => handlePlaybackRateChange(rate)} style={{ border: '1px solid #e2e8f0', background: playbackRate === rate ? '#dbeafe' : '#fff', color: playbackRate === rate ? '#1d4ed8' : '#334155', padding: '6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
+                                                <button key={rate} type="button" onClick={() => handlePlaybackRateChange(rate)} style={{ border: '1px solid #e2e8f0', background: playbackRate === rate ? '#dbeafe' : '#fff', color: playbackRate === rate ? '#101C2C' : '#334155', padding: '6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
                                                     {rate}x
                                                 </button>
                                             ))}
@@ -1742,7 +1742,7 @@ const StudentCoursePlayer = () => {
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <button type="button" onClick={handleReplay} style={{ border: '1px solid #e2e8f0', background: '#fff', color: '#334155', padding: '6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Replay</button>
-                                            <button type="button" onClick={handleMetronomeToggle} style={{ border: '1px solid #e2e8f0', background: metronomeEnabled ? '#fee2e2' : '#fff', color: metronomeEnabled ? '#b91c1c' : '#334155', padding: '6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
+                                            <button type="button" onClick={handleMetronomeToggle} style={{ border: '1px solid #e2e8f0', background: metronomeEnabled ? '#fee2e2' : '#fff', color: metronomeEnabled ? '#D85C4A' : '#334155', padding: '6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
                                                 {metronomeEnabled ? 'Metronome On' : 'Metronome Off'}
                                             </button>
                                         </div>
@@ -1760,9 +1760,9 @@ const StudentCoursePlayer = () => {
                     const submissionType = config.submission_type || 'audio';
                     const typeLabels = {
                         record_rhythm:        { label: 'Record Rhythm',         icon: 'bi-music-note-list',    color: '#16a34a' },
-                        record_melody:        { label: 'Record Melody',         icon: 'bi-music-note-beamed',  color: '#7c3aed' },
+                        record_melody:        { label: 'Record Melody',         icon: 'bi-music-note-beamed',  color: '#7C9BB8' },
                         record_embouchure:    { label: 'Record Embouchure',     icon: 'bi-camera-video',       color: '#db2777' },
-                        practice_backing_track: { label: 'Practice Backing Track', icon: 'bi-vinyl',           color: '#2563eb' },
+                        practice_backing_track: { label: 'Practice Backing Track', icon: 'bi-vinyl',           color: '#101C2C' },
                         submit_warmup:        { label: 'Submit Warmup',         icon: 'bi-sunrise',            color: '#ea580c' },
                         clap_rhythm:          { label: 'Clap Rhythm',           icon: 'bi-hand-thumbs-up',     color: '#0891b2' },
                         custom:               { label: 'Practical Assignment',  icon: 'bi-pencil',             color: '#64748b' },
@@ -1778,7 +1778,7 @@ const StudentCoursePlayer = () => {
                                         <i className={`bi ${meta.icon}`} style={{ fontSize: '20px', color: '#fff' }}></i>
                                     </div>
                                     <div>
-                                        <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '15px' }}>{meta.label}</div>
+                                        <div style={{ fontWeight: 700, color: '#101C2C', fontSize: '15px' }}>{meta.label}</div>
                                         <div style={{ color: '#64748b', fontSize: '12px' }}>Record and submit your performance to your teacher</div>
                                     </div>
                                 </div>
@@ -1791,10 +1791,10 @@ const StudentCoursePlayer = () => {
 
                             {/* Backing track */}
                             {currentLesson.file && (
-                                <div style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '12px', background: '#f8fafc', marginBottom: '16px' }}>
+                                <div style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '12px', background: '#F7F3EA', marginBottom: '16px' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                                        <i className="bi bi-vinyl" style={{ color: '#3b82f6', fontSize: '16px' }}></i>
-                                        <span style={{ fontWeight: 600, color: '#1e293b', fontSize: '13px' }}>Backing Track</span>
+                                        <i className="bi bi-vinyl" style={{ color: '#101C2C', fontSize: '16px' }}></i>
+                                        <span style={{ fontWeight: 600, color: '#101C2C', fontSize: '13px' }}>Backing Track</span>
                                         <span style={{ color: '#94a3b8', fontSize: '12px' }}>— play along while you record</span>
                                     </div>
                                     <audio
@@ -1809,7 +1809,7 @@ const StudentCoursePlayer = () => {
                                     </audio>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center', marginTop: '10px' }}>
                                         {[0.75, 1, 1.25, 1.5].map(rate => (
-                                            <button key={rate} type="button" onClick={() => handlePlaybackRateChange(rate)} style={{ border: '1px solid #e2e8f0', background: playbackRate === rate ? '#dbeafe' : '#fff', color: playbackRate === rate ? '#1d4ed8' : '#334155', padding: '5px 9px', borderRadius: '7px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>{rate}x</button>
+                                            <button key={rate} type="button" onClick={() => handlePlaybackRateChange(rate)} style={{ border: '1px solid #e2e8f0', background: playbackRate === rate ? '#dbeafe' : '#fff', color: playbackRate === rate ? '#101C2C' : '#334155', padding: '5px 9px', borderRadius: '7px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>{rate}x</button>
                                         ))}
                                         <button type="button" onClick={handleSetLoopStart} style={{ border: '1px solid #e2e8f0', background: '#fff', color: '#334155', padding: '5px 9px', borderRadius: '7px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Set A</button>
                                         <button type="button" onClick={handleSetLoopEnd} style={{ border: '1px solid #e2e8f0', background: '#fff', color: '#334155', padding: '5px 9px', borderRadius: '7px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Set B</button>
@@ -1822,9 +1822,9 @@ const StudentCoursePlayer = () => {
                             <div style={{ padding: '18px', border: '2px solid #e2e8f0', borderRadius: '12px', background: '#fff' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <i className="bi bi-record-circle" style={{ color: '#ef4444', fontSize: '18px' }}></i>
+                                        <i className="bi bi-record-circle" style={{ color: '#D85C4A', fontSize: '18px' }}></i>
                                         <div>
-                                            <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '14px' }}>Your Submission</div>
+                                            <div style={{ fontWeight: 700, color: '#101C2C', fontSize: '14px' }}>Your Submission</div>
                                             <div style={{ color: '#64748b', fontSize: '12px' }}>Submit your {submissionType} recording to your teacher</div>
                                         </div>
                                     </div>
@@ -1838,13 +1838,13 @@ const StudentCoursePlayer = () => {
                                 </div>
 
                                 {lessonSubmission && (
-                                    <div style={{ padding: '10px 12px', background: '#f8fafc', borderRadius: '8px', marginBottom: '14px', fontSize: '13px', color: '#475569' }}>
+                                    <div style={{ padding: '10px 12px', background: '#F7F3EA', borderRadius: '8px', marginBottom: '14px', fontSize: '13px', color: '#475569' }}>
                                         <div>Last submitted: {new Date(lessonSubmission.submitted_at).toLocaleString()}</div>
                                         {lessonSubmission.points_awarded !== null && lessonSubmission.points_awarded !== undefined && (
                                             <div style={{ marginTop: '4px', fontWeight: 600 }}>Score: {lessonSubmission.points_awarded} / {lessonSubmission.assignment_max_points || 100}</div>
                                         )}
                                         {lessonSubmission.teacher_feedback && (
-                                            <div style={{ marginTop: '6px', padding: '8px 10px', background: '#eff6ff', borderRadius: '6px', color: '#1d4ed8', borderLeft: '3px solid #3b82f6' }}>
+                                            <div style={{ marginTop: '6px', padding: '8px 10px', background: '#eff6ff', borderRadius: '6px', color: '#101C2C', borderLeft: '3px solid #101C2C' }}>
                                                 Teacher: {lessonSubmission.teacher_feedback}
                                             </div>
                                         )}
@@ -1876,7 +1876,7 @@ const StudentCoursePlayer = () => {
                                                     setTextInput('');
                                                     Swal.fire({ icon: 'success', title: 'Submitted!', text: 'Your response was sent to your teacher.', timer: 2000, showConfirmButton: false });
                                                 } catch (err) {
-                                                    Swal.fire({ icon: 'error', title: 'Submission failed', text: err?.response?.data?.message || 'Please try again.', confirmButtonColor: '#3b82f6' });
+                                                    Swal.fire({ icon: 'error', title: 'Submission failed', text: err?.response?.data?.message || 'Please try again.', confirmButtonColor: '#101C2C' });
                                                 } finally {
                                                     setSendingSubmission(false);
                                                 }
@@ -1958,7 +1958,7 @@ const StudentCoursePlayer = () => {
                                     padding: '14px',
                                     border: '1px solid #e2e8f0',
                                     borderRadius: '12px',
-                                    background: '#f8fafc'
+                                    background: '#F7F3EA'
                                 }}>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', marginBottom: '12px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1971,7 +1971,7 @@ const StudentCoursePlayer = () => {
                                                     style={{
                                                         border: '1px solid #e2e8f0',
                                                         background: playbackRate === rate ? '#dbeafe' : '#fff',
-                                                        color: playbackRate === rate ? '#1d4ed8' : '#334155',
+                                                        color: playbackRate === rate ? '#101C2C' : '#334155',
                                                         padding: '6px 10px',
                                                         borderRadius: '8px',
                                                         fontSize: '12px',
@@ -2060,7 +2060,7 @@ const StudentCoursePlayer = () => {
                                                 style={{
                                                     border: '1px solid #e2e8f0',
                                                     background: metronomeEnabled ? '#fee2e2' : '#fff',
-                                                    color: metronomeEnabled ? '#b91c1c' : '#334155',
+                                                    color: metronomeEnabled ? '#D85C4A' : '#334155',
                                                     padding: '6px 10px',
                                                     borderRadius: '8px',
                                                     fontSize: '12px',
@@ -2137,9 +2137,9 @@ const StudentCoursePlayer = () => {
                             justifyContent: 'center',
                             marginBottom: '24px'
                         }}>
-                            <i className="bi bi-lock-fill" style={{ fontSize: '40px', color: '#f59e0b' }}></i>
+                            <i className="bi bi-lock-fill" style={{ fontSize: '40px', color: '#C9A66B' }}></i>
                         </div>
-                        <h3 style={{ marginBottom: '12px', color: '#1e293b', fontWeight: 700 }}>
+                        <h3 style={{ marginBottom: '12px', color: '#101C2C', fontWeight: 700 }}>
                             Premium Content
                         </h3>
                         <p style={{ color: '#64748b', maxWidth: '400px', marginBottom: '8px' }}>
@@ -2148,14 +2148,14 @@ const StudentCoursePlayer = () => {
                         
                         {subscriptionInfo?.subscription && (
                             <div style={{
-                                background: '#f8fafc',
+                                background: '#F7F3EA',
                                 borderRadius: '12px',
                                 padding: '16px 24px',
                                 marginBottom: '24px',
                                 border: '1px solid #e2e8f0'
                             }}>
                                 <p style={{ margin: 0, fontSize: '14px', color: '#64748b' }}>
-                                    Your current plan: <strong style={{ color: '#3b82f6' }}>
+                                    Your current plan: <strong style={{ color: '#101C2C' }}>
                                         {subscriptionInfo.subscription.plan_name || 'Basic'}
                                     </strong>
                                 </p>
@@ -2174,7 +2174,7 @@ const StudentCoursePlayer = () => {
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     gap: '8px',
-                                    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                    background: 'linear-gradient(135deg, #101C2C 0%, #101C2C 100%)',
                                     color: 'white',
                                     padding: '12px 24px',
                                     borderRadius: '10px',
@@ -2345,7 +2345,7 @@ const StudentCoursePlayer = () => {
                             padding: '16px',
                             border: '1px solid #e2e8f0',
                             borderRadius: '12px',
-                            background: '#f8fafc'
+                            background: '#F7F3EA'
                         }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                                 <div style={{
@@ -2360,7 +2360,7 @@ const StudentCoursePlayer = () => {
                                     <i className="bi bi-mic-fill" style={{ color: '#4338ca' }}></i>
                                 </div>
                                 <div>
-                                    <h6 style={{ margin: 0, color: '#1e293b', fontWeight: 700 }}>Repeat After Me</h6>
+                                    <h6 style={{ margin: 0, color: '#101C2C', fontWeight: 700 }}>Repeat After Me</h6>
                                     <small style={{ color: '#64748b' }}>Listen, practice, then mark your progress.</small>
                                 </div>
                                 {currentLesson.repeat_after_me_status?.action && (
@@ -2404,14 +2404,14 @@ const StudentCoursePlayer = () => {
                                 <button
                                     className="btn"
                                     onClick={() => handleRepeatAfterMeAction('again')}
-                                    style={{ background: '#f59e0b', color: '#fff', borderRadius: '10px', padding: '8px 14px', border: 'none' }}
+                                    style={{ background: '#C9A66B', color: '#fff', borderRadius: '10px', padding: '8px 14px', border: 'none' }}
                                 >
                                     🔁 Practice Again
                                 </button>
                                 <button
                                     className="btn"
                                     onClick={() => handleRepeatAfterMeAction('got_it')}
-                                    style={{ background: '#3b82f6', color: '#fff', borderRadius: '10px', padding: '8px 14px', border: 'none' }}
+                                    style={{ background: '#101C2C', color: '#fff', borderRadius: '10px', padding: '8px 14px', border: 'none' }}
                                 >
                                     ⭐ I Got It
                                 </button>
@@ -2620,8 +2620,8 @@ const StudentCoursePlayer = () => {
                             padding: '16px 20px',
                         }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                                <span style={{ fontWeight: 700, fontSize: 14, color: '#1e293b' }}>
-                                    <i className="bi bi-people-fill me-2" style={{ color: '#3b82f6' }}></i>Class Standing
+                                <span style={{ fontWeight: 700, fontSize: 14, color: '#101C2C' }}>
+                                    <i className="bi bi-people-fill me-2" style={{ color: '#101C2C' }}></i>Class Standing
                                 </span>
                                 <span style={{ fontSize: 13, color: '#64748b' }}>
                                     #{cohortData.student_rank} of {cohortData.total_students}
@@ -2637,7 +2637,7 @@ const StudentCoursePlayer = () => {
                                             <span style={{
                                                 fontSize: 11,
                                                 fontWeight: entry.is_you ? 700 : 500,
-                                                color: entry.is_you ? '#3b82f6' : '#64748b',
+                                                color: entry.is_you ? '#101C2C' : '#64748b',
                                                 minWidth: 72,
                                                 whiteSpace: 'nowrap',
                                             }}>
@@ -2649,13 +2649,13 @@ const StudentCoursePlayer = () => {
                                                     width: `${entry.progress}%`,
                                                     height: '100%',
                                                     background: entry.is_you
-                                                        ? 'linear-gradient(90deg, #3b82f6, #2563eb)'
+                                                        ? 'linear-gradient(90deg, #101C2C, #101C2C)'
                                                         : '#cbd5e1',
                                                     borderRadius: 6,
                                                     transition: 'width 0.5s ease',
                                                 }} />
                                             </div>
-                                            <span style={{ fontSize: 11, color: entry.is_you ? '#2563eb' : '#94a3b8', minWidth: 32, textAlign: 'right' }}>
+                                            <span style={{ fontSize: 11, color: entry.is_you ? '#101C2C' : '#94a3b8', minWidth: 32, textAlign: 'right' }}>
                                                 {entry.progress}%
                                             </span>
                                         </div>
@@ -2772,7 +2772,7 @@ const StudentCoursePlayer = () => {
                             alignItems: 'center',
                             justifyContent: 'space-between',
                             padding: '14px 20px',
-                            background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+                            background: 'linear-gradient(135deg, #101C2C 0%, #2d2d2d 100%)',
                             borderBottom: '1px solid #333'
                         }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

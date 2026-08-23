@@ -89,7 +89,7 @@ const MyLearningPath = () => {
     const daysUntil = Math.ceil(
       (new Date(session.scheduled_date) - new Date().setHours(0,0,0,0)) / 86400000
     );
-    const urgency = daysUntil <= 1 ? '#dc2626' : daysUntil <= 3 ? '#d97706' : '#2563eb';
+    const urgency = daysUntil <= 1 ? '#D85C4A' : daysUntil <= 3 ? '#C9A66B' : '#101C2C';
     const urgencyBg = daysUntil <= 1 ? 'rgba(220,38,38,0.08)' : daysUntil <= 3 ? 'rgba(217,119,6,0.08)' : 'rgba(37,99,235,0.08)';
     const label = daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `In ${daysUntil} days`;
 
@@ -113,7 +113,7 @@ const MyLearningPath = () => {
           <i className="bi bi-camera-video-fill" style={{ color: 'white', fontSize: '18px' }}></i>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: '600', fontSize: '14px', color: '#1e293b' }}>{session.title}</div>
+          <div style={{ fontWeight: '600', fontSize: '14px', color: '#101C2C' }}>{session.title}</div>
           <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
             {session.group_class_name} &bull; {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
             &bull; {session.duration_minutes} min
@@ -150,8 +150,8 @@ const MyLearningPath = () => {
     // status: 'completed' | 'current' | 'upcoming'
     const colors = {
       completed: { bg: '#f0fdf4', border: '#22c55e', icon: '#16a34a', text: '#15803d' },
-      current:   { bg: '#eff6ff', border: '#3b82f6', icon: '#2563eb', text: '#1d4ed8' },
-      upcoming:  { bg: '#f8fafc', border: '#e2e8f0', icon: '#94a3b8', text: '#94a3b8' },
+      current:   { bg: '#eff6ff', border: '#101C2C', icon: '#101C2C', text: '#101C2C' },
+      upcoming:  { bg: '#F7F3EA', border: '#e2e8f0', icon: '#94a3b8', text: '#94a3b8' },
     };
     const c = colors[status];
 
@@ -200,14 +200,14 @@ const MyLearningPath = () => {
               {status === 'current' && (
                 <span style={{
                   padding: '2px 8px', borderRadius: '20px',
-                  backgroundColor: '#dbeafe', color: '#1d4ed8',
+                  backgroundColor: '#dbeafe', color: '#101C2C',
                   fontSize: '10px', fontWeight: '700',
                 }}>In Progress</span>
               )}
             </div>
 
             <div style={{
-              fontWeight: '600', fontSize: '15px', color: status === 'upcoming' ? '#94a3b8' : '#1e293b',
+              fontWeight: '600', fontSize: '15px', color: status === 'upcoming' ? '#94a3b8' : '#101C2C',
               marginTop: '4px', marginBottom: '4px',
             }}>
               {lpc.display_title || lpc.course_title}
@@ -230,7 +230,7 @@ const MyLearningPath = () => {
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: '6px',
                       padding: '7px 16px', borderRadius: '8px',
-                      backgroundColor: '#2563eb', color: 'white',
+                      backgroundColor: '#101C2C', color: 'white',
                       fontSize: '13px', fontWeight: '600', textDecoration: 'none',
                     }}
                   >
@@ -243,7 +243,7 @@ const MyLearningPath = () => {
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: '6px',
                       padding: '7px 16px', borderRadius: '8px',
-                      backgroundColor: '#2563eb', color: 'white',
+                      backgroundColor: '#101C2C', color: 'white',
                       fontSize: '13px', fontWeight: '600', textDecoration: 'none',
                     }}
                   >
@@ -277,7 +277,7 @@ const MyLearningPath = () => {
         <div style={{ marginBottom: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
             <div>
-              <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#0f172a' }}>
+              <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#101C2C' }}>
                 {path.title}
               </h3>
               {path.subtitle && (
@@ -295,7 +295,7 @@ const MyLearningPath = () => {
             ) : (
               <span style={{
                 padding: '6px 14px', borderRadius: '20px',
-                backgroundColor: '#dbeafe', color: '#1d4ed8',
+                backgroundColor: '#dbeafe', color: '#101C2C',
                 fontSize: '12px', fontWeight: '700',
               }}>
                 Month {(current_course_index || 0) + 1} of {totalMonths}
@@ -307,13 +307,13 @@ const MyLearningPath = () => {
           <div style={{ marginTop: '14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
               <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '500' }}>Overall Progress</span>
-              <span style={{ fontSize: '12px', fontWeight: '700', color: '#1d4ed8' }}>{progress_percent || 0}%</span>
+              <span style={{ fontSize: '12px', fontWeight: '700', color: '#101C2C' }}>{progress_percent || 0}%</span>
             </div>
             <div style={{ height: '8px', backgroundColor: '#e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
               <div style={{
                 height: '100%',
                 width: `${progress_percent || 0}%`,
-                backgroundColor: is_completed ? '#22c55e' : '#3b82f6',
+                backgroundColor: is_completed ? '#22c55e' : '#101C2C',
                 borderRadius: '8px',
                 transition: 'width 0.6s ease',
               }} />
@@ -353,7 +353,7 @@ const MyLearningPath = () => {
   // ── render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F7F3EA' }}>
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} isMobile={isMobile} />
 
       {isMobile && sidebarOpen && (
@@ -378,21 +378,21 @@ const MyLearningPath = () => {
           }}>
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', color: '#1e293b' }}
+              style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', color: '#101C2C' }}
             >
               <i className="bi bi-list"></i>
             </button>
-            <span style={{ fontWeight: '600', fontSize: '16px', color: '#0f172a' }}>My Learning Path</span>
+            <span style={{ fontWeight: '600', fontSize: '16px', color: '#101C2C' }}>My Learning Path</span>
           </div>
         )}
 
         <div style={{ padding: isMobile ? '16px' : '32px 32px 48px', maxWidth: '860px' }}>
           {/* Page header */}
           <div style={{ marginBottom: '28px' }}>
-            <h2 style={{ margin: 0, fontSize: '26px', fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h2 style={{ margin: 0, fontSize: '26px', fontWeight: '800', color: '#101C2C', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span style={{
                 width: '38px', height: '38px', borderRadius: '10px',
-                backgroundColor: '#3b82f6', display: 'inline-flex',
+                backgroundColor: '#101C2C', display: 'inline-flex',
                 alignItems: 'center', justifyContent: 'center',
               }}>
                 <i className="bi bi-map-fill" style={{ color: 'white', fontSize: '18px' }}></i>
@@ -422,9 +422,9 @@ const MyLearningPath = () => {
                 backgroundColor: '#eff6ff', margin: '0 auto 20px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <i className="bi bi-map" style={{ fontSize: '32px', color: '#3b82f6' }}></i>
+                <i className="bi bi-map" style={{ fontSize: '32px', color: '#101C2C' }}></i>
               </div>
-              <h4 style={{ color: '#1e293b', fontWeight: '700', marginBottom: '8px' }}>No Learning Path Yet</h4>
+              <h4 style={{ color: '#101C2C', fontWeight: '700', marginBottom: '8px' }}>No Learning Path Yet</h4>
               <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '24px', maxWidth: '340px', margin: '0 auto 24px' }}>
                 You haven't been enrolled in a structured learning path yet.
                 Ask your teacher or check back soon.
@@ -434,7 +434,7 @@ const MyLearningPath = () => {
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '6px',
                   padding: '10px 20px', borderRadius: '8px',
-                  backgroundColor: '#3b82f6', color: 'white',
+                  backgroundColor: '#101C2C', color: 'white',
                   fontSize: '14px', fontWeight: '600', textDecoration: 'none',
                 }}
               >

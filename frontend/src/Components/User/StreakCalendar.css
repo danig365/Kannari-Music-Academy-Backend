@@ -7,7 +7,7 @@
     background: #FFFFFF;
     border-radius: 16px;
     padding: 24px;
-    color: #111827;
+    color: #101C2C;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
     position: relative;
     overflow: hidden;
@@ -62,7 +62,7 @@
     margin: 0;
     font-size: 18px;
     font-weight: 600;
-    color: #111827;
+    color: #101C2C;
 }
 
 /* Streak Stats */
@@ -76,7 +76,7 @@
     flex-direction: column;
     align-items: center;
     padding: 12px 16px;
-    background: #F9FAFB;
+    background: #F7F3EA;
     border-radius: 12px;
     position: relative;
     min-width: 70px;
@@ -126,7 +126,7 @@
     display: flex;
     gap: 20px;
     padding: 12px 16px;
-    background: #F9FAFB;
+    background: #F7F3EA;
     border-radius: 10px;
     margin-bottom: 16px;
     border: 1px solid #E5E7EB;
@@ -212,7 +212,7 @@
 }
 
 .calendar-cell.today {
-    border-color: #4285F4 !important;
+    border-color: #101C2C !important;
     box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
 }
 
@@ -228,7 +228,7 @@
     transform: translate(-50%, -50%);
     width: 4px;
     height: 4px;
-    background: #4285f4;
+    background: #101C2C;
     border-radius: 50%;
 }
 
@@ -259,7 +259,7 @@
     bottom: 80px;
     left: 50%;
     transform: translateX(-50%);
-    background: #111827;
+    background: #101C2C;
     padding: 8px 12px;
     border-radius: 8px;
     display: flex;
@@ -301,7 +301,7 @@
 .streak-motivation.start {
     background: rgba(66, 133, 244, 0.08);
     border-color: rgba(66, 133, 244, 0.3);
-    color: #1E3A8A;
+    color: #101C2C;
 }
 
 .motivation-emoji {

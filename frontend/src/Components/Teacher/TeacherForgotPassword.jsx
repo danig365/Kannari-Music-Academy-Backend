@@ -71,10 +71,10 @@ const TeacherForgotPassword = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%)', padding: '40px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #F7F3EA 0%, #e8ecf1 100%)', padding: '40px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: '480px', background: 'white', borderRadius: '16px', padding: '40px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)' }}>
         <Link to="/teacher/login" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px' }}>← Back to login</Link>
-        <h2 style={{ marginTop: '16px', marginBottom: '8px', color: '#1a1a1a' }}>{token ? 'Set New Password' : 'Forgot Password'}</h2>
+        <h2 style={{ marginTop: '16px', marginBottom: '8px', color: '#101C2C' }}>{token ? 'Set New Password' : 'Forgot Password'}</h2>
         <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '24px' }}>
           {token ? 'Enter your new password below.' : 'Enter your registered email to receive a password reset link.'}
         </p>
@@ -92,7 +92,7 @@ const TeacherForgotPassword = () => {
               type="button"
               onClick={requestReset}
               disabled={loading}
-              style={{ width: '100%', padding: '12px', border: 'none', borderRadius: '8px', background: '#667eea', color: 'white', fontWeight: '600', cursor: 'pointer' }}
+              style={{ width: '100%', padding: '12px', border: 'none', borderRadius: '8px', background: '#101C2C', color: 'white', fontWeight: '600', cursor: 'pointer' }}
             >
               {loading ? 'Sending...' : 'Send Reset Link'}
             </button>
@@ -117,7 +117,7 @@ const TeacherForgotPassword = () => {
               type="button"
               onClick={submitNewPassword}
               disabled={loading}
-              style={{ width: '100%', padding: '12px', border: 'none', borderRadius: '8px', background: '#667eea', color: 'white', fontWeight: '600', cursor: 'pointer' }}
+              style={{ width: '100%', padding: '12px', border: 'none', borderRadius: '8px', background: '#101C2C', color: 'white', fontWeight: '600', cursor: 'pointer' }}
             >
               {loading ? 'Updating...' : 'Reset Password'}
             </button>

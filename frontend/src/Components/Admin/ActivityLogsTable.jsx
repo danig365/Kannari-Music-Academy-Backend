@@ -89,11 +89,11 @@ const ActivityLogsTable = () => {
   const actionBadge = (action) => {
     const colors = {
       login: '#10b981', logout: '#6b7280',
-      create: '#3b82f6', update: '#f59e0b', delete: '#ef4444',
-      view: '#8b5cf6', export: '#06b6d4',
-      message: '#7c3aed', submission: '#ec4899',
+      create: '#101C2C', update: '#C9A66B', delete: '#D85C4A',
+      view: '#7C9BB8', export: '#7C9BB8',
+      message: '#7C9BB8', submission: '#D85C4A',
       session_join: '#10b981', session_leave: '#f97316',
-      session_start: '#059669', session_end: '#dc2626',
+      session_start: '#059669', session_end: '#D85C4A',
     };
     const color = colors[action] || '#64748b';
     return (
@@ -108,7 +108,7 @@ const ActivityLogsTable = () => {
   };
 
   const actorBadge = (type) => {
-    const colors = { admin: '#ef4444', teacher: '#6366f1', student: '#3b82f6', parent: '#8b5cf6' };
+    const colors = { admin: '#D85C4A', teacher: '#7C9BB8', student: '#101C2C', parent: '#7C9BB8' };
     if (!type) return null;
     return (
       <span style={{
@@ -189,10 +189,10 @@ const ActivityLogsTable = () => {
           <strong style={{ color: '#16a34a' }}>{total}</strong> <span style={{ color: '#64748b' }}>total logs</span>
         </div>
         <div style={{ padding: '8px 16px', backgroundColor: '#faf5ff', borderRadius: '8px', fontSize: '13px' }}>
-          <strong style={{ color: '#7c3aed' }}>{logs.filter(l => l.action === 'message').length}</strong> <span style={{ color: '#64748b' }}>messages (this page)</span>
+          <strong style={{ color: '#7C9BB8' }}>{logs.filter(l => l.action === 'message').length}</strong> <span style={{ color: '#64748b' }}>messages (this page)</span>
         </div>
         <div style={{ padding: '8px 16px', backgroundColor: '#fdf2f8', borderRadius: '8px', fontSize: '13px' }}>
-          <strong style={{ color: '#ec4899' }}>{logs.filter(l => l.action === 'submission').length}</strong> <span style={{ color: '#64748b' }}>submissions (this page)</span>
+          <strong style={{ color: '#D85C4A' }}>{logs.filter(l => l.action === 'submission').length}</strong> <span style={{ color: '#64748b' }}>submissions (this page)</span>
         </div>
         <div style={{ padding: '8px 16px', backgroundColor: '#ecfdf5', borderRadius: '8px', fontSize: '13px' }}>
           <strong style={{ color: '#059669' }}>{logs.filter(l => l.action.startsWith('session')).length}</strong> <span style={{ color: '#64748b' }}>session events (this page)</span>
@@ -214,7 +214,7 @@ const ActivityLogsTable = () => {
         <div className="table-responsive">
           <table className="table table-hover" style={{ fontSize: '13px' }}>
             <thead>
-              <tr style={{ backgroundColor: '#f8fafc' }}>
+              <tr style={{ backgroundColor: '#F7F3EA' }}>
                 <th style={{ fontWeight: '600', color: '#475569', width: '60px' }}>ID</th>
                 <th style={{ fontWeight: '600', color: '#475569', width: '140px' }}>Time</th>
                 <th style={{ fontWeight: '600', color: '#475569', width: '110px' }}>Action</th>
@@ -234,7 +234,7 @@ const ActivityLogsTable = () => {
                   </td>
                   <td>{actionBadge(log.action)}</td>
                   <td>
-                    <span style={{ fontWeight: '500', color: '#1e293b' }}>{log.actor || 'System'}</span>
+                    <span style={{ fontWeight: '500', color: '#101C2C' }}>{log.actor || 'System'}</span>
                     {actorBadge(log.actor_type)}
                   </td>
                   <td>
@@ -262,7 +262,7 @@ const ActivityLogsTable = () => {
       {/* Detail Drawer */}
       {selectedLog && (
         <div className="card mt-3" style={{ border: '1px solid #e2e8f0' }}>
-          <div className="card-header d-flex justify-content-between align-items-center" style={{ backgroundColor: '#f8fafc', padding: '12px 16px' }}>
+          <div className="card-header d-flex justify-content-between align-items-center" style={{ backgroundColor: '#F7F3EA', padding: '12px 16px' }}>
             <span style={{ fontWeight: '600', fontSize: '14px' }}>
               Activity Log #{selectedLog.id}
             </span>
@@ -290,7 +290,7 @@ const ActivityLogsTable = () => {
               </div>
               <div className="col-12">
                 <label style={{ fontSize: '11px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase' }}>Description</label>
-                <div style={{ padding: '10px 14px', backgroundColor: '#f8fafc', borderRadius: '8px', fontSize: '13px', lineHeight: '1.6', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                <div style={{ padding: '10px 14px', backgroundColor: '#F7F3EA', borderRadius: '8px', fontSize: '13px', lineHeight: '1.6', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                   {selectedLog.description || 'No description'}
                 </div>
               </div>

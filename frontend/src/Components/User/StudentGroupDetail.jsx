@@ -57,7 +57,7 @@ const StudentGroupDetail = ({ group, onBack }) => {
             <i className="bi bi-arrow-left"></i>
           </button>
           <div>
-            <div style={{ fontWeight: '700', color: '#1e293b', fontSize: '15px' }}>{groupDetail.name || group.name}</div>
+            <div style={{ fontWeight: '700', color: '#101C2C', fontSize: '15px' }}>{groupDetail.name || group.name}</div>
             <div style={{ fontSize: '12px', color: '#64748b' }}>
               {groupDetail.student_count || group.student_count} students
               {groupDetail.teacher_name && ` • ${groupDetail.teacher_name}`}
@@ -76,7 +76,7 @@ const StudentGroupDetail = ({ group, onBack }) => {
                   flex: 1, padding: '10px 0', border: 'none', borderRadius: '8px',
                   fontSize: '13px', fontWeight: '600', cursor: 'pointer',
                   backgroundColor: activeTab === t.key ? '#fff' : 'transparent',
-                  color: activeTab === t.key ? '#1e293b' : '#64748b',
+                  color: activeTab === t.key ? '#101C2C' : '#64748b',
                   boxShadow: activeTab === t.key ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
                   transition: 'all 0.2s', position: 'relative'
                 }}

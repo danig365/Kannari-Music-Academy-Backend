@@ -8,11 +8,11 @@
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  border-left: 5px solid #0d6efd;
+  border-left: 5px solid #101C2C;
 }
 
 .dashboard-header h2 {
-  color: #0d6efd;
+  color: #101C2C;
   font-weight: 600;
 }
 
@@ -32,14 +32,14 @@
 }
 
 .nav-tabs .nav-link:hover {
-  color: #0d6efd;
-  border-bottom-color: #0d6efd;
+  color: #101C2C;
+  border-bottom-color: #101C2C;
 }
 
 .nav-tabs .nav-link.active {
-  color: #0d6efd;
+  color: #101C2C;
   background-color: transparent;
-  border-bottom-color: #0d6efd;
+  border-bottom-color: #101C2C;
   font-weight: 500;
 }
 
@@ -147,7 +147,7 @@
 
 .filter-group input:focus,
 .filter-group select:focus {
-  border-color: #0d6efd;
+  border-color: #101C2C;
   box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
   outline: none;
 }
@@ -165,7 +165,7 @@
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  border-top: 4px solid #0d6efd;
+  border-top: 4px solid #101C2C;
   width: 100%;
   box-sizing: border-box;
   text-align: center;
@@ -176,11 +176,11 @@
 }
 
 .summary-card.danger {
-  border-top-color: #dc3545;
+  border-top-color: #D85C4A;
 }
 
 .summary-card.warning {
-  border-top-color: #ffc107;
+  border-top-color: #C9A66B;
 }
 
 .summary-card.info {

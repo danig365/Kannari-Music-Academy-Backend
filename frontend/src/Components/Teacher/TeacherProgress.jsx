@@ -112,9 +112,9 @@ const TeacherProgress = () => {
 
   const getProgressColor = (percentage) => {
     if (percentage >= 80) return '#22c55e'
-    if (percentage >= 60) return '#3b82f6'
-    if (percentage >= 40) return '#f59e0b'
-    return '#ef4444'
+    if (percentage >= 60) return '#101C2C'
+    if (percentage >= 40) return '#C9A66B'
+    return '#D85C4A'
   }
 
   const getProgressClass = (percentage) => {
@@ -143,15 +143,15 @@ const TeacherProgress = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'active': return { bg: '#dcfce7', color: '#16a34a' }
-      case 'warning': return { bg: '#fef3c7', color: '#d97706' }
-      case 'inactive': return { bg: '#fee2e2', color: '#dc2626' }
+      case 'warning': return { bg: '#fef3c7', color: '#C9A66B' }
+      case 'inactive': return { bg: '#fee2e2', color: '#D85C4A' }
       default: return { bg: '#f1f5f9', color: '#64748b' }
     }
   }
 
   const getStreakStyle = (days) => {
     if (days >= 4) return { color: '#16a34a', icon: 'bi-fire' }
-    if (days >= 1) return { color: '#d97706', icon: 'bi-fire' }
+    if (days >= 1) return { color: '#C9A66B', icon: 'bi-fire' }
     return { color: '#94a3b8', icon: 'bi-dash-circle' }
   }
 
@@ -164,8 +164,8 @@ const TeacherProgress = () => {
     const days = getDaysAgo(dateStr)
     if (days === null) return '#94a3b8'
     if (days <= 3) return '#16a34a'
-    if (days <= 7) return '#d97706'
-    return '#dc2626'
+    if (days <= 7) return '#C9A66B'
+    return '#D85C4A'
   }
 
   // Loading state
@@ -185,13 +185,13 @@ const TeacherProgress = () => {
       }}>
         <i className="bi bi-exclamation-triangle" style={{
           fontSize: '64px',
-          color: '#f59e0b',
+          color: '#C9A66B',
           marginBottom: '16px'
         }}></i>
         <h4 style={{
           fontSize: '20px',
           fontWeight: 600,
-          color: '#1a1a1a',
+          color: '#101C2C',
           margin: '0 0 8px 0'
         }}>Something went wrong</h4>
         <p style={{
@@ -206,7 +206,7 @@ const TeacherProgress = () => {
             alignItems: 'center',
             gap: '8px',
             padding: '10px 20px',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
             border: 'none',
             borderRadius: '12px',
             color: '#fff',
@@ -246,7 +246,7 @@ const TeacherProgress = () => {
             <h1 style={{
               fontSize: 'clamp(28px, 5vw, 42px)',
               fontWeight: 700,
-              color: '#1a1a1a',
+              color: '#101C2C',
               margin: '0 0 8px 0',
               letterSpacing: '-0.5px'
             }}>Progress Analytics</h1>
@@ -274,7 +274,7 @@ const TeacherProgress = () => {
           <h4 style={{
             fontSize: '20px',
             fontWeight: 600,
-            color: '#1a1a1a',
+            color: '#101C2C',
             margin: '0 0 8px 0'
           }}>No Students Yet</h4>
           <p style={{
@@ -287,7 +287,7 @@ const TeacherProgress = () => {
             alignItems: 'center',
             gap: '8px',
             padding: '10px 20px',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
             border: 'none',
             borderRadius: '12px',
             color: '#fff',
@@ -330,7 +330,7 @@ const TeacherProgress = () => {
           <h1 style={{
             fontSize: 'clamp(28px, 5vw, 42px)',
             fontWeight: 700,
-            color: '#1a1a1a',
+            color: '#101C2C',
             margin: '0 0 8px 0',
             letterSpacing: '-0.5px'
           }}>Progress Analytics</h1>
@@ -358,7 +358,7 @@ const TeacherProgress = () => {
             transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#f5f7fa';
+            e.currentTarget.style.background = '#F7F3EA';
             e.currentTarget.style.borderColor = '#cbd5e1';
           }}
           onMouseLeave={(e) => {
@@ -383,9 +383,9 @@ const TeacherProgress = () => {
           style={{
             padding: '10px 20px',
             borderRadius: '12px',
-            border: activeTab === 'overview' ? '2px solid #667eea' : '2px solid #e5e7eb',
+            border: activeTab === 'overview' ? '2px solid #101C2C' : '2px solid #e5e7eb',
             background: activeTab === 'overview' ? '#f0f4f8' : '#fff',
-            color: activeTab === 'overview' ? '#667eea' : '#6b7280',
+            color: activeTab === 'overview' ? '#101C2C' : '#6b7280',
             fontWeight: activeTab === 'overview' ? 600 : 500,
             fontSize: '14px',
             cursor: 'pointer',
@@ -402,9 +402,9 @@ const TeacherProgress = () => {
           style={{
             padding: '10px 20px',
             borderRadius: '12px',
-            border: activeTab === 'students' ? '2px solid #667eea' : '2px solid #e5e7eb',
+            border: activeTab === 'students' ? '2px solid #101C2C' : '2px solid #e5e7eb',
             background: activeTab === 'students' ? '#f0f4f8' : '#fff',
-            color: activeTab === 'students' ? '#667eea' : '#6b7280',
+            color: activeTab === 'students' ? '#101C2C' : '#6b7280',
             fontWeight: activeTab === 'students' ? 600 : 500,
             fontSize: '14px',
             cursor: 'pointer',
@@ -422,9 +422,9 @@ const TeacherProgress = () => {
             style={{
               padding: '10px 20px',
               borderRadius: '12px',
-              border: activeTab === 'courses' ? '2px solid #667eea' : '2px solid #e5e7eb',
+              border: activeTab === 'courses' ? '2px solid #101C2C' : '2px solid #e5e7eb',
               background: activeTab === 'courses' ? '#f0f4f8' : '#fff',
-              color: activeTab === 'courses' ? '#667eea' : '#6b7280',
+              color: activeTab === 'courses' ? '#101C2C' : '#6b7280',
               fontWeight: activeTab === 'courses' ? 600 : 500,
               fontSize: '14px',
               cursor: 'pointer',
@@ -478,7 +478,7 @@ const TeacherProgress = () => {
                 justifyContent: 'center',
                 fontSize: '24px',
                 background: 'rgba(102, 126, 234, 0.15)',
-                color: '#667eea',
+                color: '#101C2C',
                 flexShrink: 0
               }}>
                 <i className="bi bi-graph-up"></i>
@@ -493,7 +493,7 @@ const TeacherProgress = () => {
                 <div style={{
                   fontSize: 'clamp(24px, 8vw, 32px)',
                   fontWeight: 700,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   lineHeight: 1,
                   marginBottom: '8px'
                 }}>{progressData.overall_progress}%</div>
@@ -555,7 +555,7 @@ const TeacherProgress = () => {
                 <div style={{
                   fontSize: 'clamp(24px, 8vw, 32px)',
                   fontWeight: 700,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   lineHeight: 1,
                   marginBottom: '8px'
                 }}>{progressData.completion_rate}%</div>
@@ -598,7 +598,7 @@ const TeacherProgress = () => {
                 justifyContent: 'center',
                 fontSize: '24px',
                 background: 'rgba(249, 158, 11, 0.15)',
-                color: '#f59e0b',
+                color: '#C9A66B',
                 flexShrink: 0
               }}>
                 <i className="bi bi-people-fill"></i>
@@ -613,7 +613,7 @@ const TeacherProgress = () => {
                 <div style={{
                   fontSize: 'clamp(24px, 8vw, 32px)',
                   fontWeight: 700,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   lineHeight: 1,
                   marginBottom: '8px'
                 }}>{progressData.total_students}</div>
@@ -656,7 +656,7 @@ const TeacherProgress = () => {
                 justifyContent: 'center',
                 fontSize: '24px',
                 background: 'rgba(236, 72, 153, 0.15)',
-                color: '#ec4899',
+                color: '#D85C4A',
                 flexShrink: 0
               }}>
                 <i className="bi bi-collection"></i>
@@ -671,7 +671,7 @@ const TeacherProgress = () => {
                 <div style={{
                   fontSize: 'clamp(24px, 8vw, 32px)',
                   fontWeight: 700,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   lineHeight: 1,
                   marginBottom: '8px'
                 }}>{progressData.total_lessons}</div>
@@ -708,18 +708,18 @@ const TeacherProgress = () => {
                 alignItems: 'flex-start',
                 marginBottom: '20px',
                 paddingBottom: '16px',
-                borderBottom: '1px solid #f5f7fa'
+                borderBottom: '1px solid #F7F3EA'
               }}>
                 <h2 style={{
                   fontSize: '16px',
                   fontWeight: 600,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   margin: '0',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px'
                 }}>
-                  <i className="bi bi-pie-chart" style={{ color: '#667eea', fontSize: '18px' }}></i>
+                  <i className="bi bi-pie-chart" style={{ color: '#101C2C', fontSize: '18px' }}></i>
                   Progress Distribution
                 </h2>
               </div>
@@ -735,9 +735,9 @@ const TeacherProgress = () => {
                   {progressData.total_students > 0 && (
                     <>
                       <div style={{ width: `${(progressData.progress_distribution.excellent / progressData.total_students) * 100}%`, background: '#10b981', transition: 'width 0.3s ease' }}></div>
-                      <div style={{ width: `${(progressData.progress_distribution.good / progressData.total_students) * 100}%`, background: '#667eea', transition: 'width 0.3s ease' }}></div>
-                      <div style={{ width: `${(progressData.progress_distribution.average / progressData.total_students) * 100}%`, background: '#f59e0b', transition: 'width 0.3s ease' }}></div>
-                      <div style={{ width: `${(progressData.progress_distribution.needs_improvement / progressData.total_students) * 100}%`, background: '#ef4444', transition: 'width 0.3s ease' }}></div>
+                      <div style={{ width: `${(progressData.progress_distribution.good / progressData.total_students) * 100}%`, background: '#101C2C', transition: 'width 0.3s ease' }}></div>
+                      <div style={{ width: `${(progressData.progress_distribution.average / progressData.total_students) * 100}%`, background: '#C9A66B', transition: 'width 0.3s ease' }}></div>
+                      <div style={{ width: `${(progressData.progress_distribution.needs_improvement / progressData.total_students) * 100}%`, background: '#D85C4A', transition: 'width 0.3s ease' }}></div>
                     </>
                   )}
                 </div>
@@ -745,16 +745,16 @@ const TeacherProgress = () => {
                 {/* Distribution items */}
                 {[
                   { label: 'Excellent (80%+)', color: '#10b981', value: progressData.progress_distribution.excellent },
-                  { label: 'Good (60-79%)', color: '#667eea', value: progressData.progress_distribution.good },
-                  { label: 'Average (40-59%)', color: '#f59e0b', value: progressData.progress_distribution.average },
-                  { label: 'Needs Help (<40%)', color: '#ef4444', value: progressData.progress_distribution.needs_improvement }
+                  { label: 'Good (60-79%)', color: '#101C2C', value: progressData.progress_distribution.good },
+                  { label: 'Average (40-59%)', color: '#C9A66B', value: progressData.progress_distribution.average },
+                  { label: 'Needs Help (<40%)', color: '#D85C4A', value: progressData.progress_distribution.needs_improvement }
                 ].map((item, idx) => (
                   <div key={idx} style={{
                     display: 'flex',
                     alignItems: 'center',
                     marginBottom: '12px',
                     paddingBottom: '12px',
-                    borderBottom: idx < 3 ? '1px solid #f5f7fa' : 'none'
+                    borderBottom: idx < 3 ? '1px solid #F7F3EA' : 'none'
                   }}>
                     <div style={{
                       width: '12px',
@@ -772,7 +772,7 @@ const TeacherProgress = () => {
                     }}>{item.label}</div>
                     <strong style={{
                       fontSize: '14px',
-                      color: '#1a1a1a',
+                      color: '#101C2C',
                       marginRight: '8px',
                       minWidth: '30px',
                       textAlign: 'right'
@@ -806,18 +806,18 @@ const TeacherProgress = () => {
                 alignItems: 'flex-start',
                 marginBottom: '20px',
                 paddingBottom: '16px',
-                borderBottom: '1px solid #f5f7fa'
+                borderBottom: '1px solid #F7F3EA'
               }}>
                 <h2 style={{
                   fontSize: '16px',
                   fontWeight: 600,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   margin: '0',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px'
                 }}>
-                  <i className="bi bi-bar-chart" style={{ color: '#667eea', fontSize: '18px' }}></i>
+                  <i className="bi bi-bar-chart" style={{ color: '#101C2C', fontSize: '18px' }}></i>
                   Weekly Activity
                 </h2>
                 <span style={{
@@ -849,7 +849,7 @@ const TeacherProgress = () => {
                           maxWidth: '40px',
                           height: `${Math.max(height, 4)}px`,
                           background: isToday
-                            ? 'linear-gradient(180deg, #667eea 0%, #764ba2 100%)'
+                            ? 'linear-gradient(180deg, #101C2C 0%, #7C9BB8 100%)'
                             : 'linear-gradient(180deg, rgba(102, 126, 234, 0.5) 0%, rgba(102, 126, 234, 0.3) 100%)',
                           borderRadius: '8px 8px 0 0',
                           margin: '0 auto',
@@ -875,7 +875,7 @@ const TeacherProgress = () => {
                       <div style={{
                         fontSize: '13px',
                         fontWeight: 600,
-                        color: day.activities > 0 ? '#1a1a1a' : '#94a3b8'
+                        color: day.activities > 0 ? '#101C2C' : '#94a3b8'
                       }}>
                         {day.activities}
                       </div>
@@ -900,12 +900,12 @@ const TeacherProgress = () => {
               alignItems: 'center',
               marginBottom: '16px',
               paddingBottom: '12px',
-              borderBottom: '1px solid #f5f7fa'
+              borderBottom: '1px solid #F7F3EA'
             }}>
               <h2 style={{
                 fontSize: '16px',
                 fontWeight: 600,
-                color: '#1a1a1a',
+                color: '#101C2C',
                 margin: 0,
                 display: 'flex',
                 alignItems: 'center',
@@ -932,14 +932,14 @@ const TeacherProgress = () => {
                 </div>
               </div>
               <div style={{ background: '#fff7ed', borderRadius: '12px', padding: '12px' }}>
-                <div style={{ fontSize: '12px', color: '#d97706', fontWeight: 600 }}>Practice Again</div>
+                <div style={{ fontSize: '12px', color: '#C9A66B', fontWeight: 600 }}>Practice Again</div>
                 <div style={{ fontSize: '20px', fontWeight: 700, color: '#92400e' }}>
                   {progressData.repeat_after_me_counts?.again || 0}
                 </div>
               </div>
               <div style={{ background: '#eff6ff', borderRadius: '12px', padding: '12px' }}>
-                <div style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600 }}>I Got It</div>
-                <div style={{ fontSize: '20px', fontWeight: 700, color: '#1e3a8a' }}>
+                <div style={{ fontSize: '12px', color: '#101C2C', fontWeight: 600 }}>I Got It</div>
+                <div style={{ fontSize: '20px', fontWeight: 700, color: '#101C2C' }}>
                   {progressData.repeat_after_me_counts?.got_it || 0}
                 </div>
               </div>
@@ -959,7 +959,7 @@ const TeacherProgress = () => {
                   <tbody>
                     {progressData.repeat_after_me_recent.map((item, idx) => (
                       <tr key={`${item.student_id}-${item.lesson_id}-${idx}`} style={{ borderTop: '1px solid #f1f5f9' }}>
-                        <td style={{ padding: '8px 4px', color: '#1f2937' }}>{item.student_name}</td>
+                        <td style={{ padding: '8px 4px', color: '#101C2C' }}>{item.student_name}</td>
                         <td style={{ padding: '8px 4px', color: '#475569' }}>{item.lesson_title}</td>
                         <td style={{ padding: '8px 4px' }}>
                           {item.action === 'done' && 'Done'}
@@ -994,7 +994,7 @@ const TeacherProgress = () => {
                   <button 
                     className='view-all-link' 
                     onClick={() => { setActiveTab('students'); setSortField('progress_percentage'); setSortDirection('desc'); }}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3b82f6', fontSize: 13 }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#101C2C', fontSize: 13 }}
                   >
                     View All
                   </button>
@@ -1010,7 +1010,7 @@ const TeacherProgress = () => {
                             height: 32,
                             borderRadius: '50%',
                             background: index === 0 ? '#fef3c7' : index === 1 ? '#f1f5f9' : '#fed7aa',
-                            color: index === 0 ? '#f59e0b' : index === 1 ? '#64748b' : '#ea580c',
+                            color: index === 0 ? '#C9A66B' : index === 1 ? '#64748b' : '#ea580c',
                             fontWeight: 600,
                             fontSize: 13
                           }}
@@ -1073,7 +1073,7 @@ const TeacherProgress = () => {
                   <button 
                     className='view-all-link'
                     onClick={() => { setActiveTab('students'); setStatusFilter('warning'); }}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3b82f6', fontSize: 13 }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#101C2C', fontSize: 13 }}
                   >
                     View All
                   </button>
@@ -1143,7 +1143,7 @@ const TeacherProgress = () => {
           <div className='row g-3 mb-4'>
             <div className='col-4'>
               <div className='content-card text-center py-3'>
-                <div style={{ fontSize: 28, fontWeight: 700, color: '#3b82f6' }}>
+                <div style={{ fontSize: 28, fontWeight: 700, color: '#101C2C' }}>
                   {progressData.student_progress.length}
                 </div>
                 <div className='text-muted small mt-1'>Total Students</div>
@@ -1159,7 +1159,7 @@ const TeacherProgress = () => {
             </div>
             <div className='col-4'>
               <div className='content-card text-center py-3'>
-                <div style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>
+                <div style={{ fontSize: 28, fontWeight: 700, color: '#C9A66B' }}>
                   {progressData.student_progress.reduce((sum, s) => sum + (s.pending_submissions || 0), 0)}
                 </div>
                 <div className='text-muted small mt-1'>Pending Reviews</div>
@@ -1188,7 +1188,7 @@ const TeacherProgress = () => {
                       outline: 'none',
                       transition: 'border-color 0.2s'
                     }}
-                    onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                    onFocus={(e) => e.target.style.borderColor = '#101C2C'}
                     onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                   />
                 </div>
@@ -1206,7 +1206,7 @@ const TeacherProgress = () => {
                   outline: 'none',
                   background: '#fff',
                   cursor: 'pointer',
-                  color: levelFilter === 'all' ? '#94a3b8' : '#1e293b'
+                  color: levelFilter === 'all' ? '#94a3b8' : '#101C2C'
                 }}
               >
                 <option value='all'>All Levels</option>
@@ -1227,7 +1227,7 @@ const TeacherProgress = () => {
                   outline: 'none',
                   background: '#fff',
                   cursor: 'pointer',
-                  color: instrumentFilter === 'all' ? '#94a3b8' : '#1e293b'
+                  color: instrumentFilter === 'all' ? '#94a3b8' : '#101C2C'
                 }}
               >
                 <option value='all'>All Instruments</option>
@@ -1248,7 +1248,7 @@ const TeacherProgress = () => {
                   outline: 'none',
                   background: '#fff',
                   cursor: 'pointer',
-                  color: statusFilter === 'all' ? '#94a3b8' : '#1e293b'
+                  color: statusFilter === 'all' ? '#94a3b8' : '#101C2C'
                 }}
               >
                 <option value='all'>All Statuses</option>
@@ -1271,7 +1271,7 @@ const TeacherProgress = () => {
                     borderRadius: 8,
                     border: '1.5px solid #fee2e2',
                     background: '#fef2f2',
-                    color: '#ef4444',
+                    color: '#D85C4A',
                     fontSize: 13,
                     fontWeight: 600,
                     cursor: 'pointer'
@@ -1398,7 +1398,7 @@ const TeacherProgress = () => {
                                 <span style={{
                                   marginLeft: 6,
                                   background: '#fef3c7',
-                                  color: '#d97706',
+                                  color: '#C9A66B',
                                   borderRadius: 10,
                                   padding: '1px 7px',
                                   fontSize: 11,
@@ -1468,7 +1468,7 @@ const TeacherProgress = () => {
                         height: 44,
                         borderRadius: 10,
                         background: '#eff6ff',
-                        color: '#3b82f6',
+                        color: '#101C2C',
                         flexShrink: 0
                       }}
                     >

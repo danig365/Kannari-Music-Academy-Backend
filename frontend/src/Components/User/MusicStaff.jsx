@@ -105,7 +105,7 @@ const MusicStaff = ({
     noteColor = '#22c55e';
     glowFilter = 'url(#glow-correct)';
   } else if (highlight === 'incorrect') {
-    noteColor = '#ef4444';
+    noteColor = '#D85C4A';
     glowFilter = 'url(#glow-incorrect)';
   }
 
@@ -129,7 +129,7 @@ const MusicStaff = ({
         </filter>
         <filter id="glow-incorrect" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="4" result="blur" />
-          <feFlood floodColor="#ef4444" floodOpacity="0.6" />
+          <feFlood floodColor="#D85C4A" floodOpacity="0.6" />
           <feComposite in2="blur" operator="in" />
           <feMerge>
             <feMergeNode />
@@ -227,7 +227,7 @@ const MusicStaff = ({
           textAnchor="middle"
           fontSize="20"
           fontWeight="bold"
-          fill="#f59e0b"
+          fill="#C9A66B"
           opacity="0.8"
         >
           ?

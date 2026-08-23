@@ -14,7 +14,7 @@ const formatAccessLevel = (level) => {
 };
 
 const getAccessLevelColor = (level) => {
-    const colors = { 0: '#6b7280', 1: '#3b82f6', 2: '#8b5cf6', 3: '#f59e0b', 4: '#10b981' };
+    const colors = { 0: '#6b7280', 1: '#101C2C', 2: '#7C9BB8', 3: '#C9A66B', 4: '#10b981' };
     return colors[level] || '#6b7280';
 };
 

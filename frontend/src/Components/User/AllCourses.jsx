@@ -190,7 +190,7 @@ const AllCourses = () => {
                       {/* Rating and Students */}
                       <div className="course-stats">
                         <span>
-                          <i className="bi bi-star-fill" style={{color: '#f59e0b', marginRight: '4px'}}></i>
+                          <i className="bi bi-star-fill" style={{color: '#C9A66B', marginRight: '4px'}}></i>
                           {course.course_rating ? course.course_rating.toFixed(1) : 'New'}
                         </span>
                         <span>

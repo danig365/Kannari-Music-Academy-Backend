@@ -95,10 +95,10 @@ const GroupChat = ({ groupId, studentId }) => {
   };
 
   const getSenderColor = (msg) => {
-    if (msg.sender_type === 'teacher') return '#6366f1';
-    if (msg.sender_type === 'admin' || msg.sender_type === 'school') return '#ef4444';
-    if (msg.sender_type === 'parent') return '#f59e0b';
-    return '#3b82f6';
+    if (msg.sender_type === 'teacher') return '#7C9BB8';
+    if (msg.sender_type === 'admin' || msg.sender_type === 'school') return '#D85C4A';
+    if (msg.sender_type === 'parent') return '#C9A66B';
+    return '#101C2C';
   };
 
   const getSenderInitials = (msg) => {
@@ -118,7 +118,7 @@ const GroupChat = ({ groupId, studentId }) => {
       {/* Pinned messages banner */}
       {pinnedMessages.length > 0 && (
         <div style={{ padding: '8px 16px', backgroundColor: '#fefce8', borderBottom: '1px solid #fde68a', fontSize: '13px' }}>
-          <i className="bi bi-pin-fill me-1" style={{ color: '#f59e0b' }}></i>
+          <i className="bi bi-pin-fill me-1" style={{ color: '#C9A66B' }}></i>
           <strong>Pinned:</strong> {pinnedMessages[pinnedMessages.length - 1]?.content?.substring(0, 100)}
           {pinnedMessages.length > 1 && <span style={{ color: '#92400e', marginLeft: '8px' }}>+{pinnedMessages.length - 1} more</span>}
         </div>
@@ -171,7 +171,7 @@ const GroupChat = ({ groupId, studentId }) => {
                       <span style={{ fontWeight: '600', fontSize: '12px', color: color }}>
                         {msg.sender_name_display || msg.sender_name}
                       </span>
-                      <span style={{ fontSize: '10px', color: '#94a3b8', padding: '1px 6px', borderRadius: '8px', backgroundColor: '#f8fafc', textTransform: 'capitalize' }}>
+                      <span style={{ fontSize: '10px', color: '#94a3b8', padding: '1px 6px', borderRadius: '8px', backgroundColor: '#F7F3EA', textTransform: 'capitalize' }}>
                         {msg.sender_type}
                       </span>
                       <span style={{ fontSize: '10px', color: '#94a3b8' }}>{timeAgo(msg.created_at)}</span>
@@ -179,13 +179,13 @@ const GroupChat = ({ groupId, studentId }) => {
                   )}
                   <div style={{
                     padding: '8px 14px', borderRadius: '12px', fontSize: '14px', lineHeight: '1.5',
-                    backgroundColor: own ? '#6366f1' : (msg.is_pinned ? '#fef3c7' : '#f1f5f9'),
-                    color: own ? '#fff' : '#1e293b',
+                    backgroundColor: own ? '#7C9BB8' : (msg.is_pinned ? '#fef3c7' : '#f1f5f9'),
+                    color: own ? '#fff' : '#101C2C',
                     borderTopRightRadius: own && !showAvatar ? '12px' : own ? '4px' : '12px',
                     borderTopLeftRadius: !own && !showAvatar ? '12px' : !own ? '4px' : '12px',
                     wordBreak: 'break-word'
                   }}>
-                    {msg.is_pinned && !own && <i className="bi bi-pin-fill me-1" style={{ color: '#f59e0b', fontSize: '11px' }}></i>}
+                    {msg.is_pinned && !own && <i className="bi bi-pin-fill me-1" style={{ color: '#C9A66B', fontSize: '11px' }}></i>}
                     {msg.content}
                   </div>
                 </div>
@@ -199,9 +199,9 @@ const GroupChat = ({ groupId, studentId }) => {
       {/* Message input */}
       {minorBlocked ? (
         <div style={{ padding: '14px 16px', borderTop: '1px solid #e2e8f0', backgroundColor: '#fffbeb', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <i className="bi bi-shield-lock-fill" style={{ color: '#f59e0b', fontSize: '16px' }}></i>
+          <i className="bi bi-shield-lock-fill" style={{ color: '#C9A66B', fontSize: '16px' }}></i>
           <span style={{ fontSize: '13px', color: '#92400e', fontWeight: '500' }}>
-            Group chat sending is locked — parent approval required. <a href="/parent/login" style={{ color: '#7c3aed', fontWeight: '600' }}>Parent Portal</a>
+            Group chat sending is locked — parent approval required. <a href="/parent/login" style={{ color: '#7C9BB8', fontWeight: '600' }}>Parent Portal</a>
           </span>
         </div>
       ) : (
@@ -223,7 +223,7 @@ const GroupChat = ({ groupId, studentId }) => {
           disabled={!newMsg.trim() || sending}
           style={{
             width: '40px', height: '40px', borderRadius: '50%', border: 'none',
-            backgroundColor: newMsg.trim() ? '#6366f1' : '#e2e8f0',
+            backgroundColor: newMsg.trim() ? '#7C9BB8' : '#e2e8f0',
             color: '#fff', cursor: newMsg.trim() ? 'pointer' : 'default',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'all 0.2s', flexShrink: 0

@@ -126,7 +126,7 @@
 }
 
 .btn-danger {
-    background: linear-gradient(135deg, #dc3545 0%, #bb2d3b 100%);
+    background: linear-gradient(135deg, #D85C4A 0%, #bb2d3b 100%);
     border: none;
     color: white;
     box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
@@ -167,8 +167,8 @@
 }
 
 .btn-danger {
-    background-color: #dc3545;
-    border-color: #dc3545;
+    background-color: #D85C4A;
+    border-color: #D85C4A;
     width: auto;
     display: inline-block;
 }
@@ -415,8 +415,8 @@
 }
 
 .btn-warning {
-    background-color: #ffc107;
-    border-color: #ffc107;
+    background-color: #C9A66B;
+    border-color: #C9A66B;
     color: #000;
 }
 

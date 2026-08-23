@@ -153,7 +153,7 @@ const AdminLessonManagement = ({
             id: 'video_lesson',
             name: 'Video Lesson',
             icon: 'bi-play-circle-fill',
-            color: '#3b82f6',
+            color: '#101C2C',
             description: 'Standard video lesson with objectives',
             defaults: {
                 content_type: 'video',
@@ -167,7 +167,7 @@ const AdminLessonManagement = ({
             id: 'practice_session',
             name: 'Practice Session',
             icon: 'bi-music-note-beamed',
-            color: '#8b5cf6',
+            color: '#7C9BB8',
             description: 'Audio practice with play-along tracks',
             defaults: {
                 content_type: 'audio',
@@ -181,7 +181,7 @@ const AdminLessonManagement = ({
             id: 'theory_reading',
             name: 'Theory & Reading',
             icon: 'bi-file-pdf-fill',
-            color: '#ef4444',
+            color: '#D85C4A',
             description: 'PDF document with theory content',
             defaults: {
                 content_type: 'pdf',
@@ -195,7 +195,7 @@ const AdminLessonManagement = ({
             id: 'free_preview',
             name: 'Free Preview',
             icon: 'bi-eye-fill',
-            color: '#f59e0b',
+            color: '#C9A66B',
             description: 'Unlocked preview lesson for non-enrolled users',
             defaults: {
                 content_type: 'video',
@@ -270,15 +270,15 @@ const AdminLessonManagement = ({
     const [selectedTemplate, setSelectedTemplate] = useState(null);
 
     const blockPaletteItems = [
-        { type: 'video',           label: 'Teacher Video',   icon: 'bi-camera-video-fill',    color: '#3b82f6' },
-        { type: 'audio',           label: 'Practice Audio',  icon: 'bi-music-note-beamed',    color: '#8b5cf6' },
-        { type: 'image',           label: 'Image/Diagram',   icon: 'bi-image',                color: '#06b6d4' },
+        { type: 'video',           label: 'Teacher Video',   icon: 'bi-camera-video-fill',    color: '#101C2C' },
+        { type: 'audio',           label: 'Practice Audio',  icon: 'bi-music-note-beamed',    color: '#7C9BB8' },
+        { type: 'image',           label: 'Image/Diagram',   icon: 'bi-image',                color: '#7C9BB8' },
         { type: 'repeat_after_me', label: 'Repeat After Me', icon: 'bi-arrow-repeat',         color: '#f97316' },
         { type: 'checklist',       label: 'Checklist',       icon: 'bi-check2-square',        color: '#16a34a' },
-        { type: 'timer',           label: 'Practice Timer',  icon: 'bi-stopwatch',            color: '#ef4444' },
-        { type: 'quiz',            label: 'Quiz',            icon: 'bi-question-circle-fill', color: '#f59e0b' },
-        { type: 'submission',      label: 'Submission',      icon: 'bi-mic-fill',             color: '#ec4899' },
-        { type: 'badge',           label: 'Reward Badge',    icon: 'bi-award-fill',           color: '#7c3aed' },
+        { type: 'timer',           label: 'Practice Timer',  icon: 'bi-stopwatch',            color: '#D85C4A' },
+        { type: 'quiz',            label: 'Quiz',            icon: 'bi-question-circle-fill', color: '#C9A66B' },
+        { type: 'submission',      label: 'Submission',      icon: 'bi-mic-fill',             color: '#D85C4A' },
+        { type: 'badge',           label: 'Reward Badge',    icon: 'bi-award-fill',           color: '#7C9BB8' },
         { type: 'assignment',      label: 'Assignment',      icon: 'bi-journal-text',         color: '#0891b2' },
         { type: 'practice_counter', label: 'Practice Counter', icon: 'bi-hand-index-thumb-fill', color: '#0e7490' },
     ];
@@ -572,7 +572,7 @@ const AdminLessonManagement = ({
             text: 'This will delete all modules and lessons. This cannot be undone.',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#dc2626',
+            confirmButtonColor: '#D85C4A',
             confirmButtonText: 'Yes, delete it!'
         });
 
@@ -645,7 +645,7 @@ const AdminLessonManagement = ({
             text: 'This will also delete all lessons within this module.',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#dc2626',
+            confirmButtonColor: '#D85C4A',
             confirmButtonText: 'Yes, delete it!'
         });
 
@@ -844,11 +844,11 @@ const AdminLessonManagement = ({
                     <p>The selected file exceeds the maximum allowed size for <strong>${contentType}</strong> content.</p>
                     <table style="width:100%; margin-top:10px; font-size:14px;">
                         <tr><td style="padding:4px 8px; color:#666;">Your file:</td><td style="padding:4px 8px; font-weight:600;">${formatFileSize(file.size)}</td></tr>
-                        <tr><td style="padding:4px 8px; color:#666;">Max allowed:</td><td style="padding:4px 8px; font-weight:600; color:#dc2626;">${maxLabel}</td></tr>
+                        <tr><td style="padding:4px 8px; color:#666;">Max allowed:</td><td style="padding:4px 8px; font-weight:600; color:#D85C4A;">${maxLabel}</td></tr>
                     </table>
                     <p style="margin-top:12px; font-size:13px; color:#666;">Tip: Compress or reduce the quality of your file before uploading.</p>
                 </div>`,
-                confirmButtonColor: '#4285f4'
+                confirmButtonColor: '#101C2C'
             });
             return false;
         }
@@ -984,6 +984,42 @@ const AdminLessonManagement = ({
         };
     };
 
+    // ====== MODULE / LESSON MANUAL LOCK (override on top of weekly drip) ======
+    // manual_lock: null = follow weekly schedule, true = force locked, false = force unlocked.
+    const nextLockState = (manual_lock) => {
+        if (manual_lock === true) return 'unlock';   // Locked  -> Unlocked
+        if (manual_lock === false) return 'auto';    // Unlocked -> Auto
+        return 'lock';                               // Auto    -> Locked
+    };
+
+    const lockBadge = (manual_lock) => {
+        if (manual_lock === true) return { icon: 'bi-lock-fill', color: '#D85C4A', bg: '#fee2e2', label: 'Locked' };
+        if (manual_lock === false) return { icon: 'bi-unlock-fill', color: '#16a34a', bg: '#dcfce7', label: 'Unlocked' };
+        return { icon: 'bi-calendar-week', color: '#6b7280', bg: '#f3f4f6', label: 'Auto (schedule)' };
+    };
+
+    const handleToggleModuleLock = async (module) => {
+        try {
+            await axios.post(`${baseUrl}/module/${module.id}/lock/`, {
+                state: nextLockState(module.manual_lock), ...getDownloadableRequestParams()
+            });
+            if (courseData?.course_id) fetchCourseStructure(courseData.course_id);
+        } catch (e) {
+            Swal.fire({ icon: 'error', title: 'Could not update module lock', text: e?.response?.data?.error || 'Please try again.' });
+        }
+    };
+
+    const handleToggleLessonLock = async (lesson) => {
+        try {
+            await axios.post(`${baseUrl}/lesson/${lesson.id}/lock/`, {
+                state: nextLockState(lesson.manual_lock), ...getDownloadableRequestParams()
+            });
+            if (courseData?.course_id) fetchCourseStructure(courseData.course_id);
+        } catch (e) {
+            Swal.fire({ icon: 'error', title: 'Could not update lesson lock', text: e?.response?.data?.error || 'Please try again.' });
+        }
+    };
+
     // ─── Lesson Block Builder helpers ───────────────────────────────────────────
     const getBlockRequestParams = () => ({
         requester_type: userType === 'teacher' ? 'teacher' : 'admin',
@@ -1013,14 +1049,14 @@ const AdminLessonManagement = ({
             setLessonBlocks(prev => [...prev, res.data]);
         } catch (err) {
             console.error('Error adding block:', err);
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Could not add block', confirmButtonColor: '#4285f4' });
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Could not add block', confirmButtonColor: '#101C2C' });
         }
     };
 
     const deleteLessonBlock = async (blockId) => {
         const result = await Swal.fire({
             title: 'Remove block?', text: 'This will permanently delete this block.',
-            icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Delete',
+            icon: 'warning', showCancelButton: true, confirmButtonColor: '#D85C4A', confirmButtonText: 'Delete',
         });
         if (!result.isConfirmed) return;
         try {
@@ -1110,7 +1146,7 @@ const AdminLessonManagement = ({
             inputPlaceholder: 'e.g. "Intro Quiz" or "Breathing Exercise"',
             showCancelButton: true,
             confirmButtonText: 'Save',
-            confirmButtonColor: '#4285f4',
+            confirmButtonColor: '#101C2C',
             inputValidator: v => !v.trim() ? 'Please enter a name' : null,
         });
         if (!libName) return;
@@ -1132,7 +1168,7 @@ const AdminLessonManagement = ({
             Swal.fire({ icon: 'success', title: 'Saved!', text: `"${libName.trim()}" added to your library.`, timer: 2000, showConfirmButton: false });
         } catch (err) {
             console.error('Error saving to library:', err);
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Could not save to library.', confirmButtonColor: '#4285f4' });
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Could not save to library.', confirmButtonColor: '#101C2C' });
         } finally {
             setSavingToLibraryId(null);
         }
@@ -1153,7 +1189,7 @@ const AdminLessonManagement = ({
             setPaletteTab('blocks');
         } catch (err) {
             console.error('Error cloning library block:', err);
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Could not add block to lesson.', confirmButtonColor: '#4285f4' });
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Could not add block to lesson.', confirmButtonColor: '#101C2C' });
         }
     };
 
@@ -1224,7 +1260,7 @@ const AdminLessonManagement = ({
             setTimeout(() => setSavingBlockId(null), 1800);
         } catch (err) {
             console.error('Error saving block:', err);
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Could not save block', confirmButtonColor: '#4285f4' });
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Could not save block', confirmButtonColor: '#101C2C' });
             setSavingBlockId(null);
         }
     };
@@ -1430,7 +1466,7 @@ const AdminLessonManagement = ({
             text: 'This action cannot be undone.',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#dc2626',
+            confirmButtonColor: '#D85C4A',
             confirmButtonText: 'Yes, delete it!'
         });
 
@@ -1462,12 +1498,12 @@ const AdminLessonManagement = ({
 
     const getDownloadableTypeColor = (type) => {
         switch (type) {
-            case 'pdf': return '#ef4444';
-            case 'sheet_music': return '#8b5cf6';
-            case 'audio_slow': return '#3b82f6';
-            case 'audio_fast': return '#f59e0b';
+            case 'pdf': return '#D85C4A';
+            case 'sheet_music': return '#7C9BB8';
+            case 'audio_slow': return '#101C2C';
+            case 'audio_fast': return '#C9A66B';
             case 'audio_playalong': return '#22c55e';
-            case 'worksheet': return '#06b6d4';
+            case 'worksheet': return '#7C9BB8';
             default: return '#6b7280';
         }
     };
@@ -1478,7 +1514,7 @@ const AdminLessonManagement = ({
             text: 'This action cannot be undone.',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#dc2626',
+            confirmButtonColor: '#D85C4A',
             confirmButtonText: 'Yes, delete it!'
         });
 
@@ -1507,7 +1543,7 @@ const AdminLessonManagement = ({
             inputValue: `${lesson.title} (Copy)`,
             showCancelButton: true,
             confirmButtonText: 'Duplicate',
-            confirmButtonColor: '#4285f4',
+            confirmButtonColor: '#101C2C',
             inputValidator: (value) => {
                 if (!value || !value.trim()) {
                     return 'Title is required';
@@ -1556,9 +1592,9 @@ const AdminLessonManagement = ({
 
     const getContentTypeColor = (type) => {
         switch (type) {
-            case 'video': return '#3b82f6';
-            case 'audio': return '#8b5cf6';
-            case 'pdf': return '#ef4444';
+            case 'video': return '#101C2C';
+            case 'audio': return '#7C9BB8';
+            case 'pdf': return '#D85C4A';
             case 'image': return '#22c55e';
             default: return '#6b7280';
         }
@@ -1581,8 +1617,8 @@ const AdminLessonManagement = ({
                             {/* Header */}
                             <div className="lesson-header">
                                 <div>
-                                    <h2 style={{ color: '#1a2332', fontWeight: 700, fontSize: '28px', letterSpacing: '-0.5px', marginBottom: '4px' }}>
-                                        <i className="bi bi-collection-play me-2" style={{ color: '#4285f4' }}></i>
+                                    <h2 style={{ color: '#101C2C', fontWeight: 700, fontSize: '28px', letterSpacing: '-0.5px', marginBottom: '4px' }}>
+                                        <i className="bi bi-collection-play me-2" style={{ color: '#101C2C' }}></i>
                                         {pageTitle}
                                     </h2>
                                     <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: 0 }}>
@@ -1596,7 +1632,7 @@ const AdminLessonManagement = ({
                                     className="btn"
                                     onClick={openAddCourseModal}
                                     style={{
-                                        background: 'linear-gradient(135deg, #4285f4 0%, #3b5998 100%)',
+                                        background: 'linear-gradient(135deg, #101C2C 0%, #101C2C 100%)',
                                         color: '#fff',
                                         border: 'none',
                                         borderRadius: '8px',
@@ -1621,7 +1657,7 @@ const AdminLessonManagement = ({
                             {/* Stats */}
                             <div className="lesson-stats-grid">
                                 <div className="stat-card">
-                                    <i className="bi bi-book" style={{ color: '#4285f4' }}></i>
+                                    <i className="bi bi-book" style={{ color: '#101C2C' }}></i>
                                     <h3>{courses.length}</h3>
                                     <p>Total Courses</p>
                                 </div>
@@ -1703,7 +1739,7 @@ const AdminLessonManagement = ({
                                                 ) : (
                                                     <div style={{
                                                         height: '140px',
-                                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                        background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
@@ -1717,7 +1753,7 @@ const AdminLessonManagement = ({
                                                     <div className="course-actions" style={{ marginBottom: '8px' }}>
                                                         <span style={{
                                                             background: '#e8f4fd',
-                                                            color: '#1976d2',
+                                                            color: '#101C2C',
                                                             padding: '4px 10px',
                                                             borderRadius: '12px',
                                                             fontSize: '11px',
@@ -1739,20 +1775,20 @@ const AdminLessonManagement = ({
                                                             <button
                                                                 className="btn btn-sm"
                                                                 onClick={(e) => { e.stopPropagation(); openEditCourseModal(course); }}
-                                                                style={{ background: '#e3f2fd', color: '#1976d2', border: 'none', borderRadius: '6px', padding: '4px 8px' }}
+                                                                style={{ background: '#e3f2fd', color: '#101C2C', border: 'none', borderRadius: '6px', padding: '4px 8px' }}
                                                             >
                                                                 <i className="bi bi-pencil"></i>
                                                             </button>
                                                             <button
                                                                 className="btn btn-sm"
                                                                 onClick={(e) => handleDeleteCourse(course.id, e)}
-                                                                style={{ background: '#ffebee', color: '#c62828', border: 'none', borderRadius: '6px', padding: '4px 8px' }}
+                                                                style={{ background: '#ffebee', color: '#D85C4A', border: 'none', borderRadius: '6px', padding: '4px 8px' }}
                                                             >
                                                                 <i className="bi bi-trash"></i>
                                                             </button>
                                                         </div>
                                                     </div>
-                                                    <h6 style={{ fontWeight: 600, color: '#1a2332', marginBottom: '8px', fontSize: '15px' }}>
+                                                    <h6 style={{ fontWeight: 600, color: '#101C2C', marginBottom: '8px', fontSize: '15px' }}>
                                                         {course.title}
                                                     </h6>
                                                     <p className="text-muted small mb-3" style={{ fontSize: '13px' }}>
@@ -1784,7 +1820,7 @@ const AdminLessonManagement = ({
                                                                 {course.total_enrolled_students || 0}
                                                             </span>
                                                         </div>
-                                                        <i className="bi bi-arrow-right-circle" style={{ color: '#4285f4', fontSize: '20px' }}></i>
+                                                        <i className="bi bi-arrow-right-circle" style={{ color: '#101C2C', fontSize: '20px' }}></i>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1800,7 +1836,7 @@ const AdminLessonManagement = ({
                                                 <button
                                                     className="btn mt-2"
                                                     onClick={openAddCourseModal}
-                                                    style={{ background: '#4285f4', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 24px' }}
+                                                    style={{ background: '#101C2C', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 24px' }}
                                                 >
                                                     <i className="bi bi-plus-lg me-2"></i>
                                                     Add First Course
@@ -1832,7 +1868,7 @@ const AdminLessonManagement = ({
                                         Back to Courses
                                     </button>
                                     <div>
-                                        <h4 style={{ margin: 0, fontWeight: 600, color: '#1a2332' }}>{courseData?.course_title}</h4>
+                                        <h4 style={{ margin: 0, fontWeight: 600, color: '#101C2C' }}>{courseData?.course_title}</h4>
                                         <small className="text-muted">{courseData?.total_modules || 0} Modules</small>
                                     </div>
                                 </div>
@@ -1840,7 +1876,7 @@ const AdminLessonManagement = ({
                                     className="btn"
                                     onClick={openAddModuleModal}
                                     style={{
-                                        background: 'linear-gradient(135deg, #4285f4 0%, #3b5998 100%)',
+                                        background: 'linear-gradient(135deg, #101C2C 0%, #101C2C 100%)',
                                         color: '#fff',
                                         border: 'none',
                                         borderRadius: '8px',
@@ -1860,14 +1896,14 @@ const AdminLessonManagement = ({
                                         {/* Module Header */}
                                         <div
                                             className="card-header d-flex justify-content-between align-items-center"
-                                            style={{ backgroundColor: '#f8fafc', borderBottom: expandedModules[module.id] ? '1px solid #e5e7eb' : 'none', padding: '16px 20px', cursor: 'pointer' }}
+                                            style={{ backgroundColor: '#F7F3EA', borderBottom: expandedModules[module.id] ? '1px solid #e5e7eb' : 'none', padding: '16px 20px', cursor: 'pointer' }}
                                             onClick={() => toggleModuleExpand(module.id)}
                                         >
                                             <div className="d-flex align-items-center gap-3">
                                                 <span style={{
                                                     width: '32px',
                                                     height: '32px',
-                                                    background: 'linear-gradient(135deg, #4285f4 0%, #3b5998 100%)',
+                                                    background: 'linear-gradient(135deg, #101C2C 0%, #101C2C 100%)',
                                                     color: 'white',
                                                     borderRadius: '50%',
                                                     display: 'flex',
@@ -1879,11 +1915,22 @@ const AdminLessonManagement = ({
                                                     {moduleIndex + 1}
                                                 </span>
                                                 <div>
-                                                    <h6 style={{ margin: 0, fontWeight: 600, color: '#1a2332' }}>{module.title}</h6>
+                                                    <h6 style={{ margin: 0, fontWeight: 600, color: '#101C2C' }}>{module.title}</h6>
                                                     <small className="text-muted">{module.total_lessons || module.lessons?.length || 0} Lessons</small>
                                                 </div>
                                             </div>
                                             <div className="d-flex align-items-center gap-2" style={{ flexShrink: 0 }}>
+                                                {(() => { const b = lockBadge(module.manual_lock); return (
+                                                    <button
+                                                        className="btn btn-sm"
+                                                        onClick={(e) => { e.stopPropagation(); handleToggleModuleLock(module); }}
+                                                        title={`Module access: ${b.label}. Click to change (Auto → Locked → Unlocked).`}
+                                                        style={{ background: b.bg, color: b.color, border: 'none', borderRadius: '6px', padding: '6px 10px', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', fontWeight: 600 }}
+                                                    >
+                                                        <i className={`bi ${b.icon}`}></i>
+                                                        <span>{b.label}</span>
+                                                    </button>
+                                                ); })()}
                                                 <button
                                                     className="btn btn-sm"
                                                     onClick={(e) => { e.stopPropagation(); openAddLessonModal(module.id); }}
@@ -1896,7 +1943,7 @@ const AdminLessonManagement = ({
                                                     className="btn btn-sm"
                                                     onClick={(e) => { e.stopPropagation(); openEditModuleModal(module); }}
                                                     title="Edit Module"
-                                                    style={{ background: '#e3f2fd', color: '#1976d2', border: 'none', borderRadius: '6px', padding: '6px 10px' }}
+                                                    style={{ background: '#e3f2fd', color: '#101C2C', border: 'none', borderRadius: '6px', padding: '6px 10px' }}
                                                 >
                                                     <i className="bi bi-pencil"></i>
                                                 </button>
@@ -1904,7 +1951,7 @@ const AdminLessonManagement = ({
                                                     className="btn btn-sm"
                                                     onClick={(e) => { e.stopPropagation(); handleDeleteModule(module.id); }}
                                                     title="Delete Module"
-                                                    style={{ background: '#ffebee', color: '#c62828', border: 'none', borderRadius: '6px', padding: '6px 10px' }}
+                                                    style={{ background: '#ffebee', color: '#D85C4A', border: 'none', borderRadius: '6px', padding: '6px 10px' }}
                                                 >
                                                     <i className="bi bi-trash"></i>
                                                 </button>
@@ -1929,7 +1976,7 @@ const AdminLessonManagement = ({
                                                                     </span>
                                                                     <i className={`bi ${getContentTypeIcon(lesson.content_type)}`} style={{ color: getContentTypeColor(lesson.content_type), fontSize: '18px' }}></i>
                                                                     <div>
-                                                                        <span style={{ fontWeight: 500, color: '#1a2332' }}>{lesson.title}</span>
+                                                                        <span style={{ fontWeight: 500, color: '#101C2C' }}>{lesson.title}</span>
                                                                         <div className="d-flex gap-2 mt-1 flex-wrap">
                                                                             <span className="badge" style={{ backgroundColor: '#f3f4f6', color: '#6b7280', fontSize: '11px', fontWeight: 500 }}>
                                                                                 {lesson.content_type.toUpperCase()}
@@ -1946,20 +1993,26 @@ const AdminLessonManagement = ({
                                                                                     Preview
                                                                                 </span>
                                                                             )}
-                                                                            {lesson.is_locked && (
-                                                                                <span className="badge" style={{ backgroundColor: '#fee2e2', color: '#dc2626', fontSize: '11px', fontWeight: 500 }}>
-                                                                                    <i className="bi bi-lock me-1"></i>
-                                                                                    Locked
+                                                                            {lesson.manual_lock === true && (
+                                                                                <span className="badge" style={{ backgroundColor: '#fee2e2', color: '#D85C4A', fontSize: '11px', fontWeight: 500 }}>
+                                                                                    <i className="bi bi-lock-fill me-1"></i>
+                                                                                    Locked by teacher
+                                                                                </span>
+                                                                            )}
+                                                                            {lesson.manual_lock === false && (
+                                                                                <span className="badge" style={{ backgroundColor: '#dcfce7', color: '#16a34a', fontSize: '11px', fontWeight: 500 }}>
+                                                                                    <i className="bi bi-unlock-fill me-1"></i>
+                                                                                    Unlocked by teacher
                                                                                 </span>
                                                                             )}
                                                                             {lesson.objectives && (
-                                                                                <span className="badge" style={{ backgroundColor: '#dbeafe', color: '#1d4ed8', fontSize: '11px', fontWeight: 500 }}>
+                                                                                <span className="badge" style={{ backgroundColor: '#dbeafe', color: '#101C2C', fontSize: '11px', fontWeight: 500 }}>
                                                                                     <i className="bi bi-list-check me-1"></i>
                                                                                     Objectives
                                                                                 </span>
                                                                             )}
                                                                             {lesson.youtube_url && (
-                                                                                <span className="badge" style={{ backgroundColor: '#fee2e2', color: '#dc2626', fontSize: '11px', fontWeight: 500 }}>
+                                                                                <span className="badge" style={{ backgroundColor: '#fee2e2', color: '#D85C4A', fontSize: '11px', fontWeight: 500 }}>
                                                                                     <i className="bi bi-youtube me-1"></i>
                                                                                     YouTube
                                                                                 </span>
@@ -1974,6 +2027,16 @@ const AdminLessonManagement = ({
                                                                     </div>
                                                                 </div>
                                                                 <div className="d-flex gap-2" style={{ flexShrink: 0 }}>
+                                                                    {(() => { const b = lockBadge(lesson.manual_lock); return (
+                                                                        <button
+                                                                            className="btn btn-sm"
+                                                                            onClick={() => handleToggleLessonLock(lesson)}
+                                                                            title={`Lesson access: ${b.label}. Click to change (Auto → Locked → Unlocked).`}
+                                                                            style={{ background: b.bg, color: b.color, border: 'none', borderRadius: '6px', padding: '6px 10px' }}
+                                                                        >
+                                                                            <i className={`bi ${b.icon}`}></i>
+                                                                        </button>
+                                                                    ); })()}
                                                                     <button
                                                                         className="btn btn-sm"
                                                                         onClick={() => openDownloadablesModal(lesson)}
@@ -1996,7 +2059,7 @@ const AdminLessonManagement = ({
                                                                     <button
                                                                         className="btn btn-sm"
                                                                         onClick={() => openEditLessonModal(lesson, module.id)}
-                                                                        style={{ background: '#e3f2fd', color: '#1976d2', border: 'none', borderRadius: '6px', padding: '6px 10px' }}
+                                                                        style={{ background: '#e3f2fd', color: '#101C2C', border: 'none', borderRadius: '6px', padding: '6px 10px' }}
                                                                     >
                                                                         <i className="bi bi-pencil"></i>
                                                                     </button>
@@ -2011,7 +2074,7 @@ const AdminLessonManagement = ({
                                                                     <button
                                                                         className="btn btn-sm"
                                                                         onClick={() => handleDeleteLesson(lesson.id)}
-                                                                        style={{ background: '#ffebee', color: '#c62828', border: 'none', borderRadius: '6px', padding: '6px 10px' }}
+                                                                        style={{ background: '#ffebee', color: '#D85C4A', border: 'none', borderRadius: '6px', padding: '6px 10px' }}
                                                                     >
                                                                         <i className="bi bi-trash"></i>
                                                                     </button>
@@ -2026,7 +2089,7 @@ const AdminLessonManagement = ({
                                                         <button
                                                             className="btn btn-sm"
                                                             onClick={() => openAddLessonModal(module.id)}
-                                                            style={{ background: '#4285f4', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 16px' }}
+                                                            style={{ background: '#101C2C', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 16px' }}
                                                         >
                                                             <i className="bi bi-plus-lg me-2"></i>
                                                             Add First Lesson
@@ -2046,7 +2109,7 @@ const AdminLessonManagement = ({
                                         <button
                                             className="btn mt-2"
                                             onClick={openAddModuleModal}
-                                            style={{ background: '#4285f4', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 24px' }}
+                                            style={{ background: '#101C2C', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 24px' }}
                                         >
                                             <i className="bi bi-plus-lg me-2"></i>
                                             Add First Module
@@ -2064,8 +2127,8 @@ const AdminLessonManagement = ({
                     <div className="modal-dialog modal-lg modal-dialog-centered">
                         <div className="modal-content" style={{ borderRadius: '12px', border: 'none' }}>
                             <div className="modal-header" style={{ borderBottom: '1px solid #e5e7eb', padding: '20px 24px' }}>
-                                <h5 className="modal-title" style={{ fontWeight: 600, color: '#1a2332' }}>
-                                    <i className={`bi ${editingCourse ? 'bi-pencil' : 'bi-plus-circle'} me-2`} style={{ color: '#4285f4' }}></i>
+                                <h5 className="modal-title" style={{ fontWeight: 600, color: '#101C2C' }}>
+                                    <i className={`bi ${editingCourse ? 'bi-pencil' : 'bi-plus-circle'} me-2`} style={{ color: '#101C2C' }}></i>
                                     {editingCourse ? 'Edit Course' : 'Add New Course'}
                                 </h5>
                                 <button type="button" className="btn-close" onClick={closeCourseModal}></button>
@@ -2075,7 +2138,7 @@ const AdminLessonManagement = ({
                                     <div className="row g-4">
                                         <div className="col-md-8">
                                             <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>
-                                                Course Title <span style={{ color: '#ef4444' }}>*</span>
+                                                Course Title <span style={{ color: '#D85C4A' }}>*</span>
                                             </label>
                                             <input
                                                 type="text"
@@ -2090,7 +2153,7 @@ const AdminLessonManagement = ({
                                         </div>
                                         <div className="col-md-4">
                                             <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>
-                                                Category <span style={{ color: '#ef4444' }}>*</span>
+                                                Category <span style={{ color: '#D85C4A' }}>*</span>
                                             </label>
                                             <input
                                                 type="text"
@@ -2105,7 +2168,7 @@ const AdminLessonManagement = ({
                                         {showTeacherSelect && (
                                             <div className="col-md-6">
                                                 <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>
-                                                    Instructor <span style={{ color: '#ef4444' }}>*</span>
+                                                    Instructor <span style={{ color: '#D85C4A' }}>*</span>
                                                 </label>
                                                 <select
                                                     className="form-select"
@@ -2136,7 +2199,7 @@ const AdminLessonManagement = ({
                                         </div>
                                         <div className="col-12">
                                             <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>
-                                                Description <span style={{ color: '#ef4444' }}>*</span>
+                                                Description <span style={{ color: '#D85C4A' }}>*</span>
                                             </label>
                                             <textarea
                                                 className="form-control"
@@ -2170,7 +2233,7 @@ const AdminLessonManagement = ({
                                         </div>
                                         <div className="col-md-6">
                                             <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>
-                                                <i className="bi bi-shield-lock me-1" style={{ color: '#8b5cf6' }}></i>
+                                                <i className="bi bi-shield-lock me-1" style={{ color: '#7C9BB8' }}></i>
                                                 Required Access Level
                                             </label>
                                             <select
@@ -2193,7 +2256,7 @@ const AdminLessonManagement = ({
                                     <button type="button" className="btn" onClick={closeCourseModal} style={{ background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: '8px', padding: '10px 20px' }}>
                                         Cancel
                                     </button>
-                                    <button type="submit" className="btn" disabled={savingCourse} style={{ background: 'linear-gradient(135deg, #4285f4 0%, #3b5998 100%)', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px' }}>
+                                    <button type="submit" className="btn" disabled={savingCourse} style={{ background: 'linear-gradient(135deg, #101C2C 0%, #101C2C 100%)', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px' }}>
                                         {savingCourse ? (
                                             <><span className="spinner-border spinner-border-sm me-2"></span>Saving...</>
                                         ) : (
@@ -2213,8 +2276,8 @@ const AdminLessonManagement = ({
                     <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content" style={{ border: 'none', borderRadius: '12px' }}>
                             <div className="modal-header" style={{ borderBottom: '1px solid #e5e7eb', padding: '20px 24px' }}>
-                                <h5 className="modal-title" style={{ fontWeight: 600, color: '#1a2332' }}>
-                                    <i className={`bi ${editingModule ? 'bi-pencil' : 'bi-plus-circle'} me-2`} style={{ color: '#4285f4' }}></i>
+                                <h5 className="modal-title" style={{ fontWeight: 600, color: '#101C2C' }}>
+                                    <i className={`bi ${editingModule ? 'bi-pencil' : 'bi-plus-circle'} me-2`} style={{ color: '#101C2C' }}></i>
                                     {editingModule ? 'Edit Module' : 'Add New Module'}
                                 </h5>
                                 <button type="button" className="btn-close" onClick={() => setShowModuleModal(false)}></button>
@@ -2222,7 +2285,7 @@ const AdminLessonManagement = ({
                             <form onSubmit={handleModuleSubmit}>
                                 <div className="modal-body" style={{ padding: '24px' }}>
                                     <div className="mb-3">
-                                        <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>Module Title <span style={{ color: '#ef4444' }}>*</span></label>
+                                        <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>Module Title <span style={{ color: '#D85C4A' }}>*</span></label>
                                         <input
                                             type="text"
                                             className="form-control"
@@ -2247,7 +2310,7 @@ const AdminLessonManagement = ({
                                 </div>
                                 <div className="modal-footer" style={{ borderTop: '1px solid #e5e7eb', padding: '16px 24px' }}>
                                     <button type="button" className="btn" onClick={() => setShowModuleModal(false)} style={{ background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: '8px', padding: '10px 20px' }}>Cancel</button>
-                                    <button type="submit" className="btn" style={{ background: '#4285f4', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 20px' }}>
+                                    <button type="submit" className="btn" style={{ background: '#101C2C', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 20px' }}>
                                         {editingModule ? 'Update Module' : 'Create Module'}
                                     </button>
                                 </div>
@@ -2263,7 +2326,7 @@ const AdminLessonManagement = ({
                     <div className="modal-dialog modal-lg modal-dialog-centered">
                         <div className="modal-content" style={{ border: 'none', borderRadius: '16px', overflow: 'hidden' }}>
                             <div className="modal-header" style={{ 
-                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                                background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)', 
                                 color: '#fff', 
                                 padding: '24px 28px',
                                 border: 'none' 
@@ -2320,7 +2383,7 @@ const AdminLessonManagement = ({
                                                     ></i>
                                                 </div>
                                                 <div className="card-body text-center" style={{ padding: '16px' }}>
-                                                    <h6 style={{ fontWeight: 600, color: '#1a2332', marginBottom: '8px' }}>
+                                                    <h6 style={{ fontWeight: 600, color: '#101C2C', marginBottom: '8px' }}>
                                                         {template.name}
                                                     </h6>
                                                     <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: 0 }}>
@@ -2360,8 +2423,8 @@ const AdminLessonManagement = ({
                         <div className="modal-content" style={{ border: 'none', borderRadius: '12px' }}>
                             <div className="modal-header" style={{ borderBottom: '1px solid #e5e7eb', padding: '20px 24px' }}>
                                 <div>
-                                    <h5 className="modal-title" style={{ fontWeight: 600, color: '#1a2332', marginBottom: '4px' }}>
-                                        <i className={`bi ${editingLesson ? 'bi-pencil' : 'bi-plus-circle'} me-2`} style={{ color: '#4285f4' }}></i>
+                                    <h5 className="modal-title" style={{ fontWeight: 600, color: '#101C2C', marginBottom: '4px' }}>
+                                        <i className={`bi ${editingLesson ? 'bi-pencil' : 'bi-plus-circle'} me-2`} style={{ color: '#101C2C' }}></i>
                                         {editingLesson ? 'Edit Lesson' : 'Add New Lesson'}
                                     </h5>
                                     {editingLesson && duplicateContext?.duplicatedLessonId === editingLesson.id && (
@@ -2380,14 +2443,14 @@ const AdminLessonManagement = ({
                                         <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
                                             <button type="button"
                                                 onClick={() => setLessonBuilderTab('info')}
-                                                style={{ padding: '5px 14px', fontSize: 13, fontWeight: 600, borderRadius: 20, border: '1.5px solid', borderColor: lessonBuilderTab === 'info' ? '#4285f4' : '#e2e8f0', background: lessonBuilderTab === 'info' ? '#eff6ff' : '#f9fafb', color: lessonBuilderTab === 'info' ? '#4285f4' : '#64748b', cursor: 'pointer' }}>
+                                                style={{ padding: '5px 14px', fontSize: 13, fontWeight: 600, borderRadius: 20, border: '1.5px solid', borderColor: lessonBuilderTab === 'info' ? '#101C2C' : '#e2e8f0', background: lessonBuilderTab === 'info' ? '#eff6ff' : '#F7F3EA', color: lessonBuilderTab === 'info' ? '#101C2C' : '#64748b', cursor: 'pointer' }}>
                                                 <i className="bi bi-sliders me-1"></i>Lesson Info
                                             </button>
                                             <button type="button"
                                                 onClick={() => { setLessonBuilderTab('blocks'); if (editingLesson?.id) fetchLessonBlocks(editingLesson.id); }}
-                                                style={{ padding: '5px 14px', fontSize: 13, fontWeight: 600, borderRadius: 20, border: '1.5px solid', borderColor: lessonBuilderTab === 'blocks' ? '#8b5cf6' : '#e2e8f0', background: lessonBuilderTab === 'blocks' ? '#f5f3ff' : '#f9fafb', color: lessonBuilderTab === 'blocks' ? '#8b5cf6' : '#64748b', cursor: 'pointer' }}>
+                                                style={{ padding: '5px 14px', fontSize: 13, fontWeight: 600, borderRadius: 20, border: '1.5px solid', borderColor: lessonBuilderTab === 'blocks' ? '#7C9BB8' : '#e2e8f0', background: lessonBuilderTab === 'blocks' ? '#f5f3ff' : '#F7F3EA', color: lessonBuilderTab === 'blocks' ? '#7C9BB8' : '#64748b', cursor: 'pointer' }}>
                                                 <i className="bi bi-layout-text-sidebar-reverse me-1"></i>Block Builder
-                                                {lessonBlocks.length > 0 && <span style={{ marginLeft: 6, background: '#8b5cf6', color: '#fff', borderRadius: 10, padding: '1px 7px', fontSize: 11 }}>{lessonBlocks.length}</span>}
+                                                {lessonBlocks.length > 0 && <span style={{ marginLeft: 6, background: '#7C9BB8', color: '#fff', borderRadius: 10, padding: '1px 7px', fontSize: 11 }}>{lessonBlocks.length}</span>}
                                             </button>
                                         </div>
                                     )}
@@ -2402,10 +2465,10 @@ const AdminLessonManagement = ({
                                         <div className="mb-4">
                                             <div className="d-flex justify-content-between align-items-center mb-2">
                                                 <span style={{ fontWeight: 500, color: '#374151', fontSize: '14px' }}>
-                                                    <i className="bi bi-cloud-upload me-2" style={{ color: '#4285f4' }}></i>
+                                                    <i className="bi bi-cloud-upload me-2" style={{ color: '#101C2C' }}></i>
                                                     Uploading...
                                                 </span>
-                                                <span style={{ fontWeight: 600, color: '#4285f4' }}>{uploadProgress}%</span>
+                                                <span style={{ fontWeight: 600, color: '#101C2C' }}>{uploadProgress}%</span>
                                             </div>
                                             <div className="progress" style={{ height: '8px', borderRadius: '4px', backgroundColor: '#e5e7eb' }}>
                                                 <div 
@@ -2413,7 +2476,7 @@ const AdminLessonManagement = ({
                                                     role="progressbar" 
                                                     style={{ 
                                                         width: `${uploadProgress}%`, 
-                                                        background: 'linear-gradient(90deg, #4285f4 0%, #34a853 100%)',
+                                                        background: 'linear-gradient(90deg, #101C2C 0%, #34a853 100%)',
                                                         borderRadius: '4px',
                                                         transition: 'width 0.3s ease'
                                                     }}
@@ -2424,7 +2487,7 @@ const AdminLessonManagement = ({
                                     
                                     <div className="row g-3">
                                         <div className="col-md-6">
-                                            <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>Lesson Title <span style={{ color: '#ef4444' }}>*</span></label>
+                                            <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>Lesson Title <span style={{ color: '#D85C4A' }}>*</span></label>
                                             <input
                                                 type="text"
                                                 className="form-control"
@@ -2436,7 +2499,7 @@ const AdminLessonManagement = ({
                                             />
                                         </div>
                                         <div className="col-md-3">
-                                            <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>Content Type <span style={{ color: '#ef4444' }}>*</span></label>
+                                            <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>Content Type <span style={{ color: '#D85C4A' }}>*</span></label>
                                             <select
                                                 className="form-select"
                                                 value={lessonFormData.content_type}
@@ -2561,7 +2624,7 @@ const AdminLessonManagement = ({
                                                                     setLessonFormData({ ...lessonFormData, teacher_voice_audio: null });
                                                                     if (teacherVoiceAudioInputRef.current) teacherVoiceAudioInputRef.current.value = '';
                                                                 }}
-                                                                style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '6px', fontSize: '12px' }}
+                                                                style={{ background: '#fee2e2', color: '#D85C4A', border: 'none', borderRadius: '6px', fontSize: '12px' }}
                                                             >
                                                                 <i className="bi bi-x-circle me-1"></i>Remove
                                                             </button>
@@ -2616,7 +2679,7 @@ const AdminLessonManagement = ({
                                         {/* Learning Objectives */}
                                         <div className="col-12">
                                             <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>
-                                                <i className="bi bi-list-check me-1" style={{ color: '#4285f4' }}></i>
+                                                <i className="bi bi-list-check me-1" style={{ color: '#101C2C' }}></i>
                                                 Learning Objectives
                                             </label>
                                             <textarea
@@ -2687,7 +2750,7 @@ const AdminLessonManagement = ({
                                                                     setLessonFormData({ ...lessonFormData, repeat_after_me_audio: null });
                                                                     if (repeatAudioInputRef.current) repeatAudioInputRef.current.value = '';
                                                                 }}
-                                                                style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '6px', fontSize: '12px' }}
+                                                                style={{ background: '#fee2e2', color: '#D85C4A', border: 'none', borderRadius: '6px', fontSize: '12px' }}
                                                             >
                                                                 <i className="bi bi-x-circle me-1"></i>Remove
                                                             </button>
@@ -2733,7 +2796,7 @@ const AdminLessonManagement = ({
                                                     onChange={(e) => setLessonFormData({ ...lessonFormData, is_locked: e.target.checked })}
                                                     style={{ width: '40px', height: '20px', cursor: 'pointer' }}
                                                 />
-                                                <label className="form-check-label ms-2" htmlFor="isLockedSwitch" style={{ fontWeight: 500, color: '#dc2626', cursor: 'pointer' }}>
+                                                <label className="form-check-label ms-2" htmlFor="isLockedSwitch" style={{ fontWeight: 500, color: '#D85C4A', cursor: 'pointer' }}>
                                                     <i className="bi bi-lock me-1"></i>
                                                     Manually Locked
                                                 </label>
@@ -2761,7 +2824,7 @@ const AdminLessonManagement = ({
                                         </div>
                                         <div className="col-md-6">
                                             <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>
-                                                <i className="bi bi-shield-lock me-1" style={{ color: '#8b5cf6' }}></i>
+                                                <i className="bi bi-shield-lock me-1" style={{ color: '#7C9BB8' }}></i>
                                                 Required Access Level
                                             </label>
                                             <select
@@ -2786,11 +2849,11 @@ const AdminLessonManagement = ({
                                             </label>
                                             <div className="input-group">
                                                 <span className="input-group-text" style={{ 
-                                                    background: lessonFormData.youtube_url ? '#fef2f2' : '#f9fafb', 
+                                                    background: lessonFormData.youtube_url ? '#fef2f2' : '#F7F3EA', 
                                                     border: '1px solid #e5e7eb', 
                                                     borderRight: 'none',
                                                     borderRadius: '8px 0 0 8px',
-                                                    color: lessonFormData.youtube_url ? '#dc2626' : '#9ca3af'
+                                                    color: lessonFormData.youtube_url ? '#D85C4A' : '#9ca3af'
                                                 }}>
                                                     <i className="bi bi-youtube"></i>
                                                 </span>
@@ -2814,7 +2877,7 @@ const AdminLessonManagement = ({
                                         {/* Drag & Drop File Upload */}
                                         <div className="col-12">
                                             <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>
-                                                Upload File {!editingLesson && !lessonFormData.youtube_url && <span style={{ color: '#ef4444' }}>*</span>}
+                                                Upload File {!editingLesson && !lessonFormData.youtube_url && <span style={{ color: '#D85C4A' }}>*</span>}
                                                 {lessonFormData.youtube_url && <span style={{ color: '#6b7280', fontWeight: 400, fontSize: '13px' }}> (optional)</span>}
                                             </label>
                                             <div
@@ -2824,7 +2887,7 @@ const AdminLessonManagement = ({
                                                 onDrop={handleDrop}
                                                 onClick={() => fileInputRef.current?.click()}
                                                 style={{
-                                                    border: isDragging ? '2px dashed #4285f4' : '2px dashed #d1d5db',
+                                                    border: isDragging ? '2px dashed #101C2C' : '2px dashed #d1d5db',
                                                     borderRadius: '12px',
                                                     padding: '32px 20px',
                                                     textAlign: 'center',
@@ -2865,7 +2928,7 @@ const AdminLessonManagement = ({
                                                                 setLessonFormData({ ...lessonFormData, file: null });
                                                                 if (fileInputRef.current) fileInputRef.current.value = '';
                                                             }}
-                                                            style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '6px', fontSize: '12px' }}
+                                                            style={{ background: '#fee2e2', color: '#D85C4A', border: 'none', borderRadius: '6px', fontSize: '12px' }}
                                                         >
                                                             <i className="bi bi-x-circle me-1"></i>Remove
                                                         </button>
@@ -2873,12 +2936,12 @@ const AdminLessonManagement = ({
                                                 ) : (
                                                     <div>
                                                         <i className={`bi ${isDragging ? 'bi-cloud-arrow-down-fill' : 'bi-cloud-upload'}`} 
-                                                           style={{ fontSize: '36px', color: isDragging ? '#4285f4' : '#9ca3af' }}></i>
-                                                        <p style={{ fontWeight: 500, color: isDragging ? '#4285f4' : '#374151', marginTop: '12px', marginBottom: '4px' }}>
+                                                           style={{ fontSize: '36px', color: isDragging ? '#101C2C' : '#9ca3af' }}></i>
+                                                        <p style={{ fontWeight: 500, color: isDragging ? '#101C2C' : '#374151', marginTop: '12px', marginBottom: '4px' }}>
                                                             {isDragging ? 'Drop your file here!' : 'Drag & drop your file here'}
                                                         </p>
                                                         <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: 0 }}>
-                                                            or <span style={{ color: '#4285f4', fontWeight: 500 }}>click to browse</span>
+                                                            or <span style={{ color: '#101C2C', fontWeight: 500 }}>click to browse</span>
                                                         </p>
                                                         <p style={{ color: '#9ca3af', fontSize: '12px', marginTop: '8px', marginBottom: 0 }}>
                                                             Supports: {lessonFormData.content_type === 'video' ? 'MP4, MOV, AVI, MKV, WebM' :
@@ -2887,7 +2950,7 @@ const AdminLessonManagement = ({
                                                                        lessonFormData.content_type === 'image' ? 'PNG, JPG, JPEG, GIF, WebP, SVG' : 'All files'}
                                                         </p>
                                                         <p style={{ 
-                                                            color: '#4285f4', fontSize: '12px', marginTop: '4px', marginBottom: 0,
+                                                            color: '#101C2C', fontSize: '12px', marginTop: '4px', marginBottom: 0,
                                                             background: '#eff6ff', display: 'inline-block', 
                                                             padding: '2px 10px', borderRadius: '12px', fontWeight: 500
                                                         }}>
@@ -2907,14 +2970,14 @@ const AdminLessonManagement = ({
                                                             type="button"
                                                             className="btn btn-sm"
                                                             onClick={() => setClearExistingFile(prev => !prev)}
-                                                            style={{ background: clearExistingFile ? '#e0f2fe' : '#fee2e2', color: clearExistingFile ? '#0369a1' : '#dc2626', border: 'none', borderRadius: '6px', fontSize: '12px' }}
+                                                            style={{ background: clearExistingFile ? '#e0f2fe' : '#fee2e2', color: clearExistingFile ? '#0369a1' : '#D85C4A', border: 'none', borderRadius: '6px', fontSize: '12px' }}
                                                         >
                                                             <i className={`bi ${clearExistingFile ? 'bi-arrow-counterclockwise' : 'bi-trash3'} me-1`}></i>
                                                             {clearExistingFile ? 'Undo' : 'Remove'}
                                                         </button>
                                                     </div>
                                                     {clearExistingFile && (
-                                                        <div className="mt-2" style={{ fontSize: '12px', color: '#b91c1c' }}>
+                                                        <div className="mt-2" style={{ fontSize: '12px', color: '#D85C4A' }}>
                                                             This file will be removed when you save.
                                                         </div>
                                                     )}
@@ -2943,14 +3006,14 @@ const AdminLessonManagement = ({
                                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                                                     <div style={{ display: 'flex', gap: 6 }}>
                                                         <button type="button" onClick={() => setPaletteTab('blocks')}
-                                                            style={{ padding: '4px 14px', fontSize: 12, fontWeight: 600, borderRadius: 20, border: `1.5px solid ${paletteTab === 'blocks' ? '#4285f4' : '#e2e8f0'}`, background: paletteTab === 'blocks' ? '#eff6ff' : '#f9fafb', color: paletteTab === 'blocks' ? '#4285f4' : '#64748b', cursor: 'pointer' }}>
+                                                            style={{ padding: '4px 14px', fontSize: 12, fontWeight: 600, borderRadius: 20, border: `1.5px solid ${paletteTab === 'blocks' ? '#101C2C' : '#e2e8f0'}`, background: paletteTab === 'blocks' ? '#eff6ff' : '#F7F3EA', color: paletteTab === 'blocks' ? '#101C2C' : '#64748b', cursor: 'pointer' }}>
                                                             <i className="bi bi-grid-3x3-gap-fill me-1"></i>All Blocks
                                                         </button>
                                                         <button type="button"
                                                             onClick={() => { setPaletteTab('library'); if (libraryBlocks.length === 0 && !loadingLibrary) fetchLibraryBlocks(); }}
-                                                            style={{ padding: '4px 14px', fontSize: 12, fontWeight: 600, borderRadius: 20, border: `1.5px solid ${paletteTab === 'library' ? '#f59e0b' : '#e2e8f0'}`, background: paletteTab === 'library' ? '#fffbeb' : '#f9fafb', color: paletteTab === 'library' ? '#d97706' : '#64748b', cursor: 'pointer' }}>
+                                                            style={{ padding: '4px 14px', fontSize: 12, fontWeight: 600, borderRadius: 20, border: `1.5px solid ${paletteTab === 'library' ? '#C9A66B' : '#e2e8f0'}`, background: paletteTab === 'library' ? '#fffbeb' : '#F7F3EA', color: paletteTab === 'library' ? '#C9A66B' : '#64748b', cursor: 'pointer' }}>
                                                             <i className="bi bi-bookmark-fill me-1"></i>Library
-                                                            {libraryBlocks.length > 0 && <span style={{ marginLeft: 5, background: '#d97706', color: '#fff', borderRadius: 10, fontSize: 10, padding: '1px 6px' }}>{libraryBlocks.length}</span>}
+                                                            {libraryBlocks.length > 0 && <span style={{ marginLeft: 5, background: '#C9A66B', color: '#fff', borderRadius: 10, fontSize: 10, padding: '1px 6px' }}>{libraryBlocks.length}</span>}
                                                         </button>
                                                     </div>
                                                     <span style={{ fontSize: 12, color: '#94a3b8' }}>{lessonBlocks.length} block{lessonBlocks.length !== 1 ? 's' : ''}</span>
@@ -2976,12 +3039,12 @@ const AdminLessonManagement = ({
                                                         {/* Type filter chips */}
                                                         <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 10 }}>
                                                             <button type="button" onClick={() => setLibraryTypeFilter('all')}
-                                                                style={{ padding: '3px 10px', fontSize: 11, borderRadius: 12, border: `1px solid ${libraryTypeFilter === 'all' ? '#d97706' : '#e2e8f0'}`, background: libraryTypeFilter === 'all' ? '#fef3c7' : '#f9fafb', color: libraryTypeFilter === 'all' ? '#92400e' : '#64748b', cursor: 'pointer', fontWeight: 600 }}>All</button>
+                                                                style={{ padding: '3px 10px', fontSize: 11, borderRadius: 12, border: `1px solid ${libraryTypeFilter === 'all' ? '#C9A66B' : '#e2e8f0'}`, background: libraryTypeFilter === 'all' ? '#fef3c7' : '#F7F3EA', color: libraryTypeFilter === 'all' ? '#92400e' : '#64748b', cursor: 'pointer', fontWeight: 600 }}>All</button>
                                                             {[...new Set(libraryBlocks.map(b => b.block_type))].map(type => {
                                                                 const pi = blockPaletteItems.find(p => p.type === type) || { label: type, color: '#94a3b8' };
                                                                 return (
                                                                     <button key={type} type="button" onClick={() => setLibraryTypeFilter(type)}
-                                                                        style={{ padding: '3px 10px', fontSize: 11, borderRadius: 12, border: `1px solid ${libraryTypeFilter === type ? pi.color : '#e2e8f0'}`, background: libraryTypeFilter === type ? `${pi.color}15` : '#f9fafb', color: libraryTypeFilter === type ? pi.color : '#64748b', cursor: 'pointer', fontWeight: 600 }}>
+                                                                        style={{ padding: '3px 10px', fontSize: 11, borderRadius: 12, border: `1px solid ${libraryTypeFilter === type ? pi.color : '#e2e8f0'}`, background: libraryTypeFilter === type ? `${pi.color}15` : '#F7F3EA', color: libraryTypeFilter === type ? pi.color : '#64748b', cursor: 'pointer', fontWeight: 600 }}>
                                                                         {pi.label}
                                                                     </button>
                                                                 );
@@ -2994,7 +3057,7 @@ const AdminLessonManagement = ({
                                                             </div>
                                                         ) : libraryBlocks.filter(b => libraryTypeFilter === 'all' || b.block_type === libraryTypeFilter).length === 0 ? (
                                                             <div style={{ textAlign: 'center', padding: '24px 16px', border: '2px dashed #fde68a', borderRadius: 12, color: '#94a3b8' }}>
-                                                                <i className="bi bi-bookmark" style={{ fontSize: 28, display: 'block', marginBottom: 6, color: '#fbbf24' }}></i>
+                                                                <i className="bi bi-bookmark" style={{ fontSize: 28, display: 'block', marginBottom: 6, color: '#C9A66B' }}></i>
                                                                 <p style={{ margin: 0, fontSize: 13 }}>No saved blocks yet — click <i className="bi bi-bookmark"></i> on any block to save it</p>
                                                             </div>
                                                         ) : (
@@ -3007,11 +3070,11 @@ const AdminLessonManagement = ({
                                                                                 <i className={`bi ${pi.icon}`} style={{ fontSize: 14, color: pi.color }}></i>
                                                                             </div>
                                                                             <div style={{ flex: 1, minWidth: 0 }}>
-                                                                                <div style={{ fontWeight: 600, fontSize: 12, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{lb.library_name || lb.title}</div>
+                                                                                <div style={{ fontWeight: 600, fontSize: 12, color: '#101C2C', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{lb.library_name || lb.title}</div>
                                                                                 <div style={{ fontSize: 10, color: '#94a3b8' }}>{pi.label}{lb.lesson_title ? ` · from "${lb.lesson_title}"` : ''}</div>
                                                                             </div>
                                                                             <button type="button" onClick={() => cloneLibraryBlock(lb)} title="Add to this lesson"
-                                                                                style={{ background: '#eff6ff', color: '#4285f4', border: '1.5px solid #bfdbfe', borderRadius: 7, padding: '4px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>
+                                                                                style={{ background: '#eff6ff', color: '#101C2C', border: '1.5px solid #bfdbfe', borderRadius: 7, padding: '4px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>
                                                                                 <i className="bi bi-plus-lg me-1"></i>Use
                                                                             </button>
                                                                         </div>
@@ -3024,8 +3087,8 @@ const AdminLessonManagement = ({
                                             </div>
                                             <div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                                                    <span style={{ fontWeight: 600, fontSize: 14, color: '#1e293b' }}>
-                                                        <i className="bi bi-layout-text-sidebar-reverse me-2" style={{ color: '#4285f4' }}></i>Lesson Canvas
+                                                    <span style={{ fontWeight: 600, fontSize: 14, color: '#101C2C' }}>
+                                                        <i className="bi bi-layout-text-sidebar-reverse me-2" style={{ color: '#101C2C' }}></i>Lesson Canvas
                                                     </span>
                                                     {lessonBlocksLoading && <span className="spinner-border spinner-border-sm text-primary"></span>}
                                                 </div>
@@ -3044,14 +3107,14 @@ const AdminLessonManagement = ({
                                                             const ed          = blockEditData[block.id] || {};
                                                             const isMediaBlock = ['video','audio','image','repeat_after_me','checklist','timer','quiz','submission','badge','assignment','practice_counter'].includes(block.block_type);
                                                             return (
-                                                                <div key={block.id} style={{ border: `1.5px solid ${isExpanded ? pi.color + '55' : '#e2e8f0'}`, borderRadius: 10, background: '#f8fafc', overflow: 'hidden', transition: 'border-color 0.2s' }}>
+                                                                <div key={block.id} style={{ border: `1.5px solid ${isExpanded ? pi.color + '55' : '#e2e8f0'}`, borderRadius: 10, background: '#F7F3EA', overflow: 'hidden', transition: 'border-color 0.2s' }}>
                                                                     {/* Header row */}
                                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
                                                                         <div style={{ width: 34, height: 34, borderRadius: 8, background: `${pi.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                                                             <i className={`bi ${pi.icon}`} style={{ fontSize: 16, color: pi.color }}></i>
                                                                         </div>
                                                                         <div style={{ flex: 1, minWidth: 0 }}>
-                                                                            <div style={{ fontWeight: 600, fontSize: 13, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                            <div style={{ fontWeight: 600, fontSize: 13, color: '#101C2C', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                                                 {block.title || pi.label}
                                                                             </div>
                                                                             <div style={{ fontSize: 11, color: '#94a3b8' }}>{pi.label}</div>
@@ -3075,11 +3138,11 @@ const AdminLessonManagement = ({
                                                                             onClick={() => saveBlockToLibrary(block)}
                                                                             title={block.is_library_item ? `In library: "${block.library_name}"` : 'Save to library'}
                                                                             disabled={savingToLibraryId === block.id}
-                                                                            style={{ background: block.is_library_item ? '#fffbeb' : '#f8fafc', color: block.is_library_item ? '#d97706' : '#94a3b8', border: `1px solid ${block.is_library_item ? '#fde68a' : '#e2e8f0'}`, borderRadius: 6, padding: '3px 8px', cursor: savingToLibraryId === block.id ? 'wait' : 'pointer' }}>
+                                                                            style={{ background: block.is_library_item ? '#fffbeb' : '#F7F3EA', color: block.is_library_item ? '#C9A66B' : '#94a3b8', border: `1px solid ${block.is_library_item ? '#fde68a' : '#e2e8f0'}`, borderRadius: 6, padding: '3px 8px', cursor: savingToLibraryId === block.id ? 'wait' : 'pointer' }}>
                                                                             <i className={`bi ${savingToLibraryId === block.id ? 'bi-hourglass' : block.is_library_item ? 'bi-bookmark-fill' : 'bi-bookmark'}`} style={{ fontSize: 11 }}></i>
                                                                         </button>
                                                                         <button type="button" onClick={() => deleteLessonBlock(block.id)} title="Remove block"
-                                                                            style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 6, padding: '3px 9px', cursor: 'pointer' }}>
+                                                                            style={{ background: '#fee2e2', color: '#D85C4A', border: 'none', borderRadius: 6, padding: '3px 9px', cursor: 'pointer' }}>
                                                                             <i className="bi bi-trash" style={{ fontSize: 11 }}></i>
                                                                         </button>
                                                                     </div>
@@ -3187,7 +3250,7 @@ const AdminLessonManagement = ({
                                                                                                     const next = (ed.checklist_items || ['']).filter((_, j) => j !== i);
                                                                                                     updateBlockEditData(block.id, { checklist_items: next.length ? next : [''] });
                                                                                                 }}
-                                                                                                style={{ background: (ed.checklist_items || ['']).length <= 1 ? '#f3f4f6' : '#fee2e2', color: (ed.checklist_items || ['']).length <= 1 ? '#cbd5e1' : '#dc2626', border: 'none', borderRadius: 6, padding: '4px 9px', cursor: (ed.checklist_items || ['']).length <= 1 ? 'not-allowed' : 'pointer', flexShrink: 0 }}>
+                                                                                                style={{ background: (ed.checklist_items || ['']).length <= 1 ? '#f3f4f6' : '#fee2e2', color: (ed.checklist_items || ['']).length <= 1 ? '#cbd5e1' : '#D85C4A', border: 'none', borderRadius: 6, padding: '4px 9px', cursor: (ed.checklist_items || ['']).length <= 1 ? 'not-allowed' : 'pointer', flexShrink: 0 }}>
                                                                                                 <i className="bi bi-x" style={{ fontSize: 14 }}></i>
                                                                                             </button>
                                                                                         </div>
@@ -3233,7 +3296,7 @@ const AdminLessonManagement = ({
                                                                                         <label style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>Questions</label>
                                                                                         <button type="button"
                                                                                             onClick={() => updateBlockEditData(block.id, { quiz_questions: [...(ed.quiz_questions || []), { text: '', options: ['', '', '', ''], correct: 0, points: 1 }] })}
-                                                                                            style={{ background: '#eff6ff', color: '#4285f4', border: '1.5px solid #bfdbfe', borderRadius: 6, padding: '4px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                                                                                            style={{ background: '#eff6ff', color: '#101C2C', border: '1.5px solid #bfdbfe', borderRadius: 6, padding: '4px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                                                                                             <i className="bi bi-plus me-1"></i>Add Question
                                                                                         </button>
                                                                                     </div>
@@ -3246,7 +3309,7 @@ const AdminLessonManagement = ({
                                                                                     {(ed.quiz_questions || []).map((q, qi) => (
                                                                                         <div key={qi} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 14px', marginBottom: 10, background: '#fff' }}>
                                                                                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                                                                                                <span style={{ fontSize: 11, fontWeight: 700, color: '#4285f4', background: '#eff6ff', borderRadius: 4, padding: '2px 7px', flexShrink: 0 }}>Q{qi + 1}</span>
+                                                                                                <span style={{ fontSize: 11, fontWeight: 700, color: '#101C2C', background: '#eff6ff', borderRadius: 4, padding: '2px 7px', flexShrink: 0 }}>Q{qi + 1}</span>
                                                                                                 <input type="text" value={q.text}
                                                                                                     onChange={e => { const qs = [...(ed.quiz_questions || [])]; qs[qi] = { ...qs[qi], text: e.target.value }; updateBlockEditData(block.id, { quiz_questions: qs }); }}
                                                                                                     placeholder="Question text"
@@ -3258,7 +3321,7 @@ const AdminLessonManagement = ({
                                                                                                 <span style={{ fontSize: 10, color: '#94a3b8', flexShrink: 0 }}>pts</span>
                                                                                                 <button type="button"
                                                                                                     onClick={() => { const qs = (ed.quiz_questions || []).filter((_, j) => j !== qi); updateBlockEditData(block.id, { quiz_questions: qs }); }}
-                                                                                                    style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', flexShrink: 0 }}>
+                                                                                                    style={{ background: '#fee2e2', color: '#D85C4A', border: 'none', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', flexShrink: 0 }}>
                                                                                                     <i className="bi bi-trash" style={{ fontSize: 11 }}></i>
                                                                                                 </button>
                                                                                             </div>
@@ -3287,7 +3350,7 @@ const AdminLessonManagement = ({
                                                                                 <div style={{ marginBottom: 10 }}>
                                                                                     <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 8 }}>Submission Type</label>
                                                                                     <div style={{ display: 'flex', gap: 10 }}>
-                                                                                        {[{ value: 'audio', label: 'Audio', icon: 'bi-mic-fill', color: '#8b5cf6' }, { value: 'video', label: 'Video', icon: 'bi-camera-video-fill', color: '#3b82f6' }].map(opt => (
+                                                                                        {[{ value: 'audio', label: 'Audio', icon: 'bi-mic-fill', color: '#7C9BB8' }, { value: 'video', label: 'Video', icon: 'bi-camera-video-fill', color: '#101C2C' }].map(opt => (
                                                                                             <label key={opt.value} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, border: `1.5px solid ${ed.submission_type === opt.value ? opt.color : '#e2e8f0'}`, borderRadius: 8, padding: '8px 12px', cursor: 'pointer', background: ed.submission_type === opt.value ? `${opt.color}1a` : '#fff' }}>
                                                                                                 <input type="radio" name={`sub_type_${block.id}`} value={opt.value}
                                                                                                     checked={ed.submission_type === opt.value}
@@ -3330,9 +3393,9 @@ const AdminLessonManagement = ({
                                                                                         const ach = blockAchievements.find(a => String(a.id) === String(ed.badge_achievement_id));
                                                                                         return ach ? (
                                                                                             <div style={{ marginTop: 8, padding: '8px 12px', background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                                                                <i className="bi bi-award-fill" style={{ fontSize: 22, color: '#7c3aed' }}></i>
+                                                                                                <i className="bi bi-award-fill" style={{ fontSize: 22, color: '#7C9BB8' }}></i>
                                                                                                 <div>
-                                                                                                    <div style={{ fontWeight: 600, fontSize: 13, color: '#1e293b' }}>{ach.name}</div>
+                                                                                                    <div style={{ fontWeight: 600, fontSize: 13, color: '#101C2C' }}>{ach.name}</div>
                                                                                                     <div style={{ fontSize: 11, color: '#64748b' }}>{ach.description} — {ach.points} XP</div>
                                                                                                 </div>
                                                                                             </div>
@@ -3412,7 +3475,7 @@ const AdminLessonManagement = ({
                                     {lessonBuilderTab === 'info' ? (
                                         <>
                                             <button type="button" className="btn" onClick={() => setShowLessonModal(false)} style={{ background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: '8px', padding: '10px 20px' }}>Cancel</button>
-                                            <button type="submit" className="btn" disabled={uploading} style={{ background: '#4285f4', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 20px' }}>
+                                            <button type="submit" className="btn" disabled={uploading} style={{ background: '#101C2C', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 20px' }}>
                                                 {uploading ? (
                                                     <><span className="spinner-border spinner-border-sm me-2"></span>Uploading...</>
                                                 ) : (
@@ -3444,7 +3507,7 @@ const AdminLessonManagement = ({
                         <div className="modal-content" style={{ border: 'none', borderRadius: '12px' }}>
                             <div className="modal-header" style={{ borderBottom: '1px solid #e5e7eb', padding: '20px 24px' }}>
                                 <div>
-                                    <h5 className="modal-title" style={{ fontWeight: 600, color: '#1a2332', marginBottom: '4px' }}>
+                                    <h5 className="modal-title" style={{ fontWeight: 600, color: '#101C2C', marginBottom: '4px' }}>
                                         <i className="bi bi-download me-2" style={{ color: '#16a34a' }}></i>
                                         Manage Downloadables
                                     </h5>
@@ -3549,11 +3612,11 @@ const AdminLessonManagement = ({
                                                                 }}
                                                             >
                                                                 {item.status === 'uploading' ? (
-                                                                    <span className="spinner-border spinner-border-sm" style={{ color: '#4285f4' }}></span>
+                                                                    <span className="spinner-border spinner-border-sm" style={{ color: '#101C2C' }}></span>
                                                                 ) : item.status === 'completed' ? (
                                                                     <i className="bi bi-check-circle-fill" style={{ color: '#16a34a' }}></i>
                                                                 ) : item.status === 'error' ? (
-                                                                    <i className="bi bi-exclamation-circle-fill" style={{ color: '#dc2626' }}></i>
+                                                                    <i className="bi bi-exclamation-circle-fill" style={{ color: '#D85C4A' }}></i>
                                                                 ) : (
                                                                     <i className={`bi ${getDownloadableTypeIcon(item.file_type)}`} 
                                                                        style={{ color: getDownloadableTypeColor(item.file_type) }}></i>
@@ -3608,7 +3671,7 @@ const AdminLessonManagement = ({
                                                                 onClick={() => removeMultiFileItem(item.id)}
                                                                 style={{ 
                                                                     background: '#fee2e2', 
-                                                                    color: '#dc2626', 
+                                                                    color: '#D85C4A', 
                                                                     border: 'none', 
                                                                     borderRadius: '6px',
                                                                     padding: '4px 6px',
@@ -3628,7 +3691,7 @@ const AdminLessonManagement = ({
                                                                 className="progress-bar" 
                                                                 style={{ 
                                                                     width: `${multiUploadProgress[item.id]}%`,
-                                                                    background: 'linear-gradient(90deg, #4285f4 0%, #16a34a 100%)'
+                                                                    background: 'linear-gradient(90deg, #101C2C 0%, #16a34a 100%)'
                                                                 }}
                                                             ></div>
                                                         </div>
@@ -3674,7 +3737,7 @@ const AdminLessonManagement = ({
                                 )}
                                 {showAddDownloadableForm && (
                                     <div className="card mb-4" style={{ border: '1px solid #e5e7eb', borderRadius: '12px' }}>
-                                        <div className="card-header" style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb', padding: '16px 20px' }}>
+                                        <div className="card-header" style={{ background: '#F7F3EA', borderBottom: '1px solid #e5e7eb', padding: '16px 20px' }}>
                                             <h6 style={{ margin: 0, fontWeight: 600, color: '#374151' }}>
                                                 <i className="bi bi-plus-circle me-2" style={{ color: '#16a34a' }}></i>
                                                 Add Single Downloadable
@@ -3685,7 +3748,7 @@ const AdminLessonManagement = ({
                                                 <div className="row g-3">
                                                     <div className="col-md-6">
                                                         <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>
-                                                            Title <span style={{ color: '#ef4444' }}>*</span>
+                                                            Title <span style={{ color: '#D85C4A' }}>*</span>
                                                         </label>
                                                         <input
                                                             type="text"
@@ -3699,7 +3762,7 @@ const AdminLessonManagement = ({
                                                     </div>
                                                     <div className="col-md-6">
                                                         <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>
-                                                            File Type <span style={{ color: '#ef4444' }}>*</span>
+                                                            File Type <span style={{ color: '#D85C4A' }}>*</span>
                                                         </label>
                                                         <select
                                                             className="form-select"
@@ -3718,7 +3781,7 @@ const AdminLessonManagement = ({
                                                     </div>
                                                     <div className="col-12">
                                                         <label className="form-label" style={{ fontWeight: 500, color: '#374151' }}>
-                                                            File <span style={{ color: '#ef4444' }}>*</span>
+                                                            File <span style={{ color: '#D85C4A' }}>*</span>
                                                         </label>
                                                         <input
                                                             type="file"
@@ -3805,7 +3868,7 @@ const AdminLessonManagement = ({
                                                         ></i>
                                                     </div>
                                                     <div>
-                                                        <div style={{ fontWeight: 500, color: '#1a2332' }}>{item.title}</div>
+                                                        <div style={{ fontWeight: 500, color: '#101C2C' }}>{item.title}</div>
                                                         <div className="d-flex gap-2 mt-1">
                                                             <span className="badge" style={{ backgroundColor: '#f3f4f6', color: '#6b7280', fontSize: '11px' }}>
                                                                 {item.file_type_display || item.file_type.replace('_', ' ').toUpperCase()}
@@ -3815,7 +3878,7 @@ const AdminLessonManagement = ({
                                                                     {item.file_size_formatted}
                                                                 </span>
                                                             )}
-                                                            <span className="badge" style={{ backgroundColor: '#dbeafe', color: '#1d4ed8', fontSize: '11px' }}>
+                                                            <span className="badge" style={{ backgroundColor: '#dbeafe', color: '#101C2C', fontSize: '11px' }}>
                                                                 <i className="bi bi-download me-1"></i>
                                                                 {item.download_count || 0}
                                                             </span>
@@ -3828,14 +3891,14 @@ const AdminLessonManagement = ({
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="btn btn-sm"
-                                                        style={{ background: '#e3f2fd', color: '#1976d2', border: 'none', borderRadius: '6px', padding: '6px 10px' }}
+                                                        style={{ background: '#e3f2fd', color: '#101C2C', border: 'none', borderRadius: '6px', padding: '6px 10px' }}
                                                     >
                                                         <i className="bi bi-eye"></i>
                                                     </a>
                                                     <button
                                                         className="btn btn-sm"
                                                         onClick={() => handleDeleteDownloadable(item.id)}
-                                                        style={{ background: '#ffebee', color: '#c62828', border: 'none', borderRadius: '6px', padding: '6px 10px' }}
+                                                        style={{ background: '#ffebee', color: '#D85C4A', border: 'none', borderRadius: '6px', padding: '6px 10px' }}
                                                     >
                                                         <i className="bi bi-trash"></i>
                                                     </button>
@@ -3858,7 +3921,7 @@ const AdminLessonManagement = ({
                                     type="button" 
                                     className="btn btn-sm" 
                                     onClick={closeDownloadablesModal}
-                                    style={{ background: '#4285f4', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px' }}
+                                    style={{ background: '#101C2C', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px' }}
                                 >
                                     Done
                                 </button>

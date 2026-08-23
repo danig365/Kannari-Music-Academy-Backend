@@ -1,14 +1,14 @@
 .users-management-container {
-    background: linear-gradient(135deg, #f5f7fa 0%, #f0f3f8 100%);
+    background: linear-gradient(135deg, #F7F3EA 0%, #f0f3f8 100%);
     min-height: 100vh;
 }
 
 .users-management-section {
-    background: linear-gradient(135deg, #f5f7fa 0%, #f0f3f8 100%);
+    background: linear-gradient(135deg, #F7F3EA 0%, #f0f3f8 100%);
 }
 
 .users-management-header h2 {
-    color: #1a2332;
+    color: #101C2C;
     font-weight: 700;
     font-size: 28px;
     letter-spacing: -0.5px;
@@ -26,7 +26,7 @@
 
 /* Add New Button Styling */
 .users-add-btn {
-    background: #4285f4;
+    background: #101C2C;
     border: none;
     border-radius: 8px;
     color: #fff;
@@ -66,12 +66,12 @@
 }
 
 .users-nav-tabs .nav-link:hover {
-    color: #4285f4;
+    color: #101C2C;
 }
 
 .users-nav-tabs .nav-link.active {
-    color: #4285f4;
-    border-bottom-color: #4285f4;
+    color: #101C2C;
+    border-bottom-color: #101C2C;
     background: transparent;
 }
 
@@ -97,11 +97,11 @@
     border-radius: 8px;
     padding: 10px 14px;
     font-size: 14px;
-    color: #1a2332;
+    color: #101C2C;
 }
 
 .users-search-card .form-control:focus {
-    border-color: #4285f4;
+    border-color: #101C2C;
     box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
 }
 
@@ -110,7 +110,7 @@
 }
 
 .users-search-card .btn-primary {
-    background: #4285f4;
+    background: #101C2C;
     border: none;
     border-radius: 8px;
     color: #fff;
@@ -144,7 +144,7 @@
 /* Table Styling */
 .users-content-card .table {
     margin-bottom: 0;
-    color: #1a2332;
+    color: #101C2C;
 }
 
 .users-content-card .table thead {
@@ -163,7 +163,7 @@
 }
 
 .users-content-card .table td {
-    color: #1a2332;
+    color: #101C2C;
     border-bottom: 1px solid #f0f0f0;
     padding: 14px 16px;
     font-size: 14px;
@@ -180,7 +180,7 @@
 }
 
 .users-content-card .table strong {
-    color: #1a2332;
+    color: #101C2C;
     font-weight: 600;
 }
 
@@ -194,7 +194,7 @@
 }
 
 .users-content-card .badge.bg-primary {
-    background: linear-gradient(135deg, #4285f4 0%, #3b5998 100%) !important;
+    background: linear-gradient(135deg, #101C2C 0%, #101C2C 100%) !important;
     color: #fff;
 }
 
@@ -204,7 +204,7 @@
 }
 
 .users-content-card .badge.bg-warning {
-    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important;
+    background: linear-gradient(135deg, #C9A66B 0%, #ff9800 100%) !important;
     color: #000;
 }
 
@@ -257,13 +257,13 @@
 
 .users-pagination .page-link:hover:not(:disabled) {
     background: #f0f3f8;
-    border-color: #4285f4;
-    color: #4285f4;
+    border-color: #101C2C;
+    color: #101C2C;
 }
 
 .users-pagination .page-item.active .page-link {
-    background: #4285f4;
-    border-color: #4285f4;
+    background: #101C2C;
+    border-color: #101C2C;
     color: #fff;
     box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
 }
@@ -288,7 +288,7 @@
 }
 
 .users-add-button .btn-primary {
-    background: #4285f4;
+    background: #101C2C;
     border: none;
     border-radius: 8px;
     color: #fff;
@@ -644,7 +644,7 @@
 }
 
 .vr-status-card {
-    background: #f8fafc;
+    background: #F7F3EA;
     border-radius: 8px;
     border: 1px solid #f1f5f9;
 }
@@ -659,7 +659,7 @@
 
 .vr-section-header {
     padding: 12px 16px;
-    background: #f8fafc;
+    background: #F7F3EA;
     border-bottom: 1px solid #f1f5f9;
 }
 
@@ -670,7 +670,7 @@
 /* Document preview box */
 .vr-document-box {
     background: #f0f9ff;
-    border: 1px dashed #93c5fd;
+    border: 1px dashed #7C9BB8;
     border-radius: 8px;
     padding: 12px;
 }
@@ -699,14 +699,14 @@
 .vr-empty-state {
     text-align: center;
     padding: 20px 10px;
-    background: #f8fafc;
+    background: #F7F3EA;
     border-radius: 8px;
     border: 1px dashed #e2e8f0;
 }
 
 /* Background check metadata items */
 .vr-meta-item {
-    background: #f8fafc;
+    background: #F7F3EA;
     border-radius: 6px;
     padding: 8px 10px;
     border: 1px solid #f1f5f9;
@@ -720,7 +720,7 @@
 }
 
 .vr-agreement-item {
-    background: #f8fafc;
+    background: #F7F3EA;
     border: 1px solid #f1f5f9;
     border-radius: 8px;
     padding: 10px 12px;

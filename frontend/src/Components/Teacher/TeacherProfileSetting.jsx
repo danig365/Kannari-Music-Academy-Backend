@@ -273,7 +273,7 @@ const TeacherProfileSetting = () => {
         }}>
           {/* Card Header */}
           <div style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
             padding: '24px',
             display: 'flex',
             alignItems: 'center',
@@ -294,9 +294,9 @@ const TeacherProfileSetting = () => {
 
           {/* Card Body */}
           <div style={{ padding: '32px' }}>
-            <div style={{ marginBottom: '32px', padding: '20px', border: '2px solid #f5f7fa', borderRadius: '12px', backgroundColor: '#fafbff' }}>
+            <div style={{ marginBottom: '32px', padding: '20px', border: '2px solid #F7F3EA', borderRadius: '12px', backgroundColor: '#fafbff' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '12px', flexWrap: 'wrap' }}>
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#1a1a1a' }}>Child Safety Verification</h3>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#101C2C' }}>Child Safety Verification</h3>
                 <button className="btn btn-sm btn-outline-primary" onClick={fetchVerificationStatus}>
                   <i className="bi bi-arrow-repeat me-1"></i> Refresh
                 </button>
@@ -424,10 +424,10 @@ const TeacherProfileSetting = () => {
               <h3 style={{
                 fontSize: '18px',
                 fontWeight: 600,
-                color: '#1a1a1a',
+                color: '#101C2C',
                 marginBottom: '24px',
                 paddingBottom: '12px',
-                borderBottom: '2px solid #f5f7fa'
+                borderBottom: '2px solid #F7F3EA'
               }}>Profile Information</h3>
 
               {/* Full Name */}
@@ -436,7 +436,7 @@ const TeacherProfileSetting = () => {
                   display: 'block',
                   fontSize: '14px',
                   fontWeight: 600,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   marginBottom: '8px'
                 }}>Full Name</label>
                 <input 
@@ -447,21 +447,21 @@ const TeacherProfileSetting = () => {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    border: fieldErrors.full_name ? '2px solid #ef4444' : '2px solid #e5e7eb',
+                    border: fieldErrors.full_name ? '2px solid #D85C4A' : '2px solid #e5e7eb',
                     borderRadius: '12px',
                     fontSize: '14px',
                     fontWeight: 400,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     outline: 'none',
                     boxSizing: 'border-box'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#667eea';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = fieldErrors.full_name ? '#ef4444' : '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.full_name ? '#D85C4A' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
@@ -474,7 +474,7 @@ const TeacherProfileSetting = () => {
                   display: 'block',
                   fontSize: '14px',
                   fontWeight: 600,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   marginBottom: '8px'
                 }}>Email</label>
                 <input 
@@ -485,21 +485,21 @@ const TeacherProfileSetting = () => {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    border: fieldErrors.email ? '2px solid #ef4444' : '2px solid #e5e7eb',
+                    border: fieldErrors.email ? '2px solid #D85C4A' : '2px solid #e5e7eb',
                     borderRadius: '12px',
                     fontSize: '14px',
                     fontWeight: 400,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     outline: 'none',
                     boxSizing: 'border-box'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#667eea';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = fieldErrors.email ? '#ef4444' : '#e5e7eb';
+                    e.target.style.borderColor = fieldErrors.email ? '#D85C4A' : '#e5e7eb';
                     e.target.style.boxShadow = 'none';
                   }}
                 />
@@ -512,7 +512,7 @@ const TeacherProfileSetting = () => {
                   display: 'block',
                   fontSize: '14px',
                   fontWeight: 600,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   marginBottom: '8px'
                 }}>Profile Image</label>
                 <div style={{
@@ -537,7 +537,7 @@ const TeacherProfileSetting = () => {
                       boxSizing: 'border-box'
                     }}
                     onFocus={(e) => {
-                      e.target.style.borderColor = '#667eea';
+                      e.target.style.borderColor = '#101C2C';
                       e.target.style.backgroundColor = '#f0f4f8';
                     }}
                     onBlur={(e) => {
@@ -582,7 +582,7 @@ const TeacherProfileSetting = () => {
                   display: 'block',
                   fontSize: '14px',
                   fontWeight: 600,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   marginBottom: '8px'
                 }}>Mobile Number</label>
                 <input 
@@ -597,13 +597,13 @@ const TeacherProfileSetting = () => {
                     borderRadius: '12px',
                     fontSize: '14px',
                     fontWeight: 400,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     outline: 'none',
                     boxSizing: 'border-box'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#667eea';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                   }}
                   onBlur={(e) => {
@@ -619,7 +619,7 @@ const TeacherProfileSetting = () => {
                   display: 'block',
                   fontSize: '14px',
                   fontWeight: 600,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   marginBottom: '8px'
                 }}>Skills</label>
                 <textarea 
@@ -634,7 +634,7 @@ const TeacherProfileSetting = () => {
                     borderRadius: '12px',
                     fontSize: '14px',
                     fontWeight: 400,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     outline: 'none',
                     boxSizing: 'border-box',
@@ -643,7 +643,7 @@ const TeacherProfileSetting = () => {
                     resize: 'vertical'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#667eea';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                   }}
                   onBlur={(e) => {
@@ -659,7 +659,7 @@ const TeacherProfileSetting = () => {
                   display: 'block',
                   fontSize: '14px',
                   fontWeight: 600,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   marginBottom: '8px'
                 }}>Qualification</label>
                 <textarea 
@@ -674,7 +674,7 @@ const TeacherProfileSetting = () => {
                     borderRadius: '12px',
                     fontSize: '14px',
                     fontWeight: 400,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     outline: 'none',
                     boxSizing: 'border-box',
@@ -683,7 +683,7 @@ const TeacherProfileSetting = () => {
                     resize: 'vertical'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#667eea';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                   }}
                   onBlur={(e) => {
@@ -697,7 +697,7 @@ const TeacherProfileSetting = () => {
             {/* Divider */}
             <hr style={{
               border: 'none',
-              borderTop: '2px solid #f5f7fa',
+              borderTop: '2px solid #F7F3EA',
               margin: '40px 0'
             }} />
 
@@ -706,10 +706,10 @@ const TeacherProfileSetting = () => {
               <h3 style={{
                 fontSize: '18px',
                 fontWeight: 600,
-                color: '#1a1a1a',
+                color: '#101C2C',
                 marginBottom: '24px',
                 paddingBottom: '12px',
-                borderBottom: '2px solid #f5f7fa'
+                borderBottom: '2px solid #F7F3EA'
               }}>Social Accounts</h3>
 
               {/* Facebook Link */}
@@ -718,10 +718,10 @@ const TeacherProfileSetting = () => {
                   display: 'block',
                   fontSize: '14px',
                   fontWeight: 600,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   marginBottom: '8px'
                 }}>
-                  <i className="bi bi-facebook" style={{ marginRight: '8px', color: '#3b5998' }}></i>
+                  <i className="bi bi-facebook" style={{ marginRight: '8px', color: '#101C2C' }}></i>
                   Facebook Link
                 </label>
                 <input 
@@ -737,13 +737,13 @@ const TeacherProfileSetting = () => {
                     borderRadius: '12px',
                     fontSize: '14px',
                     fontWeight: 400,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     outline: 'none',
                     boxSizing: 'border-box'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#667eea';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                   }}
                   onBlur={(e) => {
@@ -759,7 +759,7 @@ const TeacherProfileSetting = () => {
                   display: 'block',
                   fontSize: '14px',
                   fontWeight: 600,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   marginBottom: '8px'
                 }}>
                   <i className="bi bi-instagram" style={{ marginRight: '8px', color: '#E1306C' }}></i>
@@ -778,13 +778,13 @@ const TeacherProfileSetting = () => {
                     borderRadius: '12px',
                     fontSize: '14px',
                     fontWeight: 400,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     outline: 'none',
                     boxSizing: 'border-box'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#667eea';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                   }}
                   onBlur={(e) => {
@@ -800,7 +800,7 @@ const TeacherProfileSetting = () => {
                   display: 'block',
                   fontSize: '14px',
                   fontWeight: 600,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   marginBottom: '8px'
                 }}>
                   <i className="bi bi-twitter" style={{ marginRight: '8px', color: '#1DA1F2' }}></i>
@@ -819,13 +819,13 @@ const TeacherProfileSetting = () => {
                     borderRadius: '12px',
                     fontSize: '14px',
                     fontWeight: 400,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     outline: 'none',
                     boxSizing: 'border-box'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#667eea';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                   }}
                   onBlur={(e) => {
@@ -841,10 +841,10 @@ const TeacherProfileSetting = () => {
                   display: 'block',
                   fontSize: '14px',
                   fontWeight: 600,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   marginBottom: '8px'
                 }}>
-                  <i className="bi bi-globe" style={{ marginRight: '8px', color: '#667eea' }}></i>
+                  <i className="bi bi-globe" style={{ marginRight: '8px', color: '#101C2C' }}></i>
                   Website Link
                 </label>
                 <input 
@@ -860,13 +860,13 @@ const TeacherProfileSetting = () => {
                     borderRadius: '12px',
                     fontSize: '14px',
                     fontWeight: 400,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     outline: 'none',
                     boxSizing: 'border-box'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#667eea';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                   }}
                   onBlur={(e) => {
@@ -882,7 +882,7 @@ const TeacherProfileSetting = () => {
                   display: 'block',
                   fontSize: '14px',
                   fontWeight: 600,
-                  color: '#1a1a1a',
+                  color: '#101C2C',
                   marginBottom: '8px'
                 }}>
                   <i className="bi bi-youtube" style={{ marginRight: '8px', color: '#FF0000' }}></i>
@@ -901,13 +901,13 @@ const TeacherProfileSetting = () => {
                     borderRadius: '12px',
                     fontSize: '14px',
                     fontWeight: 400,
-                    color: '#1a1a1a',
+                    color: '#101C2C',
                     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     outline: 'none',
                     boxSizing: 'border-box'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#667eea';
+                    e.target.style.borderColor = '#101C2C';
                     e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                   }}
                   onBlur={(e) => {
@@ -923,13 +923,13 @@ const TeacherProfileSetting = () => {
               display: 'flex',
               gap: '12px',
               paddingTop: '24px',
-              borderTop: '2px solid #f5f7fa'
+              borderTop: '2px solid #F7F3EA'
             }}>
               <button 
                 onClick={submitForm}
                 style={{
                   padding: '12px 24px',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                   border: 'none',
                   borderRadius: '12px',
                   color: '#fff',

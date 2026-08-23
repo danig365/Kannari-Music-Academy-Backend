@@ -65,11 +65,11 @@ const MyTeachers = () => {
                 {/* Header */}
                 <div className="mb-4">
                     <h2 style={{
-                        color: '#1f2937',
+                        color: '#101C2C',
                         fontWeight: '700',
                         marginBottom: '0.5rem'
                     }}>
-                        <i className="bi bi-people me-2" style={{ color: '#4285f4' }}></i>
+                        <i className="bi bi-people me-2" style={{ color: '#101C2C' }}></i>
                         My Teachers
                     </h2>
                     <p style={{ color: '#6b7280', marginBottom: 0 }}>
@@ -95,7 +95,7 @@ const MyTeachers = () => {
                             to="/student/subscriptions"
                             style={{
                                 display: 'inline-block',
-                                backgroundColor: '#4285f4',
+                                backgroundColor: '#101C2C',
                                 color: 'white',
                                 padding: '0.75rem 1.5rem',
                                 borderRadius: '8px',
@@ -105,7 +105,7 @@ const MyTeachers = () => {
                                 border: 'none'
                             }}
                             onMouseEnter={(e) => e.target.style.backgroundColor = '#3b7ce1'}
-                            onMouseLeave={(e) => e.target.style.backgroundColor = '#4285f4'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = '#101C2C'}
                         >
                             View Subscription
                         </Link>
@@ -141,7 +141,7 @@ const MyTeachers = () => {
                                         width: '100px',
                                         height: '100px',
                                         borderRadius: '50%',
-                                        backgroundColor: '#4285f4',
+                                        backgroundColor: '#101C2C',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
@@ -171,7 +171,7 @@ const MyTeachers = () => {
                                 {/* Teacher Name */}
                                 <Link to={`/teacher-detail/${enrollment.teacher.id}`} style={{ textDecoration: 'none' }}>
                                     <h5 style={{
-                                        color: '#1f2937',
+                                        color: '#101C2C',
                                         fontWeight: '600',
                                         marginBottom: '0.5rem'
                                     }}>
@@ -209,7 +209,7 @@ const MyTeachers = () => {
                                         to={`/teacher-detail/${enrollment.teacher.id}`}
                                         style={{
                                             flex: 1,
-                                            backgroundColor: '#4285f4',
+                                            backgroundColor: '#101C2C',
                                             color: 'white',
                                             padding: '0.75rem',
                                             borderRadius: '8px',
@@ -221,7 +221,7 @@ const MyTeachers = () => {
                                             border: 'none'
                                         }}
                                         onMouseEnter={(e) => e.target.style.backgroundColor = '#3b7ce1'}
-                                        onMouseLeave={(e) => e.target.style.backgroundColor = '#4285f4'}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = '#101C2C'}
                                     >
                                         <i className="bi bi-person me-1"></i> View Profile
                                     </Link>
