@@ -169,7 +169,7 @@ const ParentDashboard = () => {
           {/* Student Info Card */}
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', gridColumn: isMobile ? '1' : '1 / -1' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'linear-gradient(135deg, #7C9BB8, #6d28d9)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '700', fontSize: '20px' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'linear-gradient(135deg, #7C9BB8, #101C2C)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '700', fontSize: '20px' }}>
                 {(selectedChild.student_name || 'S').substring(0, 2).toUpperCase()}
               </div>
               <div style={{ flex: 1 }}>
@@ -330,14 +330,14 @@ const ParentDashboard = () => {
   // ===== MESSAGES TAB =====
   const renderMessages = () => (
     <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-      <i className="bi bi-chat-dots-fill" style={{ fontSize: '48px', color: '#c4b5fd' }}></i>
+      <i className="bi bi-chat-dots-fill" style={{ fontSize: '48px', color: '#7C9BB8' }}></i>
       <p style={{ color: '#64748b', marginTop: '16px', fontSize: '15px', fontWeight: '500' }}>
         Teacher conversations with your children
       </p>
       <button onClick={() => navigate('/parent/messages')}
         style={{
           marginTop: '16px', padding: '12px 28px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-          background: 'linear-gradient(135deg, #7C9BB8, #6d28d9)', color: '#fff', fontSize: '14px', fontWeight: '600',
+          background: 'linear-gradient(135deg, #7C9BB8, #101C2C)', color: '#fff', fontSize: '14px', fontWeight: '600',
           boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
         }}>
         <i className="bi bi-chat-dots me-2"></i>Open Messages
@@ -351,7 +351,7 @@ const ParentDashboard = () => {
       <div style={{ backgroundColor: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 24px', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #7C9BB8, #6d28d9)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #7C9BB8, #101C2C)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <i className="bi bi-people-fill" style={{ fontSize: '16px', color: '#fff' }}></i>
             </div>
             <div>

@@ -133,7 +133,7 @@ const WeeklyGoalCard = ({ weeklyGoal, studentId, onGoalUpdate }) => {
                         height: 120px;
                         border-radius: 50%;
                         background: conic-gradient(
-                            #4f46e5 calc(var(--progress) * 1%),
+                            #101C2C calc(var(--progress) * 1%),
                             #e5e7eb calc(var(--progress) * 1%)
                         );
                         display: flex;
@@ -157,7 +157,7 @@ const WeeklyGoalCard = ({ weeklyGoal, studentId, onGoalUpdate }) => {
                     .progress-value {
                         font-size: 1.75rem;
                         font-weight: 700;
-                        color: #4f46e5;
+                        color: #101C2C;
                         line-height: 1;
                     }
 
@@ -253,13 +253,13 @@ const WeeklyGoalCard = ({ weeklyGoal, studentId, onGoalUpdate }) => {
                 }
 
                 .goal-type-option:hover {
-                    border-color: #4f46e5;
+                    border-color: #101C2C;
                     background: #f0f9ff;
                 }
 
                 .goal-type-option.active {
-                    border-color: #4f46e5;
-                    background: #4f46e5;
+                    border-color: #101C2C;
+                    background: #101C2C;
                     color: #fff;
                 }
             `}</style>

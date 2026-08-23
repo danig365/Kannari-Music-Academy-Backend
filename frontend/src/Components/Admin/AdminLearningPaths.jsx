@@ -7,7 +7,7 @@ const baseUrl = API_BASE_URL;
 
 const MONTH_COLOR = [
     '#101C2C', '#0ea5e9', '#10b981', '#C9A66B',
-    '#D85C4A', '#7C9BB8', '#D85C4A', '#14b8a6',
+    '#D85C4A', '#7C9BB8', '#D85C4A', '#7C9BB8',
 ];
 
 const emptyForm = {

@@ -138,7 +138,7 @@ const ActivityChart = ({ activityData }) => {
                 }
 
                 .minutes-bar {
-                    background: linear-gradient(180deg, #4f46e5 0%, #7C9BB8 100%);
+                    background: linear-gradient(180deg, #101C2C 0%, #7C9BB8 100%);
                     margin-right: 4px;
                 }
 

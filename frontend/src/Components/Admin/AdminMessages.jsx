@@ -11,10 +11,10 @@ import {
 } from '../../services/messagingService';
 
 const TYPE_COLORS = {
-  teacher: { bg: '#7C9BB8', light: '#eff6ff', badge: '#eef2ff', text: '#4338ca', label: 'Teacher' },
+  teacher: { bg: '#7C9BB8', light: '#eff6ff', badge: '#F1F5F9', text: '#4338ca', label: 'Teacher' },
   student: { bg: '#101C2C', light: '#eff6ff', badge: '#dbeafe', text: '#101C2C', label: 'Student' },
-  school:  { bg: '#0891b2', light: '#ecfeff', badge: '#cffafe', text: '#0e7490', label: 'School'  },
-  parent:  { bg: '#7C9BB8', light: '#f5f3ff', badge: '#ede9fe', text: '#7C9BB8', label: 'Parent'  },
+  school:  { bg: '#7C9BB8', light: '#ecfeff', badge: '#cffafe', text: '#0e7490', label: 'School'  },
+  parent:  { bg: '#7C9BB8', light: '#F1F5F9', badge: '#F1F5F9', text: '#7C9BB8', label: 'Parent'  },
 };
 
 const typeInfo = (type) => TYPE_COLORS[type] || { bg: '#64748b', light: '#F7F3EA', badge: '#f1f5f9', text: '#475569', label: type };

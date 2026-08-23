@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
 import { isValidEmail, FieldError } from '../utils/formValidation';
+import kannariLogo from '../assets/brand/kannari-logo-gold.png';
 
 const ParentLogin = () => {
   const navigate = useNavigate();
@@ -88,7 +89,8 @@ const ParentLogin = () => {
       <div style={{ width: '100%', maxWidth: '420px' }}>
         {/* Logo area */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ width: '64px', height: '64px', margin: '0 auto 16px', background: 'linear-gradient(135deg, #7C9BB8, #6d28d9)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <img src={kannariLogo} alt="Kannari Music Academy" style={{ height: '60px', width: 'auto', margin: '0 auto 20px', display: 'block' }} />
+          <div style={{ width: '64px', height: '64px', margin: '0 auto 16px', background: 'linear-gradient(135deg, #101C2C, #7C9BB8)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <i className="bi bi-people-fill" style={{ fontSize: '28px', color: '#fff' }}></i>
           </div>
           <h2 style={{ margin: 0, fontWeight: '700', color: '#101C2C', fontSize: '24px' }}>Parent Portal</h2>

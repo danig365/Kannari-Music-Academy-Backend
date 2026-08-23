@@ -84,7 +84,7 @@ const RhythmTimeline = ({
         </filter>
         <filter id="rr-glow-preview" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="4" />
-          <feFlood floodColor="#a78bfa" floodOpacity="0.6" />
+          <feFlood floodColor="#7C9BB8" floodOpacity="0.6" />
           <feComposite in2="SourceGraphic" operator="in" />
           <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
@@ -107,7 +107,7 @@ const RhythmTimeline = ({
             : tapResults[i] === 'good' ? '#C9A66B' : '#D85C4A')
           : '#94a3b8';
         const previewHit = phase === 'preview' && playheadMs !== null && playheadMs >= ts;
-        const noteColor = previewHit ? '#a78bfa' : resultColor;
+        const noteColor = previewHit ? '#7C9BB8' : resultColor;
         const glowId = phase === 'result'
           ? (tapResults[i] === 'perfect' ? 'url(#rr-glow-green)'
             : tapResults[i] === 'good' ? 'url(#rr-glow-yellow)' : 'url(#rr-glow-red)')

@@ -2,13 +2,35 @@
   text-decoration: none;
 }
 
+/* ── Kannari brand typography ────────────────────────────────────────────────
+   Manrope for UI/body/buttons; Cormorant Garamond for large display headings
+   (H1/H2), per the brand guide. Loaded via Google Fonts in public/index.html. */
+:root {
+  --font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-body) !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Form controls don't inherit font-family — set them explicitly. */
+button, input, select, textarea, .btn, .form-control, .navbar, .nav-link {
+  font-family: var(--font-body) !important;
+}
+
+/* Large, expressive headlines use the display serif. */
+h1, h2, .h1, .h2,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  font-family: var(--font-display) !important;
+}
+
+/* Smaller UI headings stay on the functional sans-serif for clarity. */
+h3, h4, h5, h6, .h3, .h4, .h5, .h6 {
+  font-family: var(--font-body) !important;
 }
 
 body::-webkit-scrollbar{

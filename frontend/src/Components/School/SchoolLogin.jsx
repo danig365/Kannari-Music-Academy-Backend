@@ -4,6 +4,7 @@ import axios from 'axios';
 
 import { API_BASE_URL } from '../../config';
 import { validateLoginForm, FieldError } from '../../utils/formValidation';
+import kannariLogo from '../../assets/brand/kannari-logo-gold.png';
 
 const baseUrl = API_BASE_URL;
 
@@ -80,6 +81,7 @@ const SchoolLogin = () => {
                 
                 {/* Header Section */}
                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                    <img src={kannariLogo} alt="Kannari Music Academy" style={{ height: '64px', width: 'auto', margin: '0 auto 24px', display: 'block' }} />
                     <div style={{
                         display: 'inline-flex',
                         alignItems: 'center',

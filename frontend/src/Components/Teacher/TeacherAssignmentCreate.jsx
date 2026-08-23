@@ -377,7 +377,7 @@ const TeacherAssignmentCreate = () => {
             </div>
             <div style={{ color: '#64748b', fontSize: '12px' }}>Save reusable templates, then apply and assign quickly.</div>
           </div>
-          <span style={{ padding: '4px 10px', borderRadius: '999px', backgroundColor: '#eef2ff', color: '#4f46e5', fontSize: '12px', fontWeight: '600' }}>
+          <span style={{ padding: '4px 10px', borderRadius: '999px', backgroundColor: '#F1F5F9', color: '#101C2C', fontSize: '12px', fontWeight: '600' }}>
             {templates.length} templates
           </span>
         </div>

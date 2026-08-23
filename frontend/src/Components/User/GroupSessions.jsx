@@ -115,7 +115,7 @@ const GroupSessions = ({ groupId, studentId }) => {
       <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', flexWrap: 'wrap' }}>
         <button
           onClick={() => setFilter('')}
-          style={{ padding: '5px 14px', borderRadius: '20px', border: filter === '' ? '2px solid #7C9BB8' : '1px solid #e2e8f0', backgroundColor: filter === '' ? '#eef2ff' : '#fff', color: filter === '' ? '#4338ca' : '#64748b', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+          style={{ padding: '5px 14px', borderRadius: '20px', border: filter === '' ? '2px solid #7C9BB8' : '1px solid #e2e8f0', backgroundColor: filter === '' ? '#F1F5F9' : '#fff', color: filter === '' ? '#4338ca' : '#64748b', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
         >All ({sessions.length})</button>
         {Object.entries(STATUS_META).map(([key, meta]) => {
           const count = sessions.filter(s => s.status === key).length;
@@ -212,7 +212,7 @@ const GroupSessions = ({ groupId, studentId }) => {
                         href={session.recording_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ padding: '6px 14px', backgroundColor: '#f5f3ff', color: '#7C9BB8', borderRadius: '8px', fontSize: '12px', fontWeight: '600', textDecoration: 'none' }}
+                        style={{ padding: '6px 14px', backgroundColor: '#F1F5F9', color: '#7C9BB8', borderRadius: '8px', fontSize: '12px', fontWeight: '600', textDecoration: 'none' }}
                       >
                         <i className="bi bi-play-circle me-1"></i>Recording
                       </a>

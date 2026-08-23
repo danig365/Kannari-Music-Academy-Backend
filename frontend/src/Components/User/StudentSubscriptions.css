@@ -160,7 +160,7 @@
 }
 
 .student-subscriptions .plan-card .btn-primary:hover:not(:disabled) {
-    background: linear-gradient(135deg, #101C2C, #0891b2);
+    background: linear-gradient(135deg, #101C2C, #7C9BB8);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
 }

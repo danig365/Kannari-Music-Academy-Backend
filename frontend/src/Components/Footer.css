@@ -41,6 +41,12 @@
     flex-shrink: 0;
 }
 
+.footer-brand-logo {
+    height: 68px;
+    width: auto;
+    display: block;
+}
+
 .brand-logo h3 {
     font-size: 22px;
     font-weight: 700;

@@ -353,7 +353,7 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                              style={{ 
                                  width: '40px', 
                                  height: '40px', 
-                                 background: 'linear-gradient(135deg, #a855f7 0%, #7C9BB8 100%)',
+                                 background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                                  fontSize: '16px'
                              }}>
                             {adminName ? adminName.substring(0, 2).toUpperCase() : 'AD'}

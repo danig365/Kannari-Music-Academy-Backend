@@ -80,7 +80,7 @@
 .mc-score-val { color: #C9A66B; }
 
 .mc-streak-badge {
-  background: linear-gradient(135deg, #D85C4A, #f97316);
+  background: linear-gradient(135deg, #D85C4A, #D85C4A);
   color: #fff;
   border-radius: 12px;
   padding: 2px 8px;
@@ -146,7 +146,7 @@
 
 .mc-stat-label {
   font-size: 0.7rem;
-  color: #a78bfa;
+  color: #7C9BB8;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-top: 4px;
@@ -345,7 +345,7 @@
 }
 
 .mc-timer-bar.warning {
-  background: linear-gradient(90deg, #f97316, #fb923c);
+  background: linear-gradient(90deg, #D85C4A, #D85C4A);
   box-shadow: 0 0 16px rgba(249, 115, 22, 0.5);
 }
 
@@ -555,7 +555,7 @@
 }
 
 .mc-streak-bonus {
-  background: linear-gradient(135deg, #D85C4A, #f97316);
+  background: linear-gradient(135deg, #D85C4A, #D85C4A);
   color: #fff;
   border-radius: 10px;
   padding: 2px 8px;
@@ -627,7 +627,7 @@
 
 .mc-summary-label {
   font-size: 0.7rem;
-  color: #a78bfa;
+  color: #7C9BB8;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-top: 4px;

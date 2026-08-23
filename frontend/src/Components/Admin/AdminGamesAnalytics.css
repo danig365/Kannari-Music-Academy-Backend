@@ -159,7 +159,7 @@
 }
 
 .aga-game-card-stripe.note_ninja { background: linear-gradient(90deg, #7C9BB8, #818cf8); }
-.aga-game-card-stripe.rhythm_rush { background: linear-gradient(90deg, #D85C4A, #f472b6); }
+.aga-game-card-stripe.rhythm_rush { background: linear-gradient(90deg, #D85C4A, #D85C4A); }
 .aga-game-card-stripe.music_challenge { background: linear-gradient(90deg, #C9A66B, #C9A66B); }
 
 .aga-game-card-body {

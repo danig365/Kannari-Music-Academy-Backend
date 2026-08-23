@@ -56,9 +56,9 @@ const TeacherOverview = () => {
       check: { bg: '#dcfce7', color: '#16a34a' },
       play: { bg: '#dbeafe', color: '#101C2C' },
       comment: { bg: '#fef3c7', color: '#C9A66B' },
-      document: { bg: '#f3e8ff', color: '#9333ea' },
+      document: { bg: '#f3e8ff', color: '#101C2C' },
       download: { bg: '#e0f2fe', color: '#0284c7' },
-      calendar: { bg: '#fce7f3', color: '#db2777' },
+      calendar: { bg: '#fce7f3', color: '#D85C4A' },
       trophy: { bg: '#fef9c3', color: '#ca8a04' },
       'person-plus': { bg: '#dbeafe', color: '#101C2C' },
     }

@@ -131,7 +131,7 @@ const SchoolMessages = () => {
                 <div style={{
                   maxWidth: '70%', padding: '10px 14px',
                   borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                  backgroundColor: isMine ? '#0891b2' : '#fff',
+                  backgroundColor: isMine ? '#7C9BB8' : '#fff',
                   color: isMine ? '#fff' : '#101C2C',
                   fontSize: '14px',
                   boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
@@ -179,7 +179,7 @@ const SchoolMessages = () => {
               disabled={!newMessage.trim() || sending}
               style={{
                 width: '40px', height: '40px', borderRadius: '50%', border: 'none',
-                backgroundColor: newMessage.trim() ? '#0891b2' : '#e2e8f0',
+                backgroundColor: newMessage.trim() ? '#7C9BB8' : '#e2e8f0',
                 color: '#fff', cursor: newMessage.trim() ? 'pointer' : 'default',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0,
               }}

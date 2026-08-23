@@ -92,7 +92,7 @@ const ActivityLogsTable = () => {
       create: '#101C2C', update: '#C9A66B', delete: '#D85C4A',
       view: '#7C9BB8', export: '#7C9BB8',
       message: '#7C9BB8', submission: '#D85C4A',
-      session_join: '#10b981', session_leave: '#f97316',
+      session_join: '#10b981', session_leave: '#D85C4A',
       session_start: '#059669', session_end: '#D85C4A',
     };
     const color = colors[action] || '#64748b';

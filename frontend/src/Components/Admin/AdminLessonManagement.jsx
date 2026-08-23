@@ -224,7 +224,7 @@ const AdminLessonManagement = ({
             id: 'practice_with_teacher',
             name: 'Practice with Teacher',
             icon: 'bi-person-video3',
-            color: '#f97316',
+            color: '#D85C4A',
             description: 'Teacher-guided session — student plays along with teacher voice',
             defaults: {
                 content_type: 'audio',
@@ -273,13 +273,13 @@ const AdminLessonManagement = ({
         { type: 'video',           label: 'Teacher Video',   icon: 'bi-camera-video-fill',    color: '#101C2C' },
         { type: 'audio',           label: 'Practice Audio',  icon: 'bi-music-note-beamed',    color: '#7C9BB8' },
         { type: 'image',           label: 'Image/Diagram',   icon: 'bi-image',                color: '#7C9BB8' },
-        { type: 'repeat_after_me', label: 'Repeat After Me', icon: 'bi-arrow-repeat',         color: '#f97316' },
+        { type: 'repeat_after_me', label: 'Repeat After Me', icon: 'bi-arrow-repeat',         color: '#D85C4A' },
         { type: 'checklist',       label: 'Checklist',       icon: 'bi-check2-square',        color: '#16a34a' },
         { type: 'timer',           label: 'Practice Timer',  icon: 'bi-stopwatch',            color: '#D85C4A' },
         { type: 'quiz',            label: 'Quiz',            icon: 'bi-question-circle-fill', color: '#C9A66B' },
         { type: 'submission',      label: 'Submission',      icon: 'bi-mic-fill',             color: '#D85C4A' },
         { type: 'badge',           label: 'Reward Badge',    icon: 'bi-award-fill',           color: '#7C9BB8' },
-        { type: 'assignment',      label: 'Assignment',      icon: 'bi-journal-text',         color: '#0891b2' },
+        { type: 'assignment',      label: 'Assignment',      icon: 'bi-journal-text',         color: '#7C9BB8' },
         { type: 'practice_counter', label: 'Practice Counter', icon: 'bi-hand-index-thumb-fill', color: '#0e7490' },
     ];
 
@@ -2067,7 +2067,7 @@ const AdminLessonManagement = ({
                                                                         className="btn btn-sm"
                                                                         onClick={() => handleDuplicateLesson(lesson, module.id)}
                                                                         title="Duplicate Lesson"
-                                                                        style={{ background: '#ede9fe', color: '#6d28d9', border: 'none', borderRadius: '6px', padding: '6px 10px' }}
+                                                                        style={{ background: '#F1F5F9', color: '#101C2C', border: 'none', borderRadius: '6px', padding: '6px 10px' }}
                                                                     >
                                                                         <i className="bi bi-files"></i>
                                                                     </button>
@@ -2428,7 +2428,7 @@ const AdminLessonManagement = ({
                                         {editingLesson ? 'Edit Lesson' : 'Add New Lesson'}
                                     </h5>
                                     {editingLesson && duplicateContext?.duplicatedLessonId === editingLesson.id && (
-                                        <small style={{ color: '#6d28d9', display: 'block', marginBottom: '4px' }}>
+                                        <small style={{ color: '#101C2C', display: 'block', marginBottom: '4px' }}>
                                             <i className="bi bi-files me-1"></i>
                                             Copied from Lesson #{duplicateContext.sourceLessonId}
                                         </small>
@@ -2448,7 +2448,7 @@ const AdminLessonManagement = ({
                                             </button>
                                             <button type="button"
                                                 onClick={() => { setLessonBuilderTab('blocks'); if (editingLesson?.id) fetchLessonBlocks(editingLesson.id); }}
-                                                style={{ padding: '5px 14px', fontSize: 13, fontWeight: 600, borderRadius: 20, border: '1.5px solid', borderColor: lessonBuilderTab === 'blocks' ? '#7C9BB8' : '#e2e8f0', background: lessonBuilderTab === 'blocks' ? '#f5f3ff' : '#F7F3EA', color: lessonBuilderTab === 'blocks' ? '#7C9BB8' : '#64748b', cursor: 'pointer' }}>
+                                                style={{ padding: '5px 14px', fontSize: 13, fontWeight: 600, borderRadius: 20, border: '1.5px solid', borderColor: lessonBuilderTab === 'blocks' ? '#7C9BB8' : '#e2e8f0', background: lessonBuilderTab === 'blocks' ? '#F1F5F9' : '#F7F3EA', color: lessonBuilderTab === 'blocks' ? '#7C9BB8' : '#64748b', cursor: 'pointer' }}>
                                                 <i className="bi bi-layout-text-sidebar-reverse me-1"></i>Block Builder
                                                 {lessonBlocks.length > 0 && <span style={{ marginLeft: 6, background: '#7C9BB8', color: '#fff', borderRadius: 10, padding: '1px 7px', fontSize: 11 }}>{lessonBlocks.length}</span>}
                                             </button>
@@ -2597,9 +2597,9 @@ const AdminLessonManagement = ({
                                             <div className="col-12">
                                                 <div style={{ padding: '14px 16px', backgroundColor: '#fff7ed', borderRadius: '8px', border: '1px solid #fed7aa', marginBottom: '4px' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                                                        <i className="bi bi-person-video3" style={{ color: '#f97316', fontSize: '18px' }}></i>
+                                                        <i className="bi bi-person-video3" style={{ color: '#D85C4A', fontSize: '18px' }}></i>
                                                         <span style={{ fontWeight: 600, color: '#9a3412' }}>Teacher Voice Audio</span>
-                                                        <span style={{ fontSize: '12px', color: '#f97316', background: '#ffedd5', padding: '2px 8px', borderRadius: '999px', fontWeight: 500 }}>Required</span>
+                                                        <span style={{ fontSize: '12px', color: '#D85C4A', background: '#ffedd5', padding: '2px 8px', borderRadius: '999px', fontWeight: 500 }}>Required</span>
                                                     </div>
                                                     <p style={{ fontSize: '13px', color: '#78350f', margin: '0 0 10px' }}>
                                                         Upload your narration / explanation audio. Students will hear your voice guiding them through the exercise before playing along.
@@ -2695,7 +2695,7 @@ const AdminLessonManagement = ({
 
                                         {/* Repeat After Me */}
                                         <div className="col-12">
-                                            <div className="form-check form-switch" style={{ padding: '12px 16px', backgroundColor: '#eef2ff', borderRadius: '8px', border: '1px solid #c7d2fe' }}>
+                                            <div className="form-check form-switch" style={{ padding: '12px 16px', backgroundColor: '#F1F5F9', borderRadius: '8px', border: '1px solid #c7d2fe' }}>
                                                 <input
                                                     className="form-check-input"
                                                     type="checkbox"
@@ -3392,7 +3392,7 @@ const AdminLessonManagement = ({
                                                                                     {ed.badge_achievement_id && (() => {
                                                                                         const ach = blockAchievements.find(a => String(a.id) === String(ed.badge_achievement_id));
                                                                                         return ach ? (
-                                                                                            <div style={{ marginTop: 8, padding: '8px 12px', background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                                                            <div style={{ marginTop: 8, padding: '8px 12px', background: '#F1F5F9', border: '1px solid #F1F5F9', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
                                                                                                 <i className="bi bi-award-fill" style={{ fontSize: 22, color: '#7C9BB8' }}></i>
                                                                                                 <div>
                                                                                                     <div style={{ fontWeight: 600, fontSize: 13, color: '#101C2C' }}>{ach.name}</div>

@@ -2,6 +2,7 @@ import React from 'react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import './Header.css'
+import kannariLogo from '../assets/brand/kannari-logo-gold.png'
 
 const Header = () => {
   const teacherLoginStatus=localStorage.getItem('teacherLoginStatus')
@@ -25,20 +26,7 @@ const Header = () => {
     <nav className="navbar navbar-expand-lg navbar-custom sticky-top">
         <div className="container-fluid header-container">
             <Link to="/" className="navbar-brand navbar-brand-custom">
-                <div className="brand-icon-wrapper">
-                    <svg className="navbar-icon" width="32" height="32" viewBox="0 0 24 24" fill="none">
-                        <path d="M9 18V5l12-2v13" stroke="url(#gradient)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <circle cx="6" cy="18" r="3" stroke="url(#gradient)" strokeWidth="2"/>
-                        <circle cx="18" cy="16" r="3" stroke="url(#gradient)" strokeWidth="2"/>
-                        <defs>
-                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#101C2C"/>
-                                <stop offset="100%" stopColor="#7C9BB8"/>
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
-                <span className="brand-text">KANNARI MUSIC ACADEMY</span>
+                <img src={kannariLogo} alt="Kannari Music Academy" className="brand-logo-img" />
             </Link>
             
             <button 

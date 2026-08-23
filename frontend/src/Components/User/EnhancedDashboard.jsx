@@ -43,7 +43,7 @@ const EnhancedDashboard = () => {
                 title: `Month ${monthNum} Complete! 🎉`,
                 text: "Amazing work! You've unlocked the next month of your learning path.",
                 confirmButtonText: 'Keep Going!',
-                confirmButtonColor: '#4f46e5',
+                confirmButtonColor: '#101C2C',
                 timer: 8000,
                 timerProgressBar: true,
             });
@@ -338,7 +338,7 @@ const EnhancedDashboard = () => {
                         return (
                             <div className="row g-3 mb-4">
                                 <div className="col-12">
-                                    <div className="card border-0 shadow-sm" style={{background:'linear-gradient(135deg,#7C9BB8 0%,#4f46e5 100%)',color:'#fff'}}>
+                                    <div className="card border-0 shadow-sm" style={{background:'linear-gradient(135deg,#7C9BB8 0%,#101C2C 100%)',color:'#fff'}}>
                                         <div className="card-body d-flex align-items-center gap-3 p-3 flex-wrap">
                                             <div className="flex-shrink-0">
                                                 <i className="bi bi-map fs-2"></i>
@@ -354,7 +354,7 @@ const EnhancedDashboard = () => {
                                                 <small style={{opacity:0.85}}>{activeEnrollment.progress_percent}% complete{nextLesson ? ` · Up next: ${nextLesson.lesson_title}` : ''}</small>
                                             </div>
                                             <div className="flex-shrink-0">
-                                                <Link to={continueTo} className="btn btn-sm fw-semibold" style={{background:'#fff',color:'#4f46e5'}}>
+                                                <Link to={continueTo} className="btn btn-sm fw-semibold" style={{background:'#fff',color:'#101C2C'}}>
                                                     <i className="bi bi-play-circle-fill me-1"></i>
                                                     {nextLesson ? 'Continue' : 'View Path'}
                                                 </Link>

@@ -1578,7 +1578,7 @@ const StudentCoursePlayer = () => {
             const colors = {
                 'video': '#D85C4A',
                 'audio': '#7C9BB8',
-                'pdf': '#ea580c',
+                'pdf': '#D85C4A',
                 'image': '#7C9BB8'
             };
             return colors[type] || '#101C2C';
@@ -1651,7 +1651,7 @@ const StudentCoursePlayer = () => {
                                 background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
                                 border: '1px solid #fed7aa', borderRadius: '12px', marginBottom: '20px'
                             }}>
-                                <i className="bi bi-headphones" style={{ fontSize: '28px', color: '#f97316' }}></i>
+                                <i className="bi bi-headphones" style={{ fontSize: '28px', color: '#D85C4A' }}></i>
                                 <div>
                                     <div style={{ fontWeight: 700, color: '#c2410c', fontSize: '15px' }}>Put on your headphones</div>
                                     <div style={{ color: '#92400e', fontSize: '13px' }}>Practice along with your teacher — feels like a real lesson</div>
@@ -1666,7 +1666,7 @@ const StudentCoursePlayer = () => {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
                                     <div style={{
                                         width: '32px', height: '32px', borderRadius: '50%',
-                                        background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+                                        background: 'linear-gradient(135deg, #D85C4A 0%, #D85C4A 100%)',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         color: '#fff', fontWeight: 700, fontSize: '14px', flexShrink: 0
                                     }}>1</div>
@@ -1761,10 +1761,10 @@ const StudentCoursePlayer = () => {
                     const typeLabels = {
                         record_rhythm:        { label: 'Record Rhythm',         icon: 'bi-music-note-list',    color: '#16a34a' },
                         record_melody:        { label: 'Record Melody',         icon: 'bi-music-note-beamed',  color: '#7C9BB8' },
-                        record_embouchure:    { label: 'Record Embouchure',     icon: 'bi-camera-video',       color: '#db2777' },
+                        record_embouchure:    { label: 'Record Embouchure',     icon: 'bi-camera-video',       color: '#D85C4A' },
                         practice_backing_track: { label: 'Practice Backing Track', icon: 'bi-vinyl',           color: '#101C2C' },
-                        submit_warmup:        { label: 'Submit Warmup',         icon: 'bi-sunrise',            color: '#ea580c' },
-                        clap_rhythm:          { label: 'Clap Rhythm',           icon: 'bi-hand-thumbs-up',     color: '#0891b2' },
+                        submit_warmup:        { label: 'Submit Warmup',         icon: 'bi-sunrise',            color: '#D85C4A' },
+                        clap_rhythm:          { label: 'Clap Rhythm',           icon: 'bi-hand-thumbs-up',     color: '#7C9BB8' },
                         custom:               { label: 'Practical Assignment',  icon: 'bi-pencil',             color: '#64748b' },
                     };
                     const meta = typeLabels[practicalType] || typeLabels.custom;
@@ -2352,7 +2352,7 @@ const StudentCoursePlayer = () => {
                                     width: '36px',
                                     height: '36px',
                                     borderRadius: '10px',
-                                    background: '#e0e7ff',
+                                    background: '#F1F5F9',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center'

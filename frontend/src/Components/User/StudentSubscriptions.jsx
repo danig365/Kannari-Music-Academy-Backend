@@ -755,11 +755,11 @@ const StudentSubscriptions = () => {
                                             {/* Allowed Teachers */}
                                             {sub.plan_details?.allowed_teachers && sub.plan_details.allowed_teachers.length > 0 && (
                                                 <div style={{
-                                                    background: '#f5f3ff',
+                                                    background: '#F1F5F9',
                                                     borderRadius: '12px',
                                                     padding: '14px',
                                                     marginBottom: '16px',
-                                                    borderLeft: '4px solid #a78bfa'
+                                                    borderLeft: '4px solid #7C9BB8'
                                                 }}>
                                                     <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', fontWeight: 600 }}>
                                                         <i className="bi bi-people-fill me-2"></i>Allowed Instructors
@@ -767,7 +767,7 @@ const StudentSubscriptions = () => {
                                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                                                         {sub.plan_details.allowed_teachers.map((teacher, idx) => (
                                                             <span key={idx} style={{
-                                                                background: '#ede9fe',
+                                                                background: '#F1F5F9',
                                                                 color: '#6b21a8',
                                                                 padding: '4px 12px',
                                                                 borderRadius: '20px',

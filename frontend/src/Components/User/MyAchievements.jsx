@@ -206,7 +206,7 @@ const MyAchievements = () => {
                                     <span style={{
                                         fontSize: 22,
                                         fontWeight: 800,
-                                        color: streak >= 4 ? '#ea580c' : streak >= 1 ? '#ca8a04' : '#94a3b8',
+                                        color: streak >= 4 ? '#D85C4A' : streak >= 1 ? '#ca8a04' : '#94a3b8',
                                         lineHeight: 1.1
                                     }}>{streak}d</span>
                                     <span style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Streak</span>

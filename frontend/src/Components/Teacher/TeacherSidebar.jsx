@@ -452,13 +452,13 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
               }
             }}
           >
-            <i className="bi bi-chat-dots me-3" style={{ fontSize: '18px', color: isActive('/teacher/community') ? '#a78bfa' : 'inherit' }}></i>
+            <i className="bi bi-chat-dots me-3" style={{ fontSize: '18px', color: isActive('/teacher/community') ? '#7C9BB8' : 'inherit' }}></i>
             <span style={{ fontSize: '14px' }}>Teacher Lounge</span>
             <span style={{
               marginLeft: 'auto', fontSize: '0.65rem', padding: '2px 8px',
               borderRadius: '10px',
               background: 'linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.15))',
-              color: '#a78bfa', fontWeight: 600
+              color: '#7C9BB8', fontWeight: 600
             }}>CHAT</span>
           </Link>
 
@@ -510,7 +510,7 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
                    style={{ 
                      width: '40px', 
                      height: '40px', 
-                     background: 'linear-gradient(135deg, #a855f7 0%, #7C9BB8 100%)',
+                     background: 'linear-gradient(135deg, #101C2C 0%, #7C9BB8 100%)',
                      fontSize: '16px',
                      flexShrink: 0
                    }}>

@@ -911,7 +911,7 @@ const TeacherProgress = () => {
                 alignItems: 'center',
                 gap: '8px'
               }}>
-                <i className="bi bi-mic" style={{ color: '#4f46e5', fontSize: '18px' }}></i>
+                <i className="bi bi-mic" style={{ color: '#101C2C', fontSize: '18px' }}></i>
                 Repeat After Me Activity
               </h2>
               <span style={{ fontSize: '12px', color: '#6b7280' }}>
@@ -1010,7 +1010,7 @@ const TeacherProgress = () => {
                             height: 32,
                             borderRadius: '50%',
                             background: index === 0 ? '#fef3c7' : index === 1 ? '#f1f5f9' : '#fed7aa',
-                            color: index === 0 ? '#C9A66B' : index === 1 ? '#64748b' : '#ea580c',
+                            color: index === 0 ? '#C9A66B' : index === 1 ? '#64748b' : '#D85C4A',
                             fontWeight: 600,
                             fontSize: 13
                           }}

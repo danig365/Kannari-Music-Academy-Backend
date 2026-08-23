@@ -523,7 +523,7 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
             <div style={{
               width: '40px',
               height: '40px',
-              backgroundColor: '#a855f7',
+              backgroundColor: '#101C2C',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',

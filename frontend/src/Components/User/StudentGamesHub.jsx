@@ -205,13 +205,13 @@ const StudentGamesHub = () => {
               <h2 className="gh-section-title" style={{ marginTop: 28 }}>🛠️ Practice Tools</h2>
               <div className="gh-games-grid">
                 <div className="gh-game-card">
-                  <div className="gh-gc-icon" style={{ background: 'linear-gradient(135deg,#0891b2,#7C9BB8)' }}>
+                  <div className="gh-gc-icon" style={{ background: 'linear-gradient(135deg,#7C9BB8,#7C9BB8)' }}>
                     <span>🎵</span>
                   </div>
                   <div className="gh-gc-body">
                     <h3 className="gh-gc-title">Metronome</h3>
                     <p className="gh-gc-desc">Practice your timing with a steady beat. Adjustable BPM and time signatures.</p>
-                    <Link to="/student/metronome" className="gh-gc-play-btn" style={{ background: 'linear-gradient(135deg,#0891b2,#7C9BB8)' }}>
+                    <Link to="/student/metronome" className="gh-gc-play-btn" style={{ background: 'linear-gradient(135deg,#7C9BB8,#7C9BB8)' }}>
                       🎵 Open Metronome
                     </Link>
                   </div>

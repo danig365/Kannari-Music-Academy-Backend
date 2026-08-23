@@ -103,7 +103,7 @@ const StudentGroups = () => {
                       )}
                     </div>
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      <span style={{ padding: '4px 10px', borderRadius: '10px', fontSize: '11px', fontWeight: '600', backgroundColor: '#e0e7ff', color: '#4338ca' }}>
+                      <span style={{ padding: '4px 10px', borderRadius: '10px', fontSize: '11px', fontWeight: '600', backgroundColor: '#F1F5F9', color: '#4338ca' }}>
                         <i className="bi bi-people me-1"></i>{group.student_count} students
                       </span>
                       {group.upcoming_sessions > 0 && (

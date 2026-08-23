@@ -152,9 +152,9 @@ const TeacherCommunity = () => {
         ['#10b981', '#059669'],
         ['#C9A66B', '#C9A66B'],
         ['#D85C4A', '#D85C4A'],
-        ['#D85C4A', '#db2777'],
-        ['#7C9BB8', '#0891b2'],
-        ['#f97316', '#ea580c'],
+        ['#D85C4A', '#D85C4A'],
+        ['#7C9BB8', '#7C9BB8'],
+        ['#D85C4A', '#D85C4A'],
     ];
 
     const getTeacherColor = (tId) => {

@@ -190,7 +190,7 @@
   font-size: 20px;
   font-weight: 700;
   cursor: pointer;
-  background: linear-gradient(135deg, #4f46e5, #7C9BB8);
+  background: linear-gradient(135deg, #101C2C, #7C9BB8);
   color: #fff;
   transition: transform .12s, box-shadow .12s;
 }

@@ -214,8 +214,8 @@ const TeacherAssignmentReviews = () => {
             style={{
               padding: '8px 18px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', cursor: 'pointer',
               border: filter === tab.key ? '2px solid #7C9BB8' : '1px solid #e2e8f0',
-              backgroundColor: filter === tab.key ? '#eef2ff' : '#fff',
-              color: filter === tab.key ? '#4f46e5' : '#64748b',
+              backgroundColor: filter === tab.key ? '#F1F5F9' : '#fff',
+              color: filter === tab.key ? '#101C2C' : '#64748b',
               transition: 'all 0.2s'
             }}
           >

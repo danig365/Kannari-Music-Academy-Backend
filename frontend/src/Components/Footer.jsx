@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import './Footer.css'
+import kannariLogoWhite from '../assets/brand/kannari-logo-white.png'
 
 const Footer = () => {
   const scrollToTop = () => {
@@ -18,18 +19,7 @@ const Footer = () => {
             <div className="footer-grid">
               <div className="footer-column footer-brand">
                 <div className="brand-logo">
-                  <svg className="brand-icon" width="40" height="40" viewBox="0 0 24 24" fill="none">
-                    <path d="M9 18V5l12-2v13" stroke="url(#gradient)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <circle cx="6" cy="18" r="3" stroke="url(#gradient)" strokeWidth="2"/>
-                    <circle cx="18" cy="16" r="3" stroke="url(#gradient)" strokeWidth="2"/>
-                    <defs>
-                      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#101C2C"/>
-                        <stop offset="100%" stopColor="#7C9BB8"/>
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  <h3>KANNARI MUSIC ACADEMY</h3>
+                  <img src={kannariLogoWhite} alt="Kannari Music Academy" className="footer-brand-logo" />
                 </div>
                 <p className="brand-description">
                   Structured Online Music Education for the Modern Musician.

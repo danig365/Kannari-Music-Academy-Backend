@@ -164,7 +164,7 @@ const ParentMessages = () => {
         transition: 'width 0.3s', flexShrink: 0,
       }}>
         {/* Header */}
-        <div style={{ padding: '20px 16px', borderBottom: '1px solid #e2e8f0', background: 'linear-gradient(135deg, #7C9BB8 0%, #6d28d9 100%)' }}>
+        <div style={{ padding: '20px 16px', borderBottom: '1px solid #e2e8f0', background: 'linear-gradient(135deg, #7C9BB8 0%, #101C2C 100%)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ width: '40px', height: '40px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <i className="bi bi-people-fill" style={{ fontSize: '20px', color: '#fff' }}></i>
@@ -206,7 +206,7 @@ const ParentMessages = () => {
               onClick={() => openChildChat(child)}
               style={{
                 padding: '14px 16px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer',
-                backgroundColor: activeChild && (activeChild.student_id || activeChild.id) === (child.student_id || child.id) ? '#f5f3ff' : '#fff',
+                backgroundColor: activeChild && (activeChild.student_id || activeChild.id) === (child.student_id || child.id) ? '#F1F5F9' : '#fff',
                 transition: 'background 0.2s'
               }}
             >
@@ -246,7 +246,7 @@ const ParentMessages = () => {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#F7F3EA' }}>
         {!activeChild ? (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-            <i className="bi bi-chat-heart" style={{ fontSize: '64px', color: '#c4b5fd' }}></i>
+            <i className="bi bi-chat-heart" style={{ fontSize: '64px', color: '#7C9BB8' }}></i>
             <p style={{ color: '#64748b', marginTop: '16px', fontSize: '16px', fontWeight: '500' }}>Select a child to view their teacher conversation</p>
             <p style={{ color: '#94a3b8', fontSize: '13px' }}>Messages are monitored for child safety</p>
           </div>

@@ -22,7 +22,7 @@ const SENDER_COLORS = {
   student: { bg: '#101C2C', label: 'Student' },
   parent:  { bg: '#7C9BB8', label: 'Parent'  },
   admin:   { bg: '#101C2C', label: 'Admin'   },
-  school:  { bg: '#0891b2', label: 'School'  },
+  school:  { bg: '#7C9BB8', label: 'School'  },
 };
 
 const Avatar = ({ name, color }) => (
@@ -328,7 +328,7 @@ const AdminChatOversight = () => {
                       {activeThread.participant_b.name}
                     </div>
                     <div style={{ fontSize: 12, color: '#64748b', marginTop: 1 }}>
-                      <span style={{ background: activeThread.thread_type === 'teacher_student' ? '#eef2ff' : '#f5f3ff', color: activeThread.thread_type === 'teacher_student' ? '#4338ca' : '#7C9BB8', borderRadius: 4, padding: '1px 6px', fontSize: 11, fontWeight: 600 }}>
+                      <span style={{ background: activeThread.thread_type === 'teacher_student' ? '#F1F5F9' : '#F1F5F9', color: activeThread.thread_type === 'teacher_student' ? '#4338ca' : '#7C9BB8', borderRadius: 4, padding: '1px 6px', fontSize: 11, fontWeight: 600 }}>
                         {activeThread.thread_type === 'teacher_student' ? 'Teacher ↔ Student' : 'Parent ↔ Student'}
                       </span>
                       <span style={{ marginLeft: 8 }}>{messages.length} message{messages.length !== 1 ? 's' : ''}</span>
