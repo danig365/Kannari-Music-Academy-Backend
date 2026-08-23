@@ -1,4 +1,5 @@
 import React from 'react';
+import kannariLogoWhite from '../../assets/brand/kannari-logo-white.png';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const SchoolSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNavigate = null }) => {
@@ -51,19 +52,9 @@ const SchoolSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onN
         }}>
             {/* Header */}
             <div className="p-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <div className="d-flex align-items-center gap-3">
-                    <div className="rounded-3 d-flex align-items-center justify-content-center"
-                        style={{
-                            width: '48px',
-                            height: '48px',
-                            background: 'linear-gradient(135deg, #101C2C 0%, #0a58ca 100%)'
-                        }}>
-                        <i className="bi bi-building text-white fs-4"></i>
-                    </div>
-                    <div>
-                        <div className="fw-bold text-white" style={{ fontSize: '18px' }}>Kannari Music Academy</div>
-                        <div style={{ fontSize: '13px', color: '#6b7280' }}>School Portal</div>
-                    </div>
+                <div className="d-flex flex-column align-items-start gap-2">
+                    <img src={kannariLogoWhite} alt="Kannari Music Academy" style={{ height: '46px', width: 'auto' }} />
+                    <div style={{ fontSize: '13px', color: '#94a3b8', letterSpacing: '0.5px' }}>School Portal</div>
                 </div>
             </div>
 
@@ -110,7 +101,7 @@ const SchoolSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onN
                             style={{
                                 width: '40px',
                                 height: '40px',
-                                background: 'linear-gradient(135deg, #101C2C 0%, #0a58ca 100%)',
+                                background: 'linear-gradient(135deg, #101C2C 0%, #101C2C 100%)',
                                 fontSize: '16px'
                             }}>
                             {schoolName ? schoolName.substring(0, 2).toUpperCase() : 'SC'}

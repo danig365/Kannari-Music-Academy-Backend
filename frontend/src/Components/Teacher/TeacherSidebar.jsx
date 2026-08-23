@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import kannariLogoWhite from '../../assets/brand/kannari-logo-white.png'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import axios from 'axios'
@@ -110,19 +111,9 @@ const TeacherSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, on
     }}>
       {/* Header */}
       <div className="p-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-        <div className="d-flex align-items-center gap-3">
-          <div className="rounded-3 d-flex align-items-center justify-content-center" 
-               style={{ 
-                 width: '48px', 
-                 height: '48px', 
-                 background: 'linear-gradient(135deg, #101C2C 0%, #101C2C 100%)'
-               }}>
-            <i className="bi bi-person-chalkboard text-white fs-4"></i>
-          </div>
-          <div>
-            <div className="fw-bold text-white" style={{ fontSize: '18px' }}>Kannari Music Academy</div>
-            <div style={{ fontSize: '13px', color: '#6b7280' }}>Teacher Portal</div>
-          </div>
+        <div className="d-flex flex-column align-items-start gap-2">
+          <img src={kannariLogoWhite} alt="Kannari Music Academy" style={{ height: '46px', width: 'auto' }} />
+          <div style={{ fontSize: '13px', color: '#94a3b8', letterSpacing: '0.5px' }}>Teacher Portal</div>
         </div>
       </div>
 

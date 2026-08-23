@@ -1,4 +1,5 @@
 import React from 'react'
+import kannariLogoWhite from '../../assets/brand/kannari-logo-white.png'
 import { Link, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useState } from 'react'
@@ -154,23 +155,9 @@ const Sidebar = ({ isOpen: externalIsOpen, setIsOpen: externalSetIsOpen, isMobil
     <div style={sidebarStyle}>
       {/* Header Section */}
       <div style={{ padding: '20px 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            backgroundColor: '#101C2C',
-            borderRadius: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0
-          }}>
-            <i className="bi bi-music-note-beamed" style={{ fontSize: '20px', color: 'white' }}></i>
-          </div>
-          <div style={{ minWidth: 0, overflow: 'hidden' }}>
-            <div style={{ color: 'white', fontWeight: '600', fontSize: '15px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Kannari Music Academy</div>
-            <div style={{ color: '#94a3b8', fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Student Portal</div>
-          </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+          <img src={kannariLogoWhite} alt="Kannari Music Academy" style={{ height: '42px', width: 'auto' }} />
+          <div style={{ color: '#94a3b8', fontSize: '12px', letterSpacing: '0.5px' }}>Student Portal</div>
         </div>
       </div>
 
