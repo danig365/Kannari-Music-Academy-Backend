@@ -1869,3 +1869,19 @@ class LearningPathEnrollmentSerializer(serializers.ModelSerializer):
                         'course_title': course.title,
                     }
         return None
+
+
+class ActivationCodeSerializer(serializers.ModelSerializer):
+    used_by_name = serializers.SerializerMethodField()
+    created_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.ActivationCode
+        fields = ['id', 'code', 'status', 'note', 'used_by', 'used_by_name',
+                  'created_by_name', 'used_at', 'expires_at', 'created_at']
+
+    def get_used_by_name(self, obj):
+        return obj.used_by.fullname if obj.used_by else None
+
+    def get_created_by_name(self, obj):
+        return obj.created_by.full_name if obj.created_by else None

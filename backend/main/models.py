@@ -3780,3 +3780,58 @@ class LearningPathEnrollment(models.Model):
         if total == 0:
             return 0
         return int((self.current_course_index / total) * 100)
+
+
+class ActivationCode(models.Model):
+    """
+    Single-use activation code for card-free onboarding.
+
+    Students sign up into a pending state; an admin gives them a code; entering a
+    valid code activates their account. Codes are unique and single-use, generated
+    and managed from the admin dashboard. Activate-only: the code turns the account
+    on — course/plan access is assigned separately by the admin.
+    """
+    STATUS_CHOICES = [
+        ('unused', 'Unused'),
+        ('used', 'Used'),
+        ('revoked', 'Revoked'),
+    ]
+    code = models.CharField(max_length=20, unique=True, db_index=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='unused')
+    note = models.CharField(max_length=200, null=True, blank=True,
+        help_text="Optional label — e.g. who this code is for.")
+    created_by = models.ForeignKey('Admin', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='activation_codes')
+    used_by = models.ForeignKey('Student', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='activation_codes_used')
+    used_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True,
+        help_text="Optional expiry. Blank = never expires.")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = "Activation Codes"
+
+    def __str__(self):
+        return f"{self.code} ({self.status})"
+
+    def is_valid(self):
+        """True if the code can currently be redeemed."""
+        from django.utils import timezone
+        if self.status != 'unused':
+            return False
+        if self.expires_at and self.expires_at < timezone.now():
+            return False
+        return True
+
+    @staticmethod
+    def generate_unique_code():
+        """Return a fresh unique code like 'K7QF-M3PX' (ambiguous chars removed)."""
+        import secrets
+        alphabet = ''.join(c for c in 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789')  # no O/0/I/1
+        for _ in range(50):
+            code = '-'.join(''.join(secrets.choice(alphabet) for _ in range(4)) for _ in range(2))
+            if not ActivationCode.objects.filter(code=code).exists():
+                return code
+        raise RuntimeError("Could not generate a unique activation code")

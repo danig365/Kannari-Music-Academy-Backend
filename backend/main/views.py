@@ -14551,3 +14551,81 @@ class StudentMyPaths(APIView):
             'enrollments': enrollment_data,
             'upcoming_group_session': upcoming_session,
         })
+
+
+# ==================== ACTIVATION CODES (card-free onboarding) ====================
+@csrf_exempt
+def list_activation_codes(request):
+    """GET /api/admin/activation-codes/  — admin list (optional ?status=unused|used|revoked)."""
+    data = _extract_request_data(request)
+    admin, err = _validate_admin_requester(request, data)
+    if err:
+        return err
+    qs = models.ActivationCode.objects.select_related('used_by', 'created_by').all()
+    status_f = request.GET.get('status')
+    if status_f in ('unused', 'used', 'revoked'):
+        qs = qs.filter(status=status_f)
+    from .serializers import ActivationCodeSerializer
+    return JsonResponse({'codes': ActivationCodeSerializer(qs, many=True).data})
+
+
+@csrf_exempt
+def generate_activation_codes(request):
+    """POST /api/admin/activation-codes/generate/
+    Body: { requester_admin_id, count?, note?, expires_at? }  (activate-only codes)."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST only'}, status=405)
+    data = _extract_request_data(request)
+    admin, err = _validate_admin_requester(request, data)
+    if err:
+        return err
+
+    try:
+        count = int(data.get('count') or 1)
+    except (TypeError, ValueError):
+        count = 1
+    count = max(1, min(count, 100))
+    note = (str(data.get('note') or '')).strip() or None
+
+    # Parse an optional expiry (accepts ISO datetime or a plain YYYY-MM-DD date).
+    exp = None
+    raw_exp = data.get('expires_at')
+    if raw_exp:
+        from django.utils.dateparse import parse_datetime, parse_date
+        exp = parse_datetime(str(raw_exp))
+        if exp is None:
+            d = parse_date(str(raw_exp))
+            if d:
+                import datetime as _dt
+                exp = _dt.datetime.combine(d, _dt.time(23, 59, 59))
+        if exp and timezone.is_naive(exp):
+            exp = timezone.make_aware(exp)
+
+    created = []
+    for _ in range(count):
+        created.append(models.ActivationCode.objects.create(
+            code=models.ActivationCode.generate_unique_code(),
+            created_by=admin, note=note, expires_at=exp,
+        ))
+    from .serializers import ActivationCodeSerializer
+    return JsonResponse({'bool': True, 'count': len(created),
+                         'codes': ActivationCodeSerializer(created, many=True).data})
+
+
+@csrf_exempt
+def revoke_activation_code(request, code_id):
+    """POST /api/admin/activation-code/<id>/revoke/  Body: { requester_admin_id }."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST only'}, status=405)
+    data = _extract_request_data(request)
+    admin, err = _validate_admin_requester(request, data)
+    if err:
+        return err
+    code = models.ActivationCode.objects.filter(id=code_id).first()
+    if not code:
+        return JsonResponse({'bool': False, 'message': 'Code not found'}, status=404)
+    if code.status == 'used':
+        return JsonResponse({'bool': False, 'message': 'Cannot revoke a code that has already been used'}, status=400)
+    code.status = 'revoked'
+    code.save(update_fields=['status'])
+    return JsonResponse({'bool': True, 'message': 'Code revoked'})

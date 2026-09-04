@@ -313,7 +313,12 @@ urlpatterns =[
         path('admin/subscription/<int:subscription_id>/charge/', views.admin_charge_subscription_now),
         path('subscription/request/', views.subscription_request),
         path('admin/subscription-requests/', views.admin_subscription_requests),
-        
+
+        # Activation codes (card-free onboarding)
+        path('admin/activation-codes/', views.list_activation_codes),
+        path('admin/activation-codes/generate/', views.generate_activation_codes),
+        path('admin/activation-code/<int:code_id>/revoke/', views.revoke_activation_code),
+
         # ==================== ACCESS CONTROL URLS ====================
         
         # Check subscription status

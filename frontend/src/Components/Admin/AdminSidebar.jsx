@@ -199,6 +199,33 @@ const AdminSidebar = ({ isOpen = false, setIsOpen = null, isMobile = false, onNa
                         <span style={{ fontSize: '14px' }}>Subscriptions</span>
                     </Link>
 
+                    <Link
+                        to="/admin-panel/activation-codes"
+                        onClick={(e) => handleNavClick(e, '/admin-panel/activation-codes')}
+                        className="text-decoration-none d-flex align-items-center px-4 py-3 position-relative"
+                        style={{
+                            color: isActive('/admin-panel/activation-codes') ? '#fff' : '#8b92a7',
+                            backgroundColor: isActive('/admin-panel/activation-codes') ? 'rgba(16, 28, 44, 0.35)' : 'transparent',
+                            borderLeft: isActive('/admin-panel/activation-codes') ? '3px solid #C9A66B' : '3px solid transparent',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!isActive('/admin-panel/activation-codes')) {
+                                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                                e.currentTarget.style.color = '#fff';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!isActive('/admin-panel/activation-codes')) {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                                e.currentTarget.style.color = '#8b92a7';
+                            }
+                        }}
+                    >
+                        <i className="bi bi-key-fill me-3" style={{ fontSize: '18px' }}></i>
+                        <span style={{ fontSize: '14px' }}>Activation Codes</span>
+                    </Link>
+
                     <Link 
                         to="/admin-panel/games-analytics" 
                         onClick={(e) => handleNavClick(e, '/admin-panel/games-analytics')}
