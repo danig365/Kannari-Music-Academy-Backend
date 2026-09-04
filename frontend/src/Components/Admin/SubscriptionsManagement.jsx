@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import LoadingSpinner from '../LoadingSpinner';
-import AdminChargeSubscription from './AdminChargeSubscription';
 import './SubscriptionsManagement.css';
 import { API_BASE_URL, SITE_URL } from '../../config';
 
@@ -53,7 +52,6 @@ const SubscriptionsManagement = () => {
 
     // Form states
     const [showSubscriptionForm, setShowSubscriptionForm] = useState(false);
-    const [showChargeModal, setShowChargeModal] = useState(false); // #8 admin card charge
     const [showPlanForm, setShowPlanForm] = useState(false);
     const [editingPlan, setEditingPlan] = useState(null);
     const [formData, setFormData] = useState({
@@ -230,17 +228,6 @@ const SubscriptionsManagement = () => {
         }
     };
 
-    const handleChargeNow = async (row) => {
-        if (!window.confirm(`Attempt to charge ${row.student_name}'s saved card now?`)) return;
-        try {
-            const adminId = localStorage.getItem('adminId');
-            const res = await axios.post(`${baseUrl}/admin/subscription/${row.subscription_id}/charge/`, { requester_admin_id: adminId });
-            alert(res.data.message || 'Charge attempted.');
-            fetchUnpaid();
-        } catch (err) {
-            alert(err.response?.data?.error || 'Could not charge.');
-        }
-    };
 
     const handleCreateSubscription = async (e) => {
         e.preventDefault();
@@ -676,13 +663,6 @@ Weekly Lessons: ${subscription.current_week_lessons || 0} / ${subscription.plan_
                         </h4>
                         <div className="d-flex gap-2">
                             <button
-                                className="btn btn-primary"
-                                onClick={() => setShowChargeModal(true)}
-                            >
-                                <i className="bi bi-credit-card me-2"></i>
-                                Charge Card &amp; Subscribe
-                            </button>
-                            <button
                                 className="btn-create-subscription-custom"
                                 onClick={() => setShowSubscriptionForm(!showSubscriptionForm)}
                             >
@@ -691,15 +671,6 @@ Weekly Lessons: ${subscription.current_week_lessons || 0} / ${subscription.plan_
                             </button>
                         </div>
                     </div>
-
-                    {showChargeModal && (
-                        <AdminChargeSubscription
-                            students={students}
-                            plans={plans}
-                            onClose={() => setShowChargeModal(false)}
-                            onSuccess={fetchAllData}
-                        />
-                    )}
 
                     {/* Subscription Form */}
                     {showSubscriptionForm && (
@@ -1496,10 +1467,7 @@ Weekly Lessons: ${subscription.current_week_lessons || 0} / ${subscription.plan_
                                                     <td>{r.days_overdue != null ? `${r.days_overdue} days` : '—'}</td>
                                                     <td>
                                                         <div className="d-flex gap-1">
-                                                            <button className="btn btn-sm btn-outline-primary" title="Charge saved card now" onClick={() => handleChargeNow(r)}>
-                                                                <i className="bi bi-credit-card"></i> Charge
-                                                            </button>
-                                                            <button className="btn btn-sm btn-success" title="Activate without charging (testing)" onClick={() => handleActivateSub(r)}>
+                                                            <button className="btn btn-sm btn-success" title="Activate access (collect payment externally)" onClick={() => handleActivateSub(r)}>
                                                                 <i className="bi bi-check-circle"></i> Activate
                                                             </button>
                                                         </div>

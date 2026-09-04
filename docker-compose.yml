@@ -95,7 +95,6 @@ services:
           sleep $$((t - now));
           echo "[scheduler] running daily jobs";
           python manage.py expire_subscriptions || true;
-          python manage.py payment_reminders --send || true;
           python manage.py backup_data --keep-days 7 || true;
         done
     logging:
