@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import Sidebar from './Sidebar';
@@ -11,219 +9,6 @@ import { API_BASE_URL, SITE_URL } from '../../config';
 import { getStudentSubscription, getSubscriptionUsage, getAssignedTeacher, getPlanTeachers, formatAccessLevel, getAccessLevelColor, clearSubscriptionCache } from '../../services/subscriptionService';
 
 const baseUrl = API_BASE_URL;
-const stripePublicKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || 'pk_live_51SUGuu5660mVKr4oXfErDtBTL6gARjogpSlaC7hPrDdXlKTu7oFU9NYhVFjAynfAScVH6LzHwlgxVGjeFE4v9iXi00VVc57kSv';
-const stripePromise = loadStripe(stripePublicKey);
-
-// Payment Form Component
-const PaymentForm = ({ plan, studentId, hasCardOnFile, onSuccess, onCancel }) => {
-    const stripe = useStripe();
-    const elements = useElements();
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [email, setEmail] = useState('');
-    const [name, setName] = useState('');
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!stripe || (!hasCardOnFile && !elements)) return;
-
-        setLoading(true);
-        setError(null);
-
-        try {
-            if (!hasCardOnFile) {
-                if (!name.trim()) { setError('Please enter your full name'); setLoading(false); return; }
-                if (!email.trim()) { setError('Please enter your email address'); setLoading(false); return; }
-            }
-            if (!studentId) { setError('Student ID not found. Please log in again.'); setLoading(false); return; }
-            if (!plan || !plan.id || !plan.final_price) { setError('Invalid plan information. Please try again.'); setLoading(false); return; }
-
-            const paymentData = {
-                plan_id: parseInt(plan.id),
-                student_id: parseInt(studentId),
-                email: hasCardOnFile ? '' : email.trim(),
-                name: hasCardOnFile ? '' : name.trim(),
-            };
-
-            // Create Stripe Subscription on backend
-            const response = await axios.post(`${baseUrl}/subscription/create-payment-intent/`, paymentData);
-
-            const { clientSecret, setupClientSecret, isTrialing } = response.data;
-
-            // Trial: $0 today, but we MUST save a card now so the first real
-            // charge (on the 1st) succeeds. Confirm the SetupIntent to attach it.
-            if (isTrialing) {
-                if (hasCardOnFile) {
-                    // Customer already has a saved default payment method.
-                    onSuccess();
-                    return;
-                }
-                if (setupClientSecret) {
-                    const cardElement = elements.getElement(CardElement);
-                    const { error: setupErr, setupIntent } = await stripe.confirmCardSetup(setupClientSecret, {
-                        payment_method: { card: cardElement, billing_details: { name, email } }
-                    });
-                    if (setupErr) { setError(setupErr.message || 'Could not save your card. Please try again.'); }
-                    else if (setupIntent?.status === 'succeeded') { onSuccess(); }
-                    else { setError('Card could not be saved. Please try again.'); }
-                    return;
-                }
-                // No setup secret returned (unexpected) — fail loudly rather than
-                // silently creating a subscription with no payment method.
-                setError('We could not set up your card for future billing. Please try again or contact support.');
-                return;
-            }
-
-            // Non-trial path: an immediate payment is required.
-            if (!clientSecret) {
-                onSuccess();
-                return;
-            }
-
-            if (hasCardOnFile) {
-                // Use the customer's saved default payment method — no card element needed
-                const { error: stripeErr, paymentIntent } = await stripe.confirmCardPayment(clientSecret);
-                if (stripeErr) { setError(stripeErr.message || 'Payment failed'); }
-                else if (paymentIntent?.status === 'succeeded' || paymentIntent?.status === 'processing') { onSuccess(); }
-                else { setError('Payment was not completed. Please try again.'); }
-            } else {
-                const cardElement = elements.getElement(CardElement);
-                const { error: stripeErr, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-                    payment_method: { card: cardElement, billing_details: { name, email } }
-                });
-                if (stripeErr) { setError(stripeErr.message || 'Payment failed'); }
-                else if (paymentIntent?.status === 'succeeded') { onSuccess(); }
-                else if (paymentIntent?.status === 'processing') { setError('Payment is being processed. Please wait...'); }
-                else { setError('Payment was not completed. Please try again.'); }
-            }
-        } catch (err) {
-            setError(err.response?.data?.error || err.message || 'Payment failed. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="payment-form">
-            {error && (
-                <div className="alert alert-danger d-flex align-items-center">
-                    <i className="bi bi-exclamation-circle me-2"></i>
-                    {error}
-                </div>
-            )}
-
-            {/* No-charge notice */}
-            <div style={{
-                padding: '12px 16px', background: '#f0fdf4', border: '1px solid #86efac',
-                borderRadius: '10px', display: 'flex', gap: '10px', alignItems: 'flex-start',
-                marginBottom: '12px',
-            }}>
-                <i className="bi bi-shield-check" style={{ color: '#16a34a', fontSize: '16px', marginTop: '1px' }}></i>
-                <div>
-                    <strong style={{ color: '#15803d', fontSize: '13px' }}>No charge today.</strong>
-                    <span style={{ color: '#166534', fontSize: '13px' }}> Billing starts on the 1st of next month. The rest of this month is free.</span>
-                </div>
-            </div>
-
-            {hasCardOnFile ? (
-                /* Card-on-file indicator */
-                <div style={{
-                    padding: '14px 16px', background: '#F7F3EA', border: '1px solid #e2e8f0',
-                    borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '12px',
-                    marginBottom: '4px',
-                }}>
-                    <i className="bi bi-credit-card-2-front-fill" style={{ fontSize: '22px', color: '#64748b' }}></i>
-                    <div>
-                        <div style={{ fontSize: '13px', fontWeight: '600', color: '#374151' }}>Card on file</div>
-                        <div style={{ fontSize: '12px', color: '#6b7280' }}>Your saved card will be used for future billing.</div>
-                    </div>
-                    <i className="bi bi-check-circle-fill ms-auto" style={{ color: '#10b981', fontSize: '18px' }}></i>
-                </div>
-            ) : (
-                <>
-                    <div className="form-group">
-                        <label htmlFor="fullName">
-                            <i className="bi bi-person me-2"></i>Full Name
-                        </label>
-                        <input
-                            id="fullName"
-                            type="text"
-                            className="form-control"
-                            placeholder="John Doe"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            required
-                        />
-                    </div>
-                    
-                    <div className="form-group">
-                        <label htmlFor="email">
-                            <i className="bi bi-envelope me-2"></i>Email Address
-                        </label>
-                        <input
-                            id="email"
-                            type="email"
-                            className="form-control"
-                            placeholder="john@example.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
-                    
-                    <div className="form-group">
-                        <label htmlFor="cardElement">
-                            <i className="bi bi-credit-card me-2"></i>Card Information
-                        </label>
-                        <CardElement 
-                            id="cardElement"
-                            className="form-control card-element" 
-                            options={{
-                                hidePostalCode: true,
-                                style: {
-                                    base: {
-                                        fontSize: '1rem',
-                                        color: '#495057',
-                                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                                        '::placeholder': { color: '#adb5bd' }
-                                    },
-                                    invalid: { color: '#D85C4A' }
-                                }
-                            }}
-                        />
-                    </div>
-                </>
-            )}
-
-            <div className="d-flex gap-2 mt-4">
-                <button
-                    type="submit"
-                    disabled={!stripe || loading}
-                    className="btn btn-success flex-grow-1"
-                >
-                    {loading ? (
-                        <>
-                            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                            Processing...
-                        </>
-                    ) : (
-                        <>
-                            <i className="bi bi-lock me-2"></i>
-                            Confirm Subscription — ${parseFloat(plan.final_price).toFixed(2)}/mo
-                        </>
-                    )}
-                </button>
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="btn btn-secondary"
-                >
-                    Cancel
-                </button>
-            </div>
-        </form>
-    );
-};
 
 // Main Component
 const StudentSubscriptions = () => {
@@ -593,38 +378,32 @@ const StudentSubscriptions = () => {
                                     ))}
                                 </ul>
 
-                                <button
-                                    onClick={() => {
-                                        console.log('Subscribe button clicked for plan:', plan);
-                                        setSelectedPlan(plan);
-                                    }}
-                                    disabled={isSubscribedToPlan(plan.id)}
-                                    className={`btn w-100 ${
-                                        isSubscribedToPlan(plan.id)
-                                            ? 'btn-secondary'
-                                            : 'btn-primary'
-                                    }`}
-                                >
-                                    {isSubscribedToPlan(plan.id) ? (
-                                        <>
-                                            <i className="bi bi-check-circle me-2"></i>
-                                            Already Subscribed
-                                        </>
-                                    ) : (
-                                        <>
-                                            <i className="bi bi-cart-plus me-2"></i>
-                                            Subscribe Now
-                                        </>
-                                    )}
-                                </button>
-                                {!isSubscribedToPlan(plan.id) && (
-                                    <button
-                                        onClick={() => handleRequestPlan(plan)}
-                                        className="btn btn-outline-primary w-100 mt-2"
-                                    >
-                                        <i className="bi bi-hand-index me-2"></i>
-                                        Request Plan (pay outside app)
+                                {isSubscribedToPlan(plan.id) ? (
+                                    <button disabled className="btn w-100 btn-secondary">
+                                        <i className="bi bi-check-circle me-2"></i>
+                                        Already Subscribed
                                     </button>
+                                ) : (
+                                    <>
+                                        {plan.external_payment_link && (
+                                            <a
+                                                href={plan.external_payment_link}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="btn btn-primary w-100"
+                                            >
+                                                <i className="bi bi-credit-card me-2"></i>
+                                                Pay &amp; Subscribe →
+                                            </a>
+                                        )}
+                                        <button
+                                            onClick={() => handleRequestPlan(plan)}
+                                            className={`btn btn-outline-primary w-100 ${plan.external_payment_link ? 'mt-2' : ''}`}
+                                        >
+                                            <i className="bi bi-hand-index me-2"></i>
+                                            Request Plan
+                                        </button>
+                                    </>
                                 )}
                             </div>
                         )})}
@@ -898,87 +677,6 @@ const StudentSubscriptions = () => {
                 </div>
             )}
 
-            {/* Payment Modal */}
-            {selectedPlan && (
-                <div className="modal d-block show" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
-                    <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content">
-                            <div className="modal-header d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h5 className="modal-title mb-1">
-                                        Complete Your Purchase
-                                    </h5>
-                                    <p style={{fontSize: '0.85rem', margin: 0, opacity: 0.9}}>
-                                        {selectedPlan.name} Plan
-                                    </p>
-                                </div>
-                                <button
-                                    type="button"
-                                    className="btn-close"
-                                    onClick={() => setSelectedPlan(null)}
-                                ></button>
-                            </div>
-                            <div className="modal-body">
-                                {/* Plan Summary */}
-                                <div className="plan-summary">
-                                    <div style={{marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '2px solid #e9ecef'}}>
-                                        <h6 style={{color: '#6c757d', fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0}}>
-                                            Order Summary
-                                        </h6>
-                                    </div>
-                                    
-                                    <div className="summary-item">
-                                        <span>{selectedPlan.name} Plan</span>
-                                        <span>${parseFloat(selectedPlan.price).toFixed(2)}</span>
-                                    </div>
-                                    
-                                    <div className="summary-item">
-                                        <span>Duration</span>
-                                        <span style={{textTransform: 'capitalize'}}>{selectedPlan.duration.replace('_', ' ')}</span>
-                                    </div>
-                                    
-                                    {selectedPlan.discount_price && (
-                                        <div className="summary-item discount">
-                                            <span><i className="bi bi-tag-fill me-2"></i>Special Offer</span>
-                                            <span>-${(parseFloat(selectedPlan.price) - parseFloat(selectedPlan.discount_price)).toFixed(2)}</span>
-                                        </div>
-                                    )}
-                                    
-                                    <div className="summary-item total">
-                                        <span>You Pay</span>
-                                        <span>${parseFloat(selectedPlan.final_price).toFixed(2)}</span>
-                                    </div>
-                                </div>
-
-                                {/* Payment Form */}
-                                <Elements stripe={stripePromise}>
-                                    <PaymentForm
-                                        plan={selectedPlan}
-                                        studentId={studentId}
-                                        hasCardOnFile={!!(studentInfo?.stripe_customer_id)}
-                                        onSuccess={handleSubscriptionSuccess}
-                                        onCancel={() => setSelectedPlan(null)}
-                                    />
-                                </Elements>
-                                
-                                {/* Security Info */}
-                                <div style={{
-                                    marginTop: '1.5rem',
-                                    padding: '1rem',
-                                    backgroundColor: '#f8f9fa',
-                                    borderRadius: '8px',
-                                    textAlign: 'center',
-                                    fontSize: '0.85rem',
-                                    color: '#6c757d'
-                                }}>
-                                    <i className="bi bi-shield-check" style={{color: '#28a745', marginRight: '0.5rem'}}></i>
-                                    Secure payment powered by <strong>Stripe</strong>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
                     </div>
                 </div>
             </div>
