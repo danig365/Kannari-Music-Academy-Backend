@@ -975,7 +975,7 @@ class SubscriptionPlanSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'duration', 'price', 'discount_price', 
                   'access_level', 'max_courses', 'max_lessons', 'lessons_per_week', 
                   'lessons_per_day', 'features', 'features_list', 'final_price', 
-                  'status', 'is_featured', 'can_download',
+                  'status', 'is_featured', 'can_download', 'external_payment_link',
                   'can_access_live_sessions', 'max_live_sessions_per_month',
                   'max_audio_messages_per_month', 'priority_support',
                   'allowed_teachers', 'allowed_teachers_details',

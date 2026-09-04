@@ -1787,6 +1787,8 @@ class SubscriptionPlan(models.Model):
     
     features = models.TextField(null=True, blank=True, help_text="Comma-separated features")
     stripe_price_id = models.CharField(max_length=255, null=True, blank=True, help_text="Stripe Price ID (price_xxx) for recurring billing")
+    external_payment_link = models.URLField(max_length=500, null=True, blank=True,
+        help_text="External payment page URL for this plan. Students are sent here to pay; no card is collected in-app.")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     is_featured = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -81,6 +81,7 @@ const SubscriptionsManagement = () => {
         priority_support: false,
         max_live_sessions_per_month: 0,
         max_audio_messages_per_month: 0,
+        external_payment_link: '',
         allowed_teachers: []
     });
 
@@ -293,6 +294,7 @@ const SubscriptionsManagement = () => {
                 priority_support: planFormData.priority_support,
                 max_live_sessions_per_month: parseInt(planFormData.max_live_sessions_per_month) || 0,
                 max_audio_messages_per_month: parseInt(planFormData.max_audio_messages_per_month) || 0,
+                external_payment_link: planFormData.external_payment_link && planFormData.external_payment_link.trim() ? planFormData.external_payment_link.trim() : null,
                 allowed_teachers: planFormData.allowed_teachers,
                 status: 'active'
             };
@@ -364,6 +366,7 @@ const SubscriptionsManagement = () => {
                 priority_support: planFormData.priority_support,
                 max_live_sessions_per_month: parseInt(planFormData.max_live_sessions_per_month) || 0,
                 max_audio_messages_per_month: parseInt(planFormData.max_audio_messages_per_month) || 0,
+                external_payment_link: planFormData.external_payment_link && planFormData.external_payment_link.trim() ? planFormData.external_payment_link.trim() : null,
                 allowed_teachers: planFormData.allowed_teachers,
                 status: 'active'
             };
@@ -416,6 +419,7 @@ const SubscriptionsManagement = () => {
             priority_support: plan.priority_support || false,
             max_live_sessions_per_month: plan.max_live_sessions_per_month || 0,
             max_audio_messages_per_month: plan.max_audio_messages_per_month || 0,
+            external_payment_link: plan.external_payment_link || '',
             allowed_teachers: plan.allowed_teachers || []
         });
         setShowPlanForm(true);
@@ -1171,6 +1175,19 @@ Weekly Lessons: ${subscription.current_week_lessons || 0} / ${subscription.plan_
                                                 value={planFormData.features}
                                                 onChange={(e) => setPlanFormData({ ...planFormData, features: e.target.value })}
                                             />
+                                        </div>
+                                    </div>
+                                    <div className="row">
+                                        <div className="col-md-12 mb-3">
+                                            <label className="form-label">External Payment Link (URL)</label>
+                                            <input
+                                                type="url"
+                                                className="form-control"
+                                                placeholder="https://your-payment-page.com/plan-xyz"
+                                                value={planFormData.external_payment_link}
+                                                onChange={(e) => setPlanFormData({ ...planFormData, external_payment_link: e.target.value })}
+                                            />
+                                            <small className="text-muted">Students are sent here to pay. Leave empty to hide the Pay button for this plan.</small>
                                         </div>
                                     </div>
                                     <div className="row mb-3">
