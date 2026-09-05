@@ -430,6 +430,8 @@ class Student(models.Model):
     email=models.CharField(max_length=100,unique=True)
     password=models.CharField(max_length=100,null=True,blank=True)
     is_verified=models.BooleanField(default=False)
+    is_activated=models.BooleanField(default=False,
+        help_text="Account activated via activation code or by an admin. Pending accounts cannot access assigned content.")
     username=models.CharField(max_length=500)
     interseted_categories=models.TextField()
     profile_img=models.ImageField(upload_to='student_profile_imgs/',null=True)

@@ -66,6 +66,12 @@ class SubscriptionAccessControl:
         Check if student has an active, paid subscription.
         Returns tuple: (has_subscription: bool, subscription: Subscription|None, message: str)
         """
+        # Pending (not-yet-activated) accounts cannot access content until they
+        # enter an activation code (or an admin activates them).
+        student = models.Student.objects.filter(id=student_id).only('id', 'is_activated').first()
+        if student and not student.is_activated:
+            return False, None, "Your account is pending activation. Please enter your activation code to unlock access."
+
         subscription = SubscriptionAccessControl.get_active_subscription(student_id)
         
         if not subscription:
