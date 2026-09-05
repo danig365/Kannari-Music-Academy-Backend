@@ -1,2 +1,5 @@
 # Local backups (DB dumps, media snapshots) — never commit
 /backups/
+
+# Downloaded archives
+*.zip
