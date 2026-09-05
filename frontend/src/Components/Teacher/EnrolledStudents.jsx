@@ -5,6 +5,7 @@ import { useState } from 'react'
 import axios from 'axios'
 
 import { API_BASE_URL } from '../../config';
+import StudentAccessManager from './StudentAccessManager';
 
 const baseUrl = API_BASE_URL;
 
@@ -16,6 +17,7 @@ const EnrolledStudents = () => {
 
       const [studentData, setStudentData]=useState([]);
       const [courseData, setCourseData]=useState([]);
+      const [accessStudent, setAccessStudent]=useState(null);
       const teacherId=localStorage.getItem('teacherId');
       let {course_id}=useParams();
 
@@ -53,21 +55,39 @@ const EnrolledStudents = () => {
                                     <th className='text-center'>Name</th>
                                     <th className='text-center'>Email</th>
                                     <th className='text-center'>Interest</th>
+                                    <th className='text-center'>Access</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {studentData.map((row,index) => 
-                                    <tr>
+                                {studentData.map((row,index) =>
+                                    <tr key={index}>
                                     <td className='text-center' scope="row"><img className='imgmeet' src={row.student.profile_img} /></td>
                                     <td className='text-center' scope="row">{row.student.fullname}</td>
                                     <td className='text-center w-auto' scope="row">{row.student.email}</td>
                                     <td className='text-center' scope="row">{row.student.interseted_categories}</td>
+                                    <td className='text-center' scope="row">
+                                        <button className="btn btn-sm" style={{ background:'#101C2C', color:'#fff', border:'none' }}
+                                            onClick={() => setAccessStudent(row.student)}>
+                                            <i className="bi bi-sliders me-1"></i> Manage Access
+                                        </button>
+                                    </td>
                                 </tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
                 </div>
+
+        {accessStudent && (
+            <StudentAccessManager
+                studentId={accessStudent.id}
+                studentName={accessStudent.fullname}
+                courseId={course_id}
+                requesterType="teacher"
+                requesterId={teacherId}
+                onClose={() => setAccessStudent(null)}
+            />
+        )}
     </>
   )
 }
