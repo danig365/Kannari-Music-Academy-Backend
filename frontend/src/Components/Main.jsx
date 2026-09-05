@@ -7,6 +7,7 @@ import TeacherDetail from './User/TeacherDetail'
 import { BrowserRouter, Routes, Route, useLocation, Navigate, useParams } from 'react-router-dom';
 import About from './About';
 import Login from './User/Login'
+import ActivateAccount from './User/ActivateAccount'
 import ForgotPassword from './User/ForgotPassword'
 import Register from './User/Register'
 import EnhancedDashboard from './User/EnhancedDashboard'
@@ -183,6 +184,7 @@ const MainContent = () => {
 
           {/* ==================== STUDENT ROUTES (/student/...) ==================== */}
           <Route path='/student/login' element={<Login />}/>
+          <Route path='/student/activate' element={<ActivateAccount />}/>
           <Route path='/student/forgot-password' element={<ForgotPassword />}/>
           <Route path='/student/register' element={<Register />}/>
           <Route path='/student/logout' element={<UserLogout />}/>

@@ -54,7 +54,9 @@ const Login = () => {
         if(res.data.bool==true){
           localStorage.setItem('studentLoginStatus',true);
           localStorage.setItem('studentId',res.data.student_id);
-          window.location.href='/student/dashboard';
+          localStorage.setItem('studentActivated', res.data.is_activated ? 'true' : 'false');
+          // Pending accounts must enter an activation code before accessing content.
+          window.location.href = res.data.is_activated === false ? '/student/activate' : '/student/dashboard';
         }else{
           const message = res.data?.message || 'Please enter valid login details.'
           setErrorMsg(message)

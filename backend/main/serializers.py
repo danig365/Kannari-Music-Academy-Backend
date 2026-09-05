@@ -234,7 +234,7 @@ class ModuleProgressSerializer(serializers.ModelSerializer):
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model=models.Student
-        fields=['id','fullname','email','password','username','interseted_categories','profile_img','date_of_birth','phone_number','address','parent_account_required','parent_linked_at']
+        fields=['id','fullname','email','password','username','interseted_categories','profile_img','date_of_birth','phone_number','address','parent_account_required','parent_linked_at','is_activated']
         extra_kwargs = {
             'password': {'required': False, 'allow_blank': True},
             'interseted_categories': {'required': False, 'allow_blank': True},

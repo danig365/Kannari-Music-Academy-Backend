@@ -318,6 +318,8 @@ urlpatterns =[
         path('admin/activation-codes/', views.list_activation_codes),
         path('admin/activation-codes/generate/', views.generate_activation_codes),
         path('admin/activation-code/<int:code_id>/revoke/', views.revoke_activation_code),
+        path('student/<int:student_id>/redeem-code/', views.redeem_activation_code),
+        path('admin/student/<int:student_id>/set-activation/', views.admin_set_student_activation),
 
         # ==================== ACCESS CONTROL URLS ====================
         

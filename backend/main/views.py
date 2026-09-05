@@ -866,6 +866,7 @@ def student_login(request):
             'bool': True,
             'student_id': studentData.id,
             'is_minor': is_minor,
+            'is_activated': studentData.is_activated,
             'can_send_messages': can_messages,
             'parent_account_required': studentData.parent_account_required,
             'has_parent_approval': has_parent_approval,
@@ -14629,3 +14630,62 @@ def revoke_activation_code(request, code_id):
     code.status = 'revoked'
     code.save(update_fields=['status'])
     return JsonResponse({'bool': True, 'message': 'Code revoked'})
+
+
+@csrf_exempt
+def redeem_activation_code(request, student_id):
+    """POST /api/student/<id>/redeem-code/  Body: { code }
+    Validates and consumes a single-use code, then activates the student's account."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST only'}, status=405)
+    data = _extract_request_data(request)
+    raw = (str(data.get('code') or '')).strip().upper()
+    if not raw:
+        return JsonResponse({'bool': False, 'message': 'Please enter your activation code.'}, status=400)
+
+    student = models.Student.objects.filter(id=student_id).first()
+    if not student:
+        return JsonResponse({'bool': False, 'message': 'Student not found.'}, status=404)
+    if student.is_activated:
+        return JsonResponse({'bool': True, 'message': 'Your account is already active.'})
+
+    from django.db import transaction
+    with transaction.atomic():
+        code = models.ActivationCode.objects.select_for_update().filter(code=raw).first()
+        if not code:
+            return JsonResponse({'bool': False, 'message': 'Invalid activation code.'}, status=400)
+        if not code.is_valid():
+            reason = ('This code has already been used.' if code.status == 'used'
+                      else 'This code has been revoked.' if code.status == 'revoked'
+                      else 'This code has expired.')
+            return JsonResponse({'bool': False, 'message': reason}, status=400)
+        code.status = 'used'
+        code.used_by = student
+        code.used_at = timezone.now()
+        code.save(update_fields=['status', 'used_by', 'used_at'])
+        student.is_activated = True
+        student.save(update_fields=['is_activated'])
+
+    return JsonResponse({'bool': True, 'message': 'Your account is now active!'})
+
+
+@csrf_exempt
+def admin_set_student_activation(request, student_id):
+    """POST /api/admin/student/<id>/set-activation/  Body: { requester_admin_id, activated }
+    Admin manually activates or deactivates a student account (no code needed)."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST only'}, status=405)
+    data = _extract_request_data(request)
+    admin, err = _validate_admin_requester(request, data)
+    if err:
+        return err
+    student = models.Student.objects.filter(id=student_id).first()
+    if not student:
+        return JsonResponse({'bool': False, 'message': 'Student not found.'}, status=404)
+    activated = data.get('activated', True)
+    if isinstance(activated, str):
+        activated = activated.strip().lower() in ('1', 'true', 'yes', 'activate', 'activated')
+    student.is_activated = bool(activated)
+    student.save(update_fields=['is_activated'])
+    return JsonResponse({'bool': True, 'is_activated': student.is_activated,
+                         'message': 'Account activated.' if student.is_activated else 'Account deactivated.'})

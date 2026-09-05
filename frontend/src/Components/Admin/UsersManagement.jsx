@@ -493,6 +493,20 @@ const UsersManagement = () => {
         }
     };
 
+    const handleToggleActivation = async (student) => {
+        const next = !student.is_activated;
+        if (!window.confirm(`${next ? 'Activate' : 'Deactivate'} ${student.fullname}'s account?`)) return;
+        try {
+            await axios.post(`${baseUrl}/admin/student/${student.id}/set-activation/`, {
+                requester_admin_id: adminId,
+                activated: next,
+            });
+            fetchStudents();
+        } catch (error) {
+            alert(error.response?.data?.message || 'Could not update activation.');
+        }
+    };
+
     // Teachers Edit
     const handleEditTeacher = (teacher) => {
         setEditingTeacher(teacher);
@@ -1300,6 +1314,13 @@ const UsersManagement = () => {
                                                                 )}
                                                             </TableCell>
                                                             <TableCell label="Actions">
+                                                                <button
+                                                                    className={`btn btn-sm me-2 ${student.is_activated ? 'btn-outline-secondary' : 'btn-primary'}`}
+                                                                    onClick={() => handleToggleActivation(student)}
+                                                                    title={student.is_activated ? 'Account active — click to deactivate' : 'Account pending — click to activate'}
+                                                                >
+                                                                    <i className={`bi ${student.is_activated ? 'bi-check-circle-fill' : 'bi-hourglass-split'}`}></i> {student.is_activated ? 'Active' : 'Pending'}
+                                                                </button>
                                                                 <button
                                                                     className={`btn btn-sm me-2 ${(student.enrolled_courses || 0) > 0 ? 'btn-outline-success' : 'btn-success'}`}
                                                                     onClick={() => setAssignStudent(student)}
