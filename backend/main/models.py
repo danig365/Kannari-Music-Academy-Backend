@@ -517,6 +517,12 @@ class StudentCourseEnrollment(models.Model):
     completed_at=models.DateTimeField(null=True, blank=True, help_text="When course was completed")
     last_accessed=models.DateTimeField(null=True, blank=True, help_text="Last time student accessed the course")
     progress_percent=models.IntegerField(default=0, help_text="Overall course completion percentage")
+    # Per-student course access mode (Feature C). Overrides course-level settings
+    # for THIS student: auto = weekly drip, unlocked = whole course open,
+    # locked = all locked (teacher unlocks specific modules/lessons via overrides).
+    ACCESS_MODE_CHOICES = [('auto', 'Auto (weekly)'), ('unlocked', 'Fully unlocked'), ('locked', 'Locked')]
+    access_mode=models.CharField(max_length=10, choices=ACCESS_MODE_CHOICES, default='auto',
+        help_text="Per-student access: auto (weekly drip), unlocked (whole course), or locked.")
 
     class Meta:
          verbose_name_plural="6. Enrolled Courses"
@@ -3837,3 +3843,38 @@ class ActivationCode(models.Model):
             if not ActivationCode.objects.filter(code=code).exists():
                 return code
         raise RuntimeError("Could not generate a unique activation code")
+
+
+class StudentModuleAccess(models.Model):
+    """Per-student override for a single module (Chapter). Presence of a row means
+    the teacher explicitly set this module's access for this student, overriding the
+    course-level rules and the student's course access_mode."""
+    STATE_CHOICES = [('locked', 'Locked'), ('unlocked', 'Unlocked')]
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='module_access')
+    module = models.ForeignKey('Chapter', on_delete=models.CASCADE, related_name='student_access')
+    state = models.CharField(max_length=10, choices=STATE_CHOICES)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['student', 'module']
+        verbose_name_plural = "Student Module Access"
+
+    def __str__(self):
+        return f"{self.student_id} · module {self.module_id} → {self.state}"
+
+
+class StudentLessonAccess(models.Model):
+    """Per-student override for a single lesson. Highest-precedence override —
+    beats module overrides, course access_mode and course-level rules."""
+    STATE_CHOICES = [('locked', 'Locked'), ('unlocked', 'Unlocked')]
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='lesson_access')
+    lesson = models.ForeignKey('ModuleLesson', on_delete=models.CASCADE, related_name='student_access')
+    state = models.CharField(max_length=10, choices=STATE_CHOICES)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['student', 'lesson']
+        verbose_name_plural = "Student Lesson Access"
+
+    def __str__(self):
+        return f"{self.student_id} · lesson {self.lesson_id} → {self.state}"

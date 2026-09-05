@@ -6393,6 +6393,7 @@ class StudentModuleProgressEnhanced(APIView):
             module_unlock_state = SubscriptionAccessControl.get_course_module_unlock_state(
                 student_id, course, subscription
             )
+            lesson_overrides = SubscriptionAccessControl.get_student_lesson_overrides(student_id, course)
 
             modules_data = []
             total_lessons = 0
@@ -6450,7 +6451,7 @@ class StudentModuleProgressEnhanced(APIView):
                     is_preview = lesson.is_preview
                     _mstate = module_unlock_state.get(module.id, {"unlocked": True, "unlock_date": None, "manual": None})
                     already_accessed = lesson_progress is not None
-                    _llocked, _ = SubscriptionAccessControl.resolve_lesson_lock(lesson, _mstate)
+                    _llocked, _ = SubscriptionAccessControl.resolve_lesson_lock(lesson, _mstate, lesson_overrides.get(lesson.id))
                     is_unlocked = (not _llocked) or is_preview or already_accessed
                     
                     # Get downloadables for this lesson
@@ -7287,6 +7288,7 @@ class StudentLessonPageData(APIView):
             module_unlock_state = SubscriptionAccessControl.get_course_module_unlock_state(
                 student_id, course, subscription
             )
+            lesson_overrides = SubscriptionAccessControl.get_student_lesson_overrides(student_id, course)
 
             modules_data = []
             total_lessons = 0
@@ -7324,7 +7326,7 @@ class StudentLessonPageData(APIView):
                     # Lock = weekly module drip + teacher module/lesson overrides.
                     # Preview lessons and lessons the student already opened stay open.
                     already_accessed = lesson_progress is not None
-                    _llocked, _ = SubscriptionAccessControl.resolve_lesson_lock(lesson, _mstate)
+                    _llocked, _ = SubscriptionAccessControl.resolve_lesson_lock(lesson, _mstate, lesson_overrides.get(lesson.id))
                     is_locked = _llocked and not lesson.is_preview and not already_accessed
                     # Only surface an unlock DATE for schedule-based locks (not manual ones).
                     lesson_unlock_date = None
@@ -14689,3 +14691,101 @@ def admin_set_student_activation(request, student_id):
     student.save(update_fields=['is_activated'])
     return JsonResponse({'bool': True, 'is_activated': student.is_activated,
                          'message': 'Account activated.' if student.is_activated else 'Account deactivated.'})
+
+
+# ==================== PER-STUDENT COURSE ACCESS (Feature C) ====================
+class StudentCourseAccessMode(APIView):
+    """POST /api/student/<sid>/course/<cid>/access-mode/  Body: {mode, requester_type, requester_id}
+    Set a student's whole-course access mode: auto | unlocked | locked."""
+    def post(self, request, student_id, course_id):
+        course = models.Course.objects.filter(id=course_id).select_related('teacher').first()
+        if not course:
+            return JsonResponse({'error': 'Course not found'}, status=404)
+        ok, err = _require_course_teacher_or_admin(request, course)
+        if not ok:
+            return err
+        mode = (request.data.get('mode') or '').strip().lower()
+        if mode not in ('auto', 'unlocked', 'locked'):
+            return JsonResponse({'error': 'mode must be auto, unlocked or locked'}, status=400)
+        enr = models.StudentCourseEnrollment.objects.filter(student_id=student_id, course=course).first()
+        if not enr:
+            return JsonResponse({'error': 'Student is not enrolled in this course'}, status=404)
+        enr.access_mode = mode
+        enr.save(update_fields=['access_mode'])
+        return JsonResponse({'success': True, 'access_mode': mode})
+
+
+class StudentModuleAccessToggle(APIView):
+    """POST /api/student/<sid>/module/<chapter_id>/access/  Body: {state: locked|unlocked|auto, requester...}"""
+    def post(self, request, student_id, chapter_id):
+        module = models.Chapter.objects.filter(id=chapter_id).select_related('course__teacher').first()
+        if not module:
+            return JsonResponse({'error': 'Module not found'}, status=404)
+        ok, err = _require_course_teacher_or_admin(request, module.course)
+        if not ok:
+            return err
+        state = (request.data.get('state') or '').strip().lower()
+        if state == 'auto':
+            models.StudentModuleAccess.objects.filter(student_id=student_id, module_id=chapter_id).delete()
+            return JsonResponse({'success': True, 'state': 'auto'})
+        if state not in ('locked', 'unlocked'):
+            return JsonResponse({'error': 'state must be locked, unlocked or auto'}, status=400)
+        models.StudentModuleAccess.objects.update_or_create(
+            student_id=student_id, module_id=chapter_id, defaults={'state': state})
+        return JsonResponse({'success': True, 'state': state})
+
+
+class StudentLessonAccessToggle(APIView):
+    """POST /api/student/<sid>/lesson/<lesson_id>/access/  Body: {state: locked|unlocked|auto, requester...}"""
+    def post(self, request, student_id, lesson_id):
+        lesson = models.ModuleLesson.objects.filter(id=lesson_id).select_related('module__course__teacher').first()
+        if not lesson:
+            return JsonResponse({'error': 'Lesson not found'}, status=404)
+        ok, err = _require_course_teacher_or_admin(request, lesson.module.course)
+        if not ok:
+            return err
+        state = (request.data.get('state') or '').strip().lower()
+        if state == 'auto':
+            models.StudentLessonAccess.objects.filter(student_id=student_id, lesson_id=lesson_id).delete()
+            return JsonResponse({'success': True, 'state': 'auto'})
+        if state not in ('locked', 'unlocked'):
+            return JsonResponse({'error': 'state must be locked, unlocked or auto'}, status=400)
+        models.StudentLessonAccess.objects.update_or_create(
+            student_id=student_id, lesson_id=lesson_id, defaults={'state': state})
+        return JsonResponse({'success': True, 'state': state})
+
+
+class StudentCourseAccessState(APIView):
+    """GET /api/student/<sid>/course/<cid>/access-state/
+    Returns the per-student access panel: course mode + each module/lesson's override
+    and resolved locked state (for the teacher/admin UI)."""
+    def get(self, request, student_id, course_id):
+        course = models.Course.objects.filter(id=course_id).first()
+        if not course:
+            return JsonResponse({'error': 'Course not found'}, status=404)
+        enr = models.StudentCourseEnrollment.objects.filter(student_id=student_id, course=course).first()
+        access_mode = enr.access_mode if enr else 'auto'
+        subscription = SubscriptionAccessControl.get_active_subscription(student_id)
+        mstate = SubscriptionAccessControl.get_course_module_unlock_state(student_id, course, subscription)
+        lesson_overrides = SubscriptionAccessControl.get_student_lesson_overrides(student_id, course)
+        modules_out = []
+        for m in models.Chapter.objects.filter(course=course).order_by('order', 'id'):
+            ms = mstate.get(m.id, {})
+            lessons_out = []
+            for l in models.ModuleLesson.objects.filter(module=m).order_by('order', 'id'):
+                locked, _ = SubscriptionAccessControl.resolve_lesson_lock(l, ms, lesson_overrides.get(l.id))
+                lessons_out.append({
+                    'id': l.id, 'title': l.title,
+                    'student_override': lesson_overrides.get(l.id),   # 'locked'|'unlocked'|None
+                    'locked': locked,
+                })
+            ud = ms.get('unlock_date')
+            modules_out.append({
+                'id': m.id, 'title': m.title, 'order': m.order,
+                'unlocked': ms.get('unlocked', True),
+                'student_override': ms.get('student_override'),        # 'locked'|'unlocked'|None
+                'unlock_date': ud.isoformat() if ud else None,
+                'lessons': lessons_out,
+            })
+        return JsonResponse({'access_mode': access_mode, 'course_id': course.id,
+                             'course_title': course.title, 'modules': modules_out})

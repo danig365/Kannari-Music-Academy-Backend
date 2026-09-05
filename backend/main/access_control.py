@@ -184,20 +184,35 @@ class SubscriptionAccessControl:
         modules = list(models.Chapter.objects.filter(course=course).order_by('order', 'id'))
 
         drip = bool(mpw)
+
+        # Fetch this student's enrollment once (anchor date + per-student course mode).
+        enrollment = None
+        try:
+            enrollment = models.StudentCourseEnrollment.objects.filter(
+                student_id=student_id, course=course
+            ).order_by('enrolled_time').first()
+        except Exception:
+            enrollment = None
+        access_mode = (enrollment.access_mode if enrollment else 'auto') or 'auto'
+
+        # Per-student per-module overrides { module_id: 'locked'|'unlocked' }.
+        module_overrides = {}
+        try:
+            for mo in models.StudentModuleAccess.objects.filter(
+                student_id=student_id, module__course=course
+            ):
+                module_overrides[mo.module_id] = mo.state
+        except Exception:
+            module_overrides = {}
+
         allowed_modules = 0
         enrolled_date = today
         if drip:
             mpw = int(mpw)
             # Anchor = per-course enrollment date, fallback to subscription start, then today.
             enrolled_date = None
-            try:
-                enrollment = models.StudentCourseEnrollment.objects.filter(
-                    student_id=student_id, course=course
-                ).order_by('enrolled_time').first()
-                if enrollment and enrollment.enrolled_time:
-                    enrolled_date = enrollment.enrolled_time.date()
-            except Exception:
-                enrolled_date = None
+            if enrollment and enrollment.enrolled_time:
+                enrolled_date = enrollment.enrolled_time.date()
             if not enrolled_date and subscription and subscription.start_date:
                 enrolled_date = subscription.start_date
             if not enrolled_date:
@@ -221,11 +236,21 @@ class SubscriptionAccessControl:
                 drip_unlocked = True
                 drip_unlock_date = None
 
-            # Teacher manual override wins over the schedule.
-            if m.manual_lock is True:
-                unlocked, unlock_date = False, None          # locked by teacher (no schedule date)
+            # Precedence (most specific first): per-student module override →
+            # per-student course access_mode → course-level manual_lock → weekly drip.
+            smo = module_overrides.get(m.id)   # 'locked' | 'unlocked' | None
+            if smo == 'unlocked':
+                unlocked, unlock_date = True, None
+            elif smo == 'locked':
+                unlocked, unlock_date = False, None
+            elif access_mode == 'unlocked':
+                unlocked, unlock_date = True, None
+            elif access_mode == 'locked':
+                unlocked, unlock_date = False, None
+            elif m.manual_lock is True:
+                unlocked, unlock_date = False, None          # locked by teacher (course-level)
             elif m.manual_lock is False:
-                unlocked, unlock_date = True, None            # unlocked by teacher (possibly early)
+                unlocked, unlock_date = True, None            # unlocked by teacher (course-level)
             else:
                 unlocked = drip_unlocked
                 unlock_date = None if drip_unlocked else drip_unlock_date
@@ -234,20 +259,43 @@ class SubscriptionAccessControl:
                 "unlocked": unlocked,
                 "unlock_date": unlock_date,
                 "week": week_needed,
-                "manual": m.manual_lock,   # None / True / False — for the teacher UI
+                "manual": m.manual_lock,          # course-level override (for UI)
+                "student_override": smo,          # per-student module override (for UI)
             }
         return state
 
     @staticmethod
-    def resolve_lesson_lock(lesson, module_state):
+    def get_student_lesson_overrides(student_id, course):
+        """Return { lesson_id: 'locked'|'unlocked' } — this student's per-lesson
+        overrides across the course. Fetched once per request and passed to
+        resolve_lesson_lock()."""
+        overrides = {}
+        try:
+            for lo in models.StudentLessonAccess.objects.filter(
+                student_id=student_id, lesson__module__course=course
+            ):
+                overrides[lo.lesson_id] = lo.state
+        except Exception:
+            overrides = {}
+        return overrides
+
+    @staticmethod
+    def resolve_lesson_lock(lesson, module_state, student_override=None):
         """
-        Resolve whether a lesson is locked, combining the module's state (which
-        already includes the weekly drip + the module-level teacher override) with
-        the lesson's own teacher override. Lesson override takes precedence.
+        Resolve whether a lesson is locked. Precedence (most specific first):
+        per-student lesson override → per-student module/course (already folded into
+        module_state) → lesson-level teacher override → module state (drip + course
+        module override). `student_override` is 'locked'|'unlocked'|None.
 
         Returns (is_locked: bool, message: str).
         """
-        # Individual lesson override wins over everything.
+        # Per-student lesson override wins over everything.
+        if student_override == 'unlocked':
+            return False, ""
+        if student_override == 'locked':
+            return True, "This lesson has been locked by your teacher."
+
+        # Course-level individual lesson override next.
         if lesson.manual_lock is True:
             return True, "This lesson has been locked by your teacher."
         if lesson.manual_lock is False:
@@ -306,7 +354,9 @@ class SubscriptionAccessControl:
             student_id, course, subscription
         )
         module_state = unlock_state.get(lesson.module_id, {"unlocked": True, "unlock_date": None, "manual": None})
-        is_locked, lock_msg = SubscriptionAccessControl.resolve_lesson_lock(lesson, module_state)
+        _lo = models.StudentLessonAccess.objects.filter(student_id=student_id, lesson_id=lesson_id).first()
+        student_lesson_override = _lo.state if _lo else None
+        is_locked, lock_msg = SubscriptionAccessControl.resolve_lesson_lock(lesson, module_state, student_lesson_override)
         if is_locked:
             already_accessed = models.ModuleLessonProgress.objects.filter(
                 student_id=student_id, lesson_id=lesson_id

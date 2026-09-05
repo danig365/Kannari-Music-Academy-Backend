@@ -172,6 +172,12 @@ urlpatterns =[
         path('module/<int:chapter_id>/lock/', views.ModuleLockToggle.as_view()),
         path('lesson/<int:lesson_id>/lock/', views.LessonLockToggle.as_view()),
 
+        # Per-student course access (Feature C)
+        path('student/<int:student_id>/course/<int:course_id>/access-mode/', views.StudentCourseAccessMode.as_view()),
+        path('student/<int:student_id>/course/<int:course_id>/access-state/', views.StudentCourseAccessState.as_view()),
+        path('student/<int:student_id>/module/<int:chapter_id>/access/', views.StudentModuleAccessToggle.as_view()),
+        path('student/<int:student_id>/lesson/<int:lesson_id>/access/', views.StudentLessonAccessToggle.as_view()),
+
         # Student Lesson Progress
         path('student/<int:student_id>/course/<int:course_id>/progress/', views.StudentModuleProgress.as_view()),
         path('student/<int:student_id>/course/<int:course_id>/progress-enhanced/', views.StudentModuleProgressEnhanced.as_view()),
